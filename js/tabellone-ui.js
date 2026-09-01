@@ -154,8 +154,7 @@ async function eseguiTurno() {
         nascondiCarta();                                   // sparisce solo ora: il giocatore ha confermato
 
         corretta = valutaRisposta(carta, risposteDate);
-        const accettata = await mostraVerdetto(corretta, risposteDate);
-        if (accettata) break;
+        const accettata = await mostraVerdetto(carta, corretta, risposteDate);
       }
       r = applicaRispostaConoscenza(stato, percorso, corretta);
     } else {

@@ -1,9 +1,10 @@
 // risposta-ui.js
 // Raccoglie la risposta scritta dal giocatore, la verifica in modo
 // automatico e tollerante, e mostra il verdetto con un conto alla rovescia
-// di 10 secondi. Non decide da sola quando mostrare o nascondere la carta:
-// quello lo coordina chi la usa (tabellone-ui.js), perché la carta deve
-// restare visibile mentre il giocatore scrive.
+// di 10 secondi — se è sbagliata, anche la risposta corretta. Non decide
+// da sola quando mostrare o nascondere la carta: quello lo coordina chi la
+// usa (tabellone-ui.js), perché la carta deve restare visibile mentre il
+// giocatore scrive.
 
 function normalizza(testo) {
   return testo
@@ -14,16 +15,12 @@ function normalizza(testo) {
     .trim();
 }
 
-// Parole troppo comuni per contare da sole nel confronto.
 const PAROLE_IGNORATE = new Set(['il','lo','la','i','gli','le','un','uno','una','di','del','della','dei','e','a','ai','al']);
 
 function paroleSignificative(testo) {
   return normalizza(testo).split(' ').filter(p => p.length > 0 && !PAROLE_IGNORATE.has(p));
 }
 
-// Due risposte combaciano se le parole importanti dell'una sono tutte
-// contenute nell'altra — così "seminatore" combacia con "Il seminatore" e
-// "sangue" con "Acqua tramutata in sangue", senza bisogno della frase esatta.
 function risposteCorrispondono(risposta, atteso) {
   const paroleR = paroleSignificative(risposta);
   const paroleA = paroleSignificative(atteso);
@@ -97,15 +94,25 @@ export function raccogliRisposta(carta) {
 
 const DURATA_COUNTDOWN_S = 10;
 
-export function mostraVerdetto(corretta, risposteDate) {
+export function mostraVerdetto(carta, corretta, risposteDate) {
   return new Promise(risolvi => {
     const area = document.getElementById('verdetto-area');
     area.classList.remove('nascosta');
 
     let secondiRimasti = DURATA_COUNTDOWN_S;
+
+    let rigaRispostaGiusta = '';
+    if (!corretta) {
+      const rispostaGiusta = carta.tipo === 'elenco'
+        ? carta.rispostePossibili.join(', ')
+        : carta.risposta;
+      rigaRispostaGiusta = `<p class="verdetto-risposta-giusta">Risposta corretta: ${rispostaGiusta}</p>`;
+    }
+
     area.innerHTML = `
       <p class="verdetto-esito">${corretta ? '✅ Corretto!' : '❌ Non risulta corretto'}</p>
       <p class="verdetto-dettaglio">Risposta data: ${risposteDate.join(', ') || '(vuota)'}</p>
+      ${rigaRispostaGiusta}
       <p class="verdetto-countdown">Si chiude tra <span id="verdetto-conto">${secondiRimasti}</span>s</p>
       <button id="verdetto-ok">✅ OK</button>
       <button id="verdetto-correggi">✏️ Correggi</button>
