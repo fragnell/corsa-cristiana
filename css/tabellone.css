@@ -1,6 +1,6 @@
 /* tabellone.css */
-/* Struttura del tabellone, animazioni delle pedine, carta pescata,
-   pannello di risposta del giocatore. Un unico file, tutto verificato insieme. */
+/* Tabellone, animazioni delle pedine, carta pescata, pannello di risposta,
+   pannello "tocca a te" e animazione del dado. Tutto in un unico file. */
 
 body {
   font-family: sans-serif;
@@ -62,20 +62,8 @@ body {
 }
 
 #controlli {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-#btn-tira {
-  font-size: 1rem;
-  padding: 0.5rem 1.2rem;
-  cursor: pointer;
-}
-
-#btn-tira:disabled {
-  cursor: default;
-  opacity: 0.6;
+  font-size: 1.1rem;
+  min-height: 2rem;
 }
 
 /* --- animazioni delle pedine --- */
@@ -191,7 +179,7 @@ body {
   border: 1px solid #999;
 }
 
-/* --- risposta scritta dal giocatore e verdetto --- */
+/* --- pannelli flottanti: risposta, verdetto, tocca-a-te --- */
 
 .pannello-flottante {
   position: fixed;
@@ -253,8 +241,71 @@ body {
   font-size: 0.9rem;
 }
 
-
 .verdetto-countdown {
   color: #888;
   font-size: 0.85rem;
+}
+
+.verdetto-risposta-giusta {
+  font-weight: bold;
+  color: #b8860b;
+  background: #fff8e1;
+  padding: 0.4rem;
+  border-radius: 6px;
+}
+
+/* --- "tocca a te" e il dado --- */
+
+.turno-giocatore-nome {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+#btn-tira-dado {
+  font-size: 1.1rem;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #2e7d32;
+  background: #4caf50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.dado-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+}
+
+.dado-overlay.nascosta {
+  display: none;
+}
+
+.dado-faccia {
+  font-size: 8rem;
+  line-height: 1;
+  background: white;
+  border: 4px solid #333;
+  border-radius: 20px;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes dado-scatto-anim {
+  0%   { transform: scale(0.85) rotate(-8deg); }
+  50%  { transform: scale(1.1) rotate(8deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.dado-faccia.dado-scatto {
+  animation: dado-scatto-anim 0.09s ease-out;
 }

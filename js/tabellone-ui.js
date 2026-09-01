@@ -1,13 +1,16 @@
 // tabellone-ui.js
-// Disegna il tabellone a spirale, anima le pedine, e alla Conoscenza,
-// Imprevisto o Prova pesca una carta vera. Per la Conoscenza, la carta
-// resta visibile mentre il giocatore scrive, e sparisce solo quando conferma.
+// Disegna il tabellone a spirale e manda avanti la partita in un ciclo
+// continuo: aspetta che il giocatore di turno tiri il dado dal proprio
+// "dispositivo", anima il dado sul tabellone, muove la pedina, pesca le
+// carte quando serve, e passa al turno successivo — da solo, senza
+// bisogno di un pulsante fisso da cliccare ogni volta.
 
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
 import { creaMazzo, pesca } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta } from './carta-ui.js';
 import { raccogliRisposta, valutaRisposta, mostraVerdetto } from './risposta-ui.js';
+import { aspettaTurnoGiocatore, animaDado } from './dado-ui.js';
 
 const PALETTE = {
   rosso: '#e74c3c',
@@ -112,14 +115,16 @@ async function animaSpostamento(giocatoreId, posizioneIniziale, posizioneFinale)
   evidenziaCasella(posizioneFinale);
 }
 
-async function eseguiTurno() {
-  const bottone = document.getElementById('btn-tira');
+async function giocaTurno() {
   const infoTurno = document.getElementById('turno-info');
-  bottone.disabled = true;
-
   const giocatore = giocatoreDiTurno(stato);
+
+  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado...`;
+  await aspettaTurnoGiocatore(giocatore.nome);
+
   const posizionePrima = giocatore.posizione;
   const dado = tiraDado();
+  await animaDado(dado);
 
   const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
   await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
@@ -176,14 +181,17 @@ async function eseguiTurno() {
     }
   }
 
-  if (partitaFinita(stato)) {
-    const vincitore = stato.giocatori[stato.vincitore];
-    infoTurno.textContent = `🏆 Ha vinto ${vincitore.nome}!`;
-  } else {
+  if (!partitaFinita(stato)) {
     stato = passaTurno(stato);
-    infoTurno.textContent = `Ultimo tiro: ${dado} — tocca a ${giocatoreDiTurno(stato).nome}`;
-    bottone.disabled = false;
   }
+}
+
+async function cicloDiGioco() {
+  while (!partitaFinita(stato)) {
+    await giocaTurno();
+  }
+  const vincitore = stato.giocatori[stato.vincitore];
+  document.getElementById('turno-info').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
 }
 
 async function avvia() {
@@ -207,8 +215,7 @@ async function avvia() {
   ]);
 
   creaPedine();
-  document.getElementById('turno-info').textContent = `Tocca a ${giocatoreDiTurno(stato).nome}`;
-  document.getElementById('btn-tira').addEventListener('click', eseguiTurno);
+  cicloDiGioco();
 }
 
 avvia();
