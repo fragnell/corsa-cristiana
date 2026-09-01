@@ -26,7 +26,7 @@ export function animaDado(valoreFinale) {
     overlay.classList.remove('nascosta');
 
     let tiri = 0;
-    const TIRI_TOTALI = 10;
+    const TIRI_TOTALI = 12;
 
     const scatta = () => {
       faccia.classList.remove('dado-scatto');
@@ -47,8 +47,8 @@ export function animaDado(valoreFinale) {
         setTimeout(() => {
           overlay.classList.add('nascosta');
           risolvi();
-        }, 700);
+        }, 900); // resta un attimo sul numero vero prima di sparire
       }
-    }, 90);
+    }, 140);
   });
 }
