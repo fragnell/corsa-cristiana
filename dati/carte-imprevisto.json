@@ -1,0 +1,19 @@
+{
+  "carte": [
+    { "id": 1, "testo": "Ripetute difficoltà ti hanno fatto perdere un po' di entusiasmo.", "riferimento": "Ecclesiaste 9:11", "pubblicazione": "scl pp. 28-30", "effetto": -2 },
+    { "id": 2, "testo": "Sentirti trattato ingiustamente ti ha fatto perdere serenità.", "riferimento": "Salmo 37:8", "pubblicazione": "scl pp. 28-30", "effetto": -2 },
+    { "id": 3, "testo": "La paura di non essere all'altezza ti ha fatto esitare invece di avanzare.", "riferimento": "Salmo 29:11", "pubblicazione": "scl pp. 28-30", "effetto": -2 },
+    { "id": 4, "testo": "Soffermarti sulla prosperità di alcuni nel mondo ti ha fiaccato e rallentato nella corsa.", "riferimento": "Salmo 73:13, 28", "pubblicazione": "w24 giugno pp. 20-25", "effetto": -2 },
+    { "id": 5, "testo": "Il comportamento di qualcuno ti ha turbato e ti ha fatto rallentare nella corsa.", "riferimento": "Proverbi 19:11", "pubblicazione": "w91 15/10 pp. 21-24", "effetto": -2 },
+    { "id": 6, "testo": "Compagnie poco positive hanno influenzato il tuo modo di pensare e ti hanno fatto rallentare nella corsa.", "riferimento": "1 Corinti 15:33", "pubblicazione": "w91 15/10 pp. 21-24", "effetto": -2 },
+    { "id": 7, "testo": "Un periodo difficile ti ha fatto perdere entusiasmo e rallentare nella corsa.", "riferimento": "Rut 1:20", "pubblicazione": "w20 dicembre pp. 16-21", "effetto": -2 },
+    { "id": 8, "testo": "L'attesa dell'adempimento delle promesse di Geova ti è sembrata più lunga del previsto e hai perso un po' di slancio.", "riferimento": "Abacuc 2:3", "pubblicazione": "w15 15/8 pp. 14-18", "effetto": -2 },
+    { "id": 9, "testo": "Ripensare a ciò che facevi in passato ti ha fatto perdere concentrazione su quello che puoi fare ora.", "riferimento": "Filippesi 3:13", "pubblicazione": "w20 agosto pp. 20-25", "effetto": -2 },
+    { "id": 10, "testo": "La paura di non farcela ti ha fatto dubitare di te stesso e ti ha fatto rallentare nella corsa.", "riferimento": "Ecclesiaste 9:10", "pubblicazione": "g 5/11 pp. 26-28", "effetto": -2 },
+    { "id": 11, "testo": "Scarsi risultati nel servizio ti hanno fatto perdere un po' di entusiasmo e hanno rallentato la tua corsa.", "riferimento": "Ebrei 6:10", "pubblicazione": "w18 maggio pp. 12-16", "effetto": -2 },
+    { "id": 12, "testo": "Ansie e preoccupazioni ti hanno fatto perdere serenità e rallentare nella corsa.", "riferimento": "Isaia 40:29", "pubblicazione": "scl pp. 28-30", "effetto": -2 },
+    { "id": 13, "testo": "Hai iniziato a dubitare del tuo valore e questo ha rallentato il tuo passo.", "riferimento": "Salmo 103:13, 14", "pubblicazione": "scl pp. 28-30", "effetto": -2 },
+    { "id": 14, "testo": "Ripensare a errori del passato ti ha tolto un po' di slancio.", "riferimento": "Salmo 32:5", "pubblicazione": "scl pp. 28-30", "effetto": -2 },
+    { "id": 15, "testo": "Stanchezza o limiti fisici ti hanno fatto rallentare nella corsa.", "riferimento": "Isaia 46:4", "pubblicazione": "scl pp. 28-30", "effetto": -2 }
+  ]
+}
