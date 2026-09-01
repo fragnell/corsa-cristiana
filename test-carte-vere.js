@@ -26,4 +26,3 @@ for (let i = 0; i < 3; i++) {
   mazzoProva = r.mazzo;
   console.log(`- [${r.carta.tipo}] "${r.carta.testo.slice(0, 60)}..."`);
 }
-EOF
