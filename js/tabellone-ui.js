@@ -149,12 +149,13 @@ async function eseguiTurno() {
 
       let corretta;
       while (true) {
-        await mostraCarta('CONOSCENZA', carta);           // resta visibile: tutti la leggono mentre si scrive
+        await mostraCarta('CONOSCENZA', carta);
         const risposteDate = await raccogliRisposta(carta);
-        nascondiCarta();                                   // sparisce solo ora: il giocatore ha confermato
+        nascondiCarta();
 
         corretta = valutaRisposta(carta, risposteDate);
         const accettata = await mostraVerdetto(carta, corretta, risposteDate);
+        if (accettata) break;
       }
       r = applicaRispostaConoscenza(stato, percorso, corretta);
     } else {
