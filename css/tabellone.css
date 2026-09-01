@@ -1,8 +1,79 @@
 /* tabellone.css */
-/* Per ora minimale: solo per verificare che il collegamento funzioni.
-   Lo stile vero arriva quando disegniamo il tabellone. */
+/* Struttura di base: griglia a spirale, caselle colorate per tipo, pedine sopra.
+   Lo stile "carino" (animazioni, immagini) arriva in una rifinitura successiva. */
 
 body {
   font-family: sans-serif;
-  padding: 2rem;
+  padding: 1.5rem;
+}
+
+#tabellone {
+  display: grid;
+  grid-template-columns: repeat(8, 64px);
+  grid-template-rows: repeat(8, 64px);
+  gap: 3px;
+  margin: 1.5rem 0;
+}
+
+.casella {
+  border: 1px solid #999;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2px;
+  font-size: 0.65rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.casella .numero {
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+.casella-CONOSCENZA  { background: #cfe3ff; }
+.casella-IMPREVISTO  { background: #ffe2ad; }
+.casella-PROVA       { background: #ffc9c9; }
+.casella-SALTO       { background: #c8f7d4; }
+.casella-FERMO       { background: #ff9e9e; }
+.casella-PARTENZA    { background: #baff9e; }
+.casella-ARRIVO      { background: #ffe066; }
+
+.pedine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: auto;
+}
+
+.pedina {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: white;
+  font-weight: bold;
+  border: 1px solid rgba(0,0,0,0.3);
+}
+
+#controlli {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#btn-tira {
+  font-size: 1rem;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+}
+
+#btn-tira:disabled {
+  cursor: default;
+  opacity: 0.6;
 }

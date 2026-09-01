@@ -39,7 +39,7 @@ function spostaGiocatore(stato, percorso, quantita, evento) {
   const giocatore = stato.giocatori[stato.turnoDi];
   let nuovaPosizione = giocatore.posizione + quantita;
 
-  if (nuovaPosizione > ultimaCasella(percorso)) {
+  if (nuovaPosizione >= ultimaCasella(percorso)) {
     giocatore.posizione = ultimaCasella(percorso);
     stato.vincitore = giocatore.id;
     return { stato, evento: { tipo: 'VITTORIA' } };
@@ -98,7 +98,7 @@ export function muoviGiocatore(stato, percorso, valoreDado) {
 
   const nuovaPosizione = giocatore.posizione + valoreDado;
 
-  if (nuovaPosizione > ultimaCasella(percorso)) {
+  if (nuovaPosizione >= ultimaCasella(percorso)) {
     giocatore.posizione = ultimaCasella(percorso);
     nuovoStato.vincitore = giocatore.id;
     return { stato: nuovoStato, evento: { tipo: 'VITTORIA' } };
