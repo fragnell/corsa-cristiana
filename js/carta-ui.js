@@ -1,8 +1,8 @@
 // carta-ui.js
 // Mostra la carta pescata (Conoscenza, Imprevisto, Prova) con l'animazione
-// di rotazione, e aspetta che il giudice prema un bottone per continuare.
-// Non sa nulla del tabellone: riceve una carta e degli "opzioni" di risposta,
-// restituisce quale opzione è stata scelta.
+// di rotazione. Se ci sono opzioni (bottoni), aspetta che se ne prema uno.
+// Se non ce ne sono (caso della Conoscenza, dove ora risponde il giocatore),
+// la mostra e basta, poi prosegue da sola dopo un attimo per leggerla.
 
 export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni) {
   return new Promise(risolvi => {
@@ -16,15 +16,12 @@ export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni) {
     elTipo.textContent = tipoCarta;
     elRiferimento.textContent = '';
 
-    // Conoscenza mostra solo la domanda: la risposta resta privata, la vedrà
-    // il giudice sul proprio telefono quando costruiremo quella parte.
     if (tipoCarta === 'CONOSCENZA') {
       elTesto.textContent = carta.domanda;
       if (carta.tipo === 'elenco') {
         elRiferimento.textContent = `(cita almeno ${carta.minimoRichiesto})`;
       }
     } else {
-      // Imprevisto e Prova sono pubbliche per intero: niente da nascondere.
       elTesto.textContent = carta.testo;
       if (tipoCarta === 'IMPREVISTO') {
         elRiferimento.textContent = carta.riferimento || '';
@@ -32,6 +29,20 @@ export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni) {
     }
 
     elBottoni.innerHTML = '';
+    elCarta.classList.remove('girata');
+    overlay.classList.remove('nascosta');
+
+    if (opzioni.length === 0) {
+      setTimeout(() => {
+        elCarta.classList.add('girata');
+        setTimeout(() => {
+          overlay.classList.add('nascosta');
+          risolvi(null);
+        }, 1400);
+      }, 400);
+      return;
+    }
+
     opzioni.forEach(opz => {
       const bottone = document.createElement('button');
       bottone.textContent = opz.etichetta;
@@ -42,10 +53,6 @@ export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni) {
       elBottoni.appendChild(bottone);
     });
 
-    elCarta.classList.remove('girata');
-    overlay.classList.remove('nascosta');
-
-    // piccola pausa a carta coperta, prima di girarla
     setTimeout(() => elCarta.classList.add('girata'), 400);
   });
 }

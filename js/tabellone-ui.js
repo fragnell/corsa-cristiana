@@ -1,11 +1,13 @@
 // tabellone-ui.js
 // Disegna il tabellone a spirale, anima le pedine, e alla Conoscenza,
-// Imprevisto o Prova pesca una carta vera e la mostra girandola.
+// Imprevisto o Prova pesca una carta vera. Per la Conoscenza, il giocatore
+// scrive la risposta invece che un giudice la valuti a vista.
 
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
 import { creaMazzo, pesca } from './mazzi.js';
 import { mostraCartaEAspettaScelta } from './carta-ui.js';
+import { chiediRispostaEVerifica } from './risposta-ui.js';
 
 const PALETTE = {
   rosso: '#e74c3c',
@@ -131,25 +133,20 @@ async function eseguiTurno() {
     await animaSpostamento(giocatore.id, posizioneAtterrata, posizioneDopoEffetto);
   }
 
-  // Imprevisto: l'effetto è già applicato dal motore, la carta si mostra solo per far vedere quale sia stata.
   if (r.evento.tipo === 'IMPREVISTO') {
     const pescata = pesca(mazzoImprevisto);
     mazzoImprevisto = pescata.mazzo;
     await mostraCartaEAspettaScelta('IMPREVISTO', pescata.carta, [{ etichetta: 'Continua', valore: null }]);
   }
 
-  // Conoscenza e Prova: la carta si pesca e si mostra PRIMA di sapere l'esito,
-  // che arriva dal bottone premuto dal giudice.
   if (r.evento.tipo === 'IN_ATTESA') {
     const posizionePrimaEsito = stato.giocatori[giocatore.id].posizione;
 
     if (r.evento.casella === 'CONOSCENZA') {
       const pescata = pesca(mazzoConoscenza);
       mazzoConoscenza = pescata.mazzo;
-      const corretta = await mostraCartaEAspettaScelta('CONOSCENZA', pescata.carta, [
-        { etichetta: '✅ Risposta corretta', valore: true },
-        { etichetta: '❌ Risposta sbagliata', valore: false }
-      ]);
+      await mostraCartaEAspettaScelta('CONOSCENZA', pescata.carta, []); // solo mostra la domanda
+      const corretta = await chiediRispostaEVerifica(pescata.carta);   // il giocatore scrive e si verifica da sola
       r = applicaRispostaConoscenza(stato, percorso, corretta);
     } else {
       const pescata = pesca(mazzoProva);

@@ -1,6 +1,6 @@
 /* tabellone.css */
-/* Struttura di base: griglia a spirale, caselle colorate per tipo, pedine sopra.
-   Lo stile "carino" (animazioni, immagini) arriva in una rifinitura successiva. */
+/* Struttura del tabellone, animazioni delle pedine, carta pescata,
+   pannello di risposta del giocatore. Un unico file, tutto verificato insieme. */
 
 body {
   font-family: sans-serif;
@@ -77,7 +77,8 @@ body {
   cursor: default;
   opacity: 0.6;
 }
-/* --- animazioni --- */
+
+/* --- animazioni delle pedine --- */
 
 @keyframes salto-pedina {
   0%, 100% { transform: scale(1); }
@@ -96,7 +97,6 @@ body {
 .casella.evidenziata {
   animation: evidenzia-casella 0.45s ease-in-out;
 }
-
 
 /* --- la carta pescata --- */
 
@@ -189,4 +189,66 @@ body {
   cursor: pointer;
   border-radius: 6px;
   border: 1px solid #999;
+}
+
+/* --- risposta scritta dal giocatore e verdetto --- */
+
+.pannello-flottante {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 210;
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.pannello-flottante.nascosta {
+  display: none;
+}
+
+.pannello-flottante input[type="text"] {
+  font-size: 1rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+}
+
+.pannello-flottante button {
+  font-size: 0.95rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #999;
+  margin: 0.3rem 0.2rem 0;
+}
+
+.risposta-riga {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.6rem 0;
+}
+
+#risposta-elenco-lista {
+  text-align: left;
+  max-height: 120px;
+  overflow-y: auto;
+  margin: 0.5rem 0;
+}
+
+.verdetto-esito {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.verdetto-dettaglio {
+  color: #555;
+  font-size: 0.9rem;
 }
