@@ -51,4 +51,4 @@ export function animaDado(valoreFinale) {
       }
     }, 180);
   });
-}
+}s
