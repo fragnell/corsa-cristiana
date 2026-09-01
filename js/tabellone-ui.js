@@ -1,13 +1,13 @@
 // tabellone-ui.js
 // Disegna il tabellone a spirale, anima le pedine, e alla Conoscenza,
-// Imprevisto o Prova pesca una carta vera. Per la Conoscenza, il giocatore
-// scrive la risposta invece che un giudice la valuti a vista.
+// Imprevisto o Prova pesca una carta vera. Per la Conoscenza, la carta
+// resta visibile mentre il giocatore scrive, e sparisce solo quando conferma.
 
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
 import { creaMazzo, pesca } from './mazzi.js';
-import { mostraCartaEAspettaScelta } from './carta-ui.js';
-import { chiediRispostaEVerifica } from './risposta-ui.js';
+import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta } from './carta-ui.js';
+import { raccogliRisposta, valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 
 const PALETTE = {
   rosso: '#e74c3c',
@@ -145,8 +145,18 @@ async function eseguiTurno() {
     if (r.evento.casella === 'CONOSCENZA') {
       const pescata = pesca(mazzoConoscenza);
       mazzoConoscenza = pescata.mazzo;
-      await mostraCartaEAspettaScelta('CONOSCENZA', pescata.carta, []); // solo mostra la domanda
-      const corretta = await chiediRispostaEVerifica(pescata.carta);   // il giocatore scrive e si verifica da sola
+      const carta = pescata.carta;
+
+      let corretta;
+      while (true) {
+        await mostraCarta('CONOSCENZA', carta);           // resta visibile: tutti la leggono mentre si scrive
+        const risposteDate = await raccogliRisposta(carta);
+        nascondiCarta();                                   // sparisce solo ora: il giocatore ha confermato
+
+        corretta = valutaRisposta(carta, risposteDate);
+        const accettata = await mostraVerdetto(corretta, risposteDate);
+        if (accettata) break;
+      }
       r = applicaRispostaConoscenza(stato, percorso, corretta);
     } else {
       const pescata = pesca(mazzoProva);

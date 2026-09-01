@@ -1,33 +1,50 @@
 // risposta-ui.js
-// Il giocatore scrive la propria risposta (invece che qualcuno la valuti a
-// vista). Il controllo è automatico e tollerante su maiuscole, spazi e
-// accenti. Se il controllo sbaglia per un dettaglio di forma, "Correggi"
-// rimanda la domanda al giocatore per riprovare.
-//
-// Oggi questo gira sulla stessa pagina del tabellone, per simulare cosa
-// succederà sul telefono del giocatore quando costruiremo i dispositivi
-// separati — la logica però è già quella definitiva.
+// Raccoglie la risposta scritta dal giocatore, la verifica in modo
+// automatico e tollerante, e mostra il verdetto con un conto alla rovescia
+// di 10 secondi. Non decide da sola quando mostrare o nascondere la carta:
+// quello lo coordina chi la usa (tabellone-ui.js), perché la carta deve
+// restare visibile mentre il giocatore scrive.
 
 function normalizza(testo) {
   return testo
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // via gli accenti
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/['\u2019`.,]/g, '')                       // via apostrofi e punteggiatura comune
+    .replace(/['\u2019`.,]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-function contaRisposteValide(risposteDate, rispostePossibili) {
-  const possibiliNorm = rispostePossibili.map(normalizza);
-  const trovate = new Set();
-  risposteDate.forEach(r => {
-    const idx = possibiliNorm.indexOf(normalizza(r));
-    if (idx !== -1) trovate.add(idx); // per indice, così non conta due volte la stessa voce
-  });
-  return trovate.size;
+// Parole troppo comuni per contare da sole nel confronto.
+const PAROLE_IGNORATE = new Set(['il','lo','la','i','gli','le','un','uno','una','di','del','della','dei','e','a','ai','al']);
+
+function paroleSignificative(testo) {
+  return normalizza(testo).split(' ').filter(p => p.length > 0 && !PAROLE_IGNORATE.has(p));
 }
 
-function raccogliRisposta(carta) {
+// Due risposte combaciano se le parole importanti dell'una sono tutte
+// contenute nell'altra — così "seminatore" combacia con "Il seminatore" e
+// "sangue" con "Acqua tramutata in sangue", senza bisogno della frase esatta.
+function risposteCorrispondono(risposta, atteso) {
+  const paroleR = paroleSignificative(risposta);
+  const paroleA = paroleSignificative(atteso);
+  if (paroleR.length === 0) return false;
+  return paroleR.every(p => paroleA.includes(p)) || paroleA.every(p => paroleR.includes(p));
+}
+
+export function valutaRisposta(carta, risposteDate) {
+  if (carta.tipo === 'elenco') {
+    const trovate = new Set();
+    risposteDate.forEach(r => {
+      carta.rispostePossibili.forEach((atteso, idx) => {
+        if (risposteCorrispondono(r, atteso)) trovate.add(idx);
+      });
+    });
+    return trovate.size >= carta.minimoRichiesto;
+  }
+  return normalizza(risposteDate[0] || '') === normalizza(carta.risposta);
+}
+
+export function raccogliRisposta(carta) {
   return new Promise(risolvi => {
     const area = document.getElementById('risposta-area');
     area.classList.remove('nascosta');
@@ -45,9 +62,7 @@ function raccogliRisposta(carta) {
       const lista = [];
       const listaEl = document.getElementById('risposta-elenco-lista');
       const input = document.getElementById('risposta-input');
-
       const aggiorna = () => { listaEl.innerHTML = lista.map(r => `<div>• ${r}</div>`).join(''); };
-
       const aggiungi = () => {
         const valore = input.value.trim();
         if (valore) { lista.push(valore); input.value = ''; aggiorna(); }
@@ -55,7 +70,6 @@ function raccogliRisposta(carta) {
       };
       document.getElementById('risposta-aggiungi').addEventListener('click', aggiungi);
       input.addEventListener('keydown', e => { if (e.key === 'Enter') aggiungi(); });
-
       document.getElementById('risposta-conferma').addEventListener('click', () => {
         area.classList.add('nascosta');
         risolvi(lista);
@@ -81,38 +95,39 @@ function raccogliRisposta(carta) {
   });
 }
 
-function mostraVerdetto(corretta, risposteDate) {
+const DURATA_COUNTDOWN_S = 10;
+
+export function mostraVerdetto(corretta, risposteDate) {
   return new Promise(risolvi => {
     const area = document.getElementById('verdetto-area');
     area.classList.remove('nascosta');
+
+    let secondiRimasti = DURATA_COUNTDOWN_S;
     area.innerHTML = `
       <p class="verdetto-esito">${corretta ? '✅ Corretto!' : '❌ Non risulta corretto'}</p>
       <p class="verdetto-dettaglio">Risposta data: ${risposteDate.join(', ') || '(vuota)'}</p>
-      <button id="verdetto-ok">Va bene, continua</button>
+      <p class="verdetto-countdown">Si chiude tra <span id="verdetto-conto">${secondiRimasti}</span>s</p>
+      <button id="verdetto-ok">✅ OK</button>
       <button id="verdetto-correggi">✏️ Correggi</button>
     `;
-    document.getElementById('verdetto-ok').addEventListener('click', () => {
+
+    let concluso = false;
+    const concludi = risultato => {
+      if (concluso) return;
+      concluso = true;
+      clearInterval(timer);
       area.classList.add('nascosta');
-      risolvi(true);
-    });
-    document.getElementById('verdetto-correggi').addEventListener('click', () => {
-      area.classList.add('nascosta');
-      risolvi(false);
-    });
+      risolvi(risultato);
+    };
+
+    const timer = setInterval(() => {
+      secondiRimasti--;
+      const conto = document.getElementById('verdetto-conto');
+      if (conto) conto.textContent = secondiRimasti;
+      if (secondiRimasti <= 0) concludi(true);
+    }, 1000);
+
+    document.getElementById('verdetto-ok').addEventListener('click', () => concludi(true));
+    document.getElementById('verdetto-correggi').addEventListener('click', () => concludi(false));
   });
-}
-
-// Chiede la risposta, verifica, mostra l'esito. Se si preme "Correggi" si
-// ricomincia da capo. Restituisce true/false: se la risposta finale è giusta.
-export async function chiediRispostaEVerifica(carta) {
-  while (true) {
-    const risposteDate = await raccogliRisposta(carta);
-
-    const corretta = carta.tipo === 'elenco'
-      ? contaRisposteValide(risposteDate, carta.rispostePossibili) >= carta.minimoRichiesto
-      : normalizza(risposteDate[0] || '') === normalizza(carta.risposta);
-
-    const accettata = await mostraVerdetto(corretta, risposteDate);
-    if (accettata) return corretta;
-  }
 }
