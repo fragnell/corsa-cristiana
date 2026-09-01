@@ -1,10 +1,11 @@
 // tabellone-ui.js
-// Disegna il tabellone a spirale, mostra le pedine, gestisce il clic su
-// "tira il dado". Interfaccia volutamente semplice: prima far funzionare
-// tutto, poi arrivano le animazioni.
+// Disegna il tabellone a spirale, anima le pedine, e alla Conoscenza,
+// Imprevisto o Prova pesca una carta vera e la mostra girandola.
 
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
+import { creaMazzo, pesca } from './mazzi.js';
+import { mostraCartaEAspettaScelta } from './carta-ui.js';
 
 const PALETTE = {
   rosso: '#e74c3c',
@@ -15,22 +16,25 @@ const PALETTE = {
   arancione: '#e67e22'
 };
 
-// Genera le coordinate di una spirale quadrata n×n, partendo dall'angolo
-// in basso a sinistra e girando in senso antiorario verso il centro —
-// la stessa forma del tabellone fisico.
+const DURATA_SALTO_MS = 300;
+
+let percorso = [];
+let stato = null;
+let mazzoConoscenza, mazzoImprevisto, mazzoProva;
+const pedineDom = new Map();
+
+function pausa(ms) {
+  return new Promise(risolvi => setTimeout(risolvi, ms));
+}
+
 function generaSpirale(n) {
   const coordinate = [];
   const strati = Math.ceil(n / 2);
-
   for (let strato = 0; strato < strati; strato++) {
     const min = strato;
     const max = n - 1 - strato;
     if (min > max) break;
-
-    if (min === max) {
-      coordinate.push({ riga: min, colonna: min });
-      continue;
-    }
+    if (min === max) { coordinate.push({ riga: min, colonna: min }); continue; }
     for (let c = min; c <= max; c++) coordinate.push({ riga: max, colonna: c });
     for (let r = max - 1; r >= min; r--) coordinate.push({ riga: r, colonna: max });
     for (let c = max - 1; c >= min; c--) coordinate.push({ riga: min, colonna: c });
@@ -45,14 +49,14 @@ async function caricaJSON(url) {
   return risposta.json();
 }
 
-function disegnaTabellone(percorso, coordinate) {
+function disegnaTabellone(coordinate) {
   const contenitore = document.getElementById('tabellone');
   contenitore.innerHTML = '';
-
   percorso.forEach((cella, indice) => {
     const { riga, colonna } = coordinate[indice];
     const el = document.createElement('div');
     el.className = `casella casella-${cella.tipo}`;
+    el.dataset.numero = cella.numero;
     el.style.gridRow = riga + 1;
     el.style.gridColumn = colonna + 1;
     el.innerHTML = `<span class="numero">${cella.numero}</span><div class="pedine" id="pedine-${cella.numero}"></div>`;
@@ -60,67 +64,144 @@ function disegnaTabellone(percorso, coordinate) {
   });
 }
 
-function disegnaPedine(stato) {
-  document.querySelectorAll('.pedine').forEach(el => (el.innerHTML = ''));
+function creaPedine() {
   stato.giocatori.forEach(g => {
-    const posto = document.getElementById(`pedine-${g.posizione}`);
-    if (!posto) return;
     const pedina = document.createElement('div');
     pedina.className = 'pedina';
     pedina.style.backgroundColor = PALETTE[g.colore] || g.colore;
     pedina.title = g.nome;
     pedina.textContent = g.nome[0];
-    posto.appendChild(pedina);
+    pedineDom.set(g.id, pedina);
+    spostaPedinaSuCasella(g.id, g.posizione);
   });
 }
 
-async function avvia() {
-  const infoTurno = document.getElementById('turno-info');
+function spostaPedinaSuCasella(giocatoreId, numeroCasella) {
+  const pedina = pedineDom.get(giocatoreId);
+  const contenitore = document.getElementById(`pedine-${numeroCasella}`);
+  if (pedina && contenitore) contenitore.appendChild(pedina);
+}
+
+function facciaBalzare(giocatoreId) {
+  const pedina = pedineDom.get(giocatoreId);
+  if (!pedina) return;
+  pedina.classList.remove('salta');
+  void pedina.offsetWidth;
+  pedina.classList.add('salta');
+}
+
+function evidenziaCasella(numeroCasella) {
+  const cella = document.querySelector(`.casella[data-numero="${numeroCasella}"]`);
+  if (!cella) return;
+  cella.classList.remove('evidenziata');
+  void cella.offsetWidth;
+  cella.classList.add('evidenziata');
+}
+
+async function animaSpostamento(giocatoreId, posizioneIniziale, posizioneFinale) {
+  const passo = posizioneFinale > posizioneIniziale ? 1 : -1;
+  let pos = posizioneIniziale;
+  while (pos !== posizioneFinale) {
+    pos += passo;
+    spostaPedinaSuCasella(giocatoreId, pos);
+    facciaBalzare(giocatoreId);
+    await pausa(DURATA_SALTO_MS);
+  }
+  evidenziaCasella(posizioneFinale);
+}
+
+async function eseguiTurno() {
   const bottone = document.getElementById('btn-tira');
+  const infoTurno = document.getElementById('turno-info');
+  bottone.disabled = true;
 
-  const percorso = (await caricaJSON('dati/percorso.json')).celle;
+  const giocatore = giocatoreDiTurno(stato);
+  const posizionePrima = giocatore.posizione;
+  const dado = tiraDado();
+
+  const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
+  await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
+
+  let r = muoviGiocatore(stato, percorso, dado);
+  stato = r.stato;
+
+  const posizioneDopoEffetto = stato.giocatori[giocatore.id].posizione;
+  if (posizioneDopoEffetto !== posizioneAtterrata && r.evento.tipo !== 'IN_ATTESA') {
+    await pausa(200);
+    await animaSpostamento(giocatore.id, posizioneAtterrata, posizioneDopoEffetto);
+  }
+
+  // Imprevisto: l'effetto è già applicato dal motore, la carta si mostra solo per far vedere quale sia stata.
+  if (r.evento.tipo === 'IMPREVISTO') {
+    const pescata = pesca(mazzoImprevisto);
+    mazzoImprevisto = pescata.mazzo;
+    await mostraCartaEAspettaScelta('IMPREVISTO', pescata.carta, [{ etichetta: 'Continua', valore: null }]);
+  }
+
+  // Conoscenza e Prova: la carta si pesca e si mostra PRIMA di sapere l'esito,
+  // che arriva dal bottone premuto dal giudice.
+  if (r.evento.tipo === 'IN_ATTESA') {
+    const posizionePrimaEsito = stato.giocatori[giocatore.id].posizione;
+
+    if (r.evento.casella === 'CONOSCENZA') {
+      const pescata = pesca(mazzoConoscenza);
+      mazzoConoscenza = pescata.mazzo;
+      const corretta = await mostraCartaEAspettaScelta('CONOSCENZA', pescata.carta, [
+        { etichetta: '✅ Risposta corretta', valore: true },
+        { etichetta: '❌ Risposta sbagliata', valore: false }
+      ]);
+      r = applicaRispostaConoscenza(stato, percorso, corretta);
+    } else {
+      const pescata = pesca(mazzoProva);
+      mazzoProva = pescata.mazzo;
+      const superata = await mostraCartaEAspettaScelta('PROVA', pescata.carta, [
+        { etichetta: '✅ Prova superata', valore: true },
+        { etichetta: '❌ Prova fallita', valore: false }
+      ]);
+      r = applicaEsitoProva(stato, percorso, superata);
+    }
+    stato = r.stato;
+
+    const posizioneDopoEsito = stato.giocatori[giocatore.id].posizione;
+    if (posizioneDopoEsito !== posizionePrimaEsito) {
+      await pausa(200);
+      await animaSpostamento(giocatore.id, posizionePrimaEsito, posizioneDopoEsito);
+    }
+  }
+
+  if (partitaFinita(stato)) {
+    const vincitore = stato.giocatori[stato.vincitore];
+    infoTurno.textContent = `🏆 Ha vinto ${vincitore.nome}!`;
+  } else {
+    stato = passaTurno(stato);
+    infoTurno.textContent = `Ultimo tiro: ${dado} — tocca a ${giocatoreDiTurno(stato).nome}`;
+    bottone.disabled = false;
+  }
+}
+
+async function avvia() {
+  percorso = (await caricaJSON('dati/percorso.json')).celle;
+  const carteConoscenza = (await caricaJSON('dati/carte-conoscenza.json')).carte;
+  const carteImprevisto = (await caricaJSON('dati/carte-imprevisto.json')).carte;
+  const carteProva = (await caricaJSON('dati/carte-prova.json')).carte;
+
+  mazzoConoscenza = creaMazzo(carteConoscenza);
+  mazzoImprevisto = creaMazzo(carteImprevisto);
+  mazzoProva = creaMazzo(carteProva);
+
   const coordinate = generaSpirale(8);
+  disegnaTabellone(coordinate);
 
-  disegnaTabellone(percorso, coordinate);
-
-  let stato = creaStatoIniziale([
+  stato = creaStatoIniziale([
     { nome: 'Marco', colore: 'rosso' },
     { nome: 'Giulia', colore: 'blu' },
     { nome: 'Luca', colore: 'verde' },
     { nome: 'Sara', colore: 'giallo' }
   ]);
 
-  disegnaPedine(stato);
-  infoTurno.textContent = `Tocca a ${giocatoreDiTurno(stato).nome}`;
-
-  bottone.addEventListener('click', () => {
-    const dado = tiraDado();
-    let r = muoviGiocatore(stato, percorso, dado);
-    stato = r.stato;
-
-    // Placeholder: finché non abbiamo l'interfaccia vera del giudice,
-    // chiediamo l'esito con una finestra di conferma del browser.
-    if (r.evento.tipo === 'IN_ATTESA' && r.evento.casella === 'CONOSCENZA') {
-      const corretta = confirm('Casella CONOSCENZA — la risposta era corretta?');
-      r = applicaRispostaConoscenza(stato, percorso, corretta);
-      stato = r.stato;
-    } else if (r.evento.tipo === 'IN_ATTESA' && r.evento.casella === 'PROVA') {
-      const superata = confirm('Casella PROVA — è stata superata?');
-      r = applicaEsitoProva(stato, percorso, superata);
-      stato = r.stato;
-    }
-
-    disegnaPedine(stato);
-
-    if (partitaFinita(stato)) {
-      const vincitore = stato.giocatori[stato.vincitore];
-      infoTurno.textContent = `🏆 Ha vinto ${vincitore.nome}!`;
-      bottone.disabled = true;
-    } else {
-      stato = passaTurno(stato);
-      infoTurno.textContent = `Ultimo tiro: ${dado} — tocca a ${giocatoreDiTurno(stato).nome}`;
-    }
-  });
+  creaPedine();
+  document.getElementById('turno-info').textContent = `Tocca a ${giocatoreDiTurno(stato).nome}`;
+  document.getElementById('btn-tira').addEventListener('click', eseguiTurno);
 }
 
 avvia();
