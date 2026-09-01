@@ -1,0 +1,8 @@
+/* tabellone.css */
+/* Per ora minimale: solo per verificare che il collegamento funzioni.
+   Lo stile vero arriva quando disegniamo il tabellone. */
+
+body {
+  font-family: sans-serif;
+  padding: 2rem;
+}
