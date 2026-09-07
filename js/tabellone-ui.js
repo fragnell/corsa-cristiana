@@ -1,16 +1,17 @@
 // tabellone-ui.js
 // Disegna il tabellone a spirale e manda avanti la partita in un ciclo
-// continuo: aspetta che il giocatore di turno tiri il dado dal proprio
-// "dispositivo", anima il dado sul tabellone, muove la pedina, pesca le
-// carte quando serve, e passa al turno successivo — da solo, senza
-// bisogno di un pulsante fisso da cliccare ogni volta.
+// continuo. Il dado non parte più da un pulsante su questa pagina: il
+// tabellone aspetta che arrivi l'intenzione "tira il dado" da Firebase,
+// mandata dal telefono del giocatore di turno. Dopo ogni turno, lo stato
+// aggiornato viene pubblicato, così i telefoni lo vedono.
 
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
 import { creaMazzo, pesca } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta } from './carta-ui.js';
 import { raccogliRisposta, valutaRisposta, mostraVerdetto } from './risposta-ui.js';
-import { aspettaTurnoGiocatore, animaDado } from './dado-ui.js';
+import { animaDado } from './dado-ui.js';
+import { generaCodicePartita, pubblicaStato, aspettaIntenzioneDado } from './sincronizzazione.js';
 
 const PALETTE = {
   rosso: '#e74c3c',
@@ -26,6 +27,7 @@ const DURATA_SALTO_MS = 300;
 let percorso = [];
 let stato = null;
 let mazzoConoscenza, mazzoImprevisto, mazzoProva;
+let codicePartita = '';
 const pedineDom = new Map();
 
 function pausa(ms) {
@@ -119,8 +121,8 @@ async function giocaTurno() {
   const infoTurno = document.getElementById('turno-info');
   const giocatore = giocatoreDiTurno(stato);
 
-  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado...`;
-  await aspettaTurnoGiocatore(giocatore.nome);
+  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...`;
+  await aspettaIntenzioneDado(codicePartita, giocatore.id);
 
   const posizionePrima = giocatore.posizione;
   const dado = tiraDado();
@@ -142,6 +144,8 @@ async function giocaTurno() {
     const pescata = pesca(mazzoImprevisto);
     mazzoImprevisto = pescata.mazzo;
     await mostraCartaEAspettaScelta('IMPREVISTO', pescata.carta, [{ etichetta: 'Continua', valore: null }]);
+
+    stato.ultimoEvento = { tipo: 'IMPREVISTO', giocatoreId: giocatore.id, id: Date.now() };
   }
 
   if (r.evento.tipo === 'IN_ATTESA') {
@@ -184,6 +188,8 @@ async function giocaTurno() {
   if (!partitaFinita(stato)) {
     stato = passaTurno(stato);
   }
+
+  await pubblicaStato(codicePartita, stato);
 }
 
 async function cicloDiGioco() {
@@ -215,6 +221,11 @@ async function avvia() {
   ]);
 
   creaPedine();
+
+  codicePartita = generaCodicePartita();
+  document.getElementById('codice-partita').textContent = codicePartita;
+  await pubblicaStato(codicePartita, stato);
+
   cicloDiGioco();
 }
 

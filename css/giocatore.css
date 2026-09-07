@@ -1,0 +1,59 @@
+/* giocatore.css */
+/* Stile per il telefono: bottoni grandi, facili da toccare, testo leggibile
+   anche con lo schermo piccolo. */
+
+body {
+  font-family: sans-serif;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+input[type="text"] {
+  font-size: 1.4rem;
+  padding: 0.5rem;
+  text-transform: uppercase;
+  width: 130px;
+  text-align: center;
+  letter-spacing: 0.15em;
+}
+
+button {
+  font-size: 1.15rem;
+  padding: 0.8rem 1.4rem;
+  margin: 0.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #999;
+}
+
+#btn-tira-dado {
+  font-size: 1.7rem;
+  padding: 1.3rem 2rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 320px;
+}
+
+.nascosta {
+  display: none;
+}
+
+#stato-turno {
+  font-size: 1.3rem;
+  margin: 1.5rem 0;
+}
+
+#messaggio-ingresso {
+  color: #c0392b;
+  font-weight: bold;
+}
+
+#notifica-evento {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #b8860b;
+}

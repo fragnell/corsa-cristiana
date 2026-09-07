@@ -1,23 +1,9 @@
 // dado-ui.js
-// Il pannello "tocca a te" (simula il telefono del giocatore di turno) e
-// l'animazione del dado che rotola sul tabellone prima di mostrare il numero.
+// L'animazione del dado che rotola sul tabellone prima di mostrare il
+// numero. Il pannello "tocca a te" ora vive sul telefono del giocatore
+// (giocatore-ui.js) — qui resta solo l'animazione visiva.
 
-const FACCE_DADO = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']; // indice 0 = faccia "1"
-
-export function aspettaTurnoGiocatore(nomeGiocatore) {
-  return new Promise(risolvi => {
-    const area = document.getElementById('turno-giocatore-area');
-    area.classList.remove('nascosta');
-    area.innerHTML = `
-      <p class="turno-giocatore-nome">🎲 ${nomeGiocatore}, tocca a te!</p>
-      <button id="btn-tira-dado">Tira il dado</button>
-    `;
-    document.getElementById('btn-tira-dado').addEventListener('click', () => {
-      area.classList.add('nascosta');
-      risolvi();
-    });
-  });
-}
+const FACCE_DADO = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
 export function animaDado(valoreFinale) {
   return new Promise(risolvi => {
@@ -47,8 +33,8 @@ export function animaDado(valoreFinale) {
         setTimeout(() => {
           overlay.classList.add('nascosta');
           risolvi();
-        }, 900); // resta un attimo sul numero vero prima di sparire
+        }, 900);
       }
     }, 180);
   });
-}s
+}

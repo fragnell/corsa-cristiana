@@ -2,7 +2,7 @@
 // Scrive un valore di prova su Firebase e lo rilegge subito dopo.
 // Se questo funziona, il collegamento è solido e possiamo costruirci sopra.
 
-import { db, ref, set, get } from './rete.js';
+import { db, ref, set, get } from './js/rete.js';
 
 async function test() {
   const div = document.getElementById('risultato');

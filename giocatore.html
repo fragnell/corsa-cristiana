@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corsa Cristiana — Il tuo telefono</title>
+  <link rel="stylesheet" href="css/giocatore.css">
+</head>
+<body>
+
+  <div id="ingresso">
+    <h1>Corsa Cristiana</h1>
+
+    <div id="passo-codice">
+      <p>Codice della partita:</p>
+      <input type="text" id="input-codice" maxlength="4" placeholder="ABCD">
+      <br>
+      <button id="btn-cerca">Cerca partita</button>
+      <p id="messaggio-ingresso"></p>
+    </div>
+
+    <div id="passo-scelta" class="nascosta">
+      <p>Chi sei?</p>
+      <div id="scelta-giocatore"></div>
+    </div>
+  </div>
+
+  <div id="gioco" class="nascosta">
+    <h2 id="mio-nome"></h2>
+    <div id="stato-turno"></div>
+    <button id="btn-tira-dado" class="nascosta">🎲 Tira il dado</button>
+    <div id="notifica-evento"></div>
+  </div>
+
+  <script type="module" src="js/giocatore-ui.js"></script>
+</body>
+</html>

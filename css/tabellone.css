@@ -309,3 +309,18 @@ body {
 .dado-faccia.dado-scatto {
   animation: dado-scatto-anim 0.09s ease-out;
 }
+
+
+#codice-partita-contenitore {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+#codice-partita {
+  font-weight: bold;
+  font-size: 2rem;
+  letter-spacing: 0.25em;
+  background: #fff3cd;
+  padding: 0.2rem 0.8rem;
+  border-radius: 8px;
+}
