@@ -132,3 +132,44 @@ button {
   padding: 0;
   font-size: 1.2rem;
 }
+
+
+/* --- domande a scelta multipla --- */
+
+#risposta-scelta-opzioni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0.8rem 0;
+}
+
+.risposta-opzione {
+  font-size: 1.1rem;
+  padding: 0.9rem;
+  border-radius: 10px;
+  border: 2px solid #999;
+  background: white;
+  text-align: left;
+}
+
+.risposta-opzione.selezionata {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+  font-weight: bold;
+}
+
+#risposta-conferma-scelta {
+  width: 100%;
+  font-size: 1.15rem;
+  padding: 0.8rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
+
+#risposta-conferma-scelta:disabled {
+  background: #a5d6a7;
+  cursor: default;
+}

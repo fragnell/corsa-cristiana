@@ -171,7 +171,7 @@ async function rispondiAConoscenza(richiesta) {
   document.getElementById('domanda-conoscenza').textContent = richiesta.domanda;
   document.getElementById('area-domanda-conoscenza').classList.remove('nascosta');
 
-  const cartaFinta = { tipo: richiesta.tipo, minimoRichiesto: richiesta.minimoRichiesto };
+  const cartaFinta = { tipo: richiesta.tipo, minimoRichiesto: richiesta.minimoRichiesto, opzioni: richiesta.opzioni };
   const risposteDate = await raccogliRisposta(cartaFinta);
 
   document.getElementById('area-domanda-conoscenza').classList.add('nascosta');
