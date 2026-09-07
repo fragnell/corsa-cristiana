@@ -47,13 +47,14 @@ export function raccogliRisposta(carta) {
     area.classList.remove('nascosta');
 
     if (carta.tipo === 'elenco') {
-      area.innerHTML = `
+            area.innerHTML = `
         <p>Scrivi una risposta alla volta e premi "Aggiungi".<br>Servono almeno ${carta.minimoRichiesto} risposte diverse.</p>
         <div id="risposta-elenco-lista"></div>
         <div class="risposta-riga">
           <input type="text" id="risposta-input" placeholder="Scrivi qui...">
           <button id="risposta-aggiungi">➕ Aggiungi</button>
         </div>
+        <p id="risposta-elenco-messaggio"></p>
         <button id="risposta-conferma">✅ Conferma</button>
       `;
       const lista = [];
@@ -68,6 +69,10 @@ export function raccogliRisposta(carta) {
       document.getElementById('risposta-aggiungi').addEventListener('click', aggiungi);
       input.addEventListener('keydown', e => { if (e.key === 'Enter') aggiungi(); });
       document.getElementById('risposta-conferma').addEventListener('click', () => {
+        if (lista.length === 0) {
+          document.getElementById('risposta-elenco-messaggio').textContent = 'Aggiungi almeno una risposta prima di confermare.';
+          return;
+        }
         area.classList.add('nascosta');
         risolvi(lista);
       });
@@ -82,6 +87,7 @@ export function raccogliRisposta(carta) {
       `;
       const input = document.getElementById('risposta-input');
       const invia = () => {
+        if (!input.value.trim()) { input.focus(); return; }
         area.classList.add('nascosta');
         risolvi([input.value.trim()]);
       };

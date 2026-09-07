@@ -6,14 +6,6 @@
 
 import { raccogliRisposta } from './risposta-ui.js';
 import { PALETTE, NOMI_COLORI } from './colori.js';
-import {
-  leggiLobbyUnaVolta,
-  ascoltaLobby,
-  unisciti,
-  ascoltaStato,
-  inviaIntenzioneDado,
-  inviaIntenzioneRisposta
-} from './sincronizzazione.js';
 
 import {
   verificaPartitaEsiste,
@@ -193,3 +185,4 @@ document.getElementById('btn-tira-dado').addEventListener('click', () => {
   document.getElementById('stato-turno').textContent = 'Tirato! In attesa del tabellone...';
   inviaIntenzioneDado(codicePartita, mioId);
 });
+
