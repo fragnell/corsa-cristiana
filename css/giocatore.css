@@ -57,3 +57,42 @@ button {
   font-weight: bold;
   color: #b8860b;
 }
+
+
+#area-domanda-conoscenza {
+  background: #fff3cd;
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+#risposta-area {
+  margin: 0.5rem 0 1.5rem;
+}
+
+#risposta-area .risposta-riga {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.6rem 0;
+}
+
+#risposta-area input[type="text"] {
+  flex: 1;
+  text-transform: none;
+  width: auto;
+  letter-spacing: normal;
+}
+
+#risposta-elenco-lista {
+  text-align: left;
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 0.5rem 0;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+}

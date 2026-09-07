@@ -1,17 +1,16 @@
 // tabellone-ui.js
 // Disegna il tabellone a spirale e manda avanti la partita in un ciclo
-// continuo. Il dado non parte più da un pulsante su questa pagina: il
-// tabellone aspetta che arrivi l'intenzione "tira il dado" da Firebase,
-// mandata dal telefono del giocatore di turno. Dopo ogni turno, lo stato
-// aggiornato viene pubblicato, così i telefoni lo vedono.
+// continuo. Dado e risposta di Conoscenza partono da intenzioni che
+// arrivano da Firebase, mandate dal telefono del giocatore di turno. Dopo
+// ogni turno, lo stato aggiornato viene pubblicato.
 
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
 import { creaMazzo, pesca } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta } from './carta-ui.js';
-import { raccogliRisposta, valutaRisposta, mostraVerdetto } from './risposta-ui.js';
+import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { animaDado } from './dado-ui.js';
-import { generaCodicePartita, pubblicaStato, aspettaIntenzioneDado } from './sincronizzazione.js';
+import { generaCodicePartita, pubblicaStato, aspettaIntenzioneDado, aspettaIntenzioneRisposta } from './sincronizzazione.js';
 
 const PALETTE = {
   rosso: '#e74c3c',
@@ -159,7 +158,15 @@ async function giocaTurno() {
       let corretta;
       while (true) {
         await mostraCarta('CONOSCENZA', carta);
-        const risposteDate = await raccogliRisposta(carta);
+
+        const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo };
+        if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
+        stato.richiestaConoscenza = richiesta;
+        await pubblicaStato(codicePartita, stato);
+
+        const risposteDate = await aspettaIntenzioneRisposta(codicePartita, giocatore.id);
+
+        stato.richiestaConoscenza = null;
         nascondiCarta();
 
         corretta = valutaRisposta(carta, risposteDate);

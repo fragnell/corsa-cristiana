@@ -55,3 +55,28 @@ export function aspettaIntenzioneDado(codicePartita, giocatoreAtteso) {
     });
   });
 }
+
+
+export function inviaIntenzioneRisposta(codicePartita, giocatoreId, risposte) {
+  return set(ref(db, `partite/${codicePartita}/intenzione`), {
+    tipo: 'RISPOSTA_CONOSCENZA',
+    giocatoreId,
+    risposte
+  });
+}
+
+// Aspetta che arrivi la risposta di Conoscenza dal giocatore atteso.
+// Restituisce l'elenco di risposte che ha scritto.
+export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso) {
+  return new Promise(risolvi => {
+    const percorsoIntenzione = ref(db, `partite/${codicePartita}/intenzione`);
+    const staccaAscolto = onValue(percorsoIntenzione, (istantanea) => {
+      const intenzione = istantanea.val();
+      if (intenzione && intenzione.tipo === 'RISPOSTA_CONOSCENZA' && intenzione.giocatoreId === giocatoreAtteso) {
+        staccaAscolto();
+        set(percorsoIntenzione, null);
+        risolvi(intenzione.risposte);
+      }
+    });
+  });
+}
