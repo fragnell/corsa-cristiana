@@ -4,7 +4,7 @@
 // intenzioni dei giocatori. Un solo file che conosce i percorsi dentro il
 // database, così tabellone e telefono restano sempre d'accordo tra loro.
 
-import { db, ref, set, get, onValue } from './rete.js';
+import { db, ref, set, get, onValue, push } from './rete.js';
 
 // Un codice a 4 lettere, facile da leggere e da dettare a voce.
 // Niente I/O: si confondono troppo facilmente con 1/0.
@@ -75,7 +75,7 @@ export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso) {
       if (intenzione && intenzione.tipo === 'RISPOSTA_CONOSCENZA' && intenzione.giocatoreId === giocatoreAtteso) {
         staccaAscolto();
         set(percorsoIntenzione, null);
-        risolvi(intenzione.risposte);
+        risolvi(intenzione.risposte || []); // Firebase cancella gli array vuoti: senza questo, un elenco confermato senza aggiungere nulla arriverebbe come "undefined" e bloccherebbe tutto
       }
     });
   });
@@ -121,4 +121,21 @@ export async function unisciti(codicePartita, nome, colore) {
   const nuovaLobby = [...lobbyAttuale, { nome, colore }];
   await set(ref(db, `partite/${codicePartita}/lobby`), nuovaLobby);
   return { ok: true };
+}
+
+
+// --- I mazzi di carte, ora dentro Firebase invece che in file statici ---
+
+// Legge un mazzo intero (conoscenza / imprevisto / prova) e restituisce
+// un array di carte, ciascuna con in più "_chiave" — la chiave Firebase
+// di quella carta, utile più avanti per modificarla o cancellarla.
+export async function leggiMazzoDaFirebase(nomeMazzo) {
+  const istantanea = await get(ref(db, `mazzi/${nomeMazzo}`));
+  const oggetto = istantanea.val() || {};
+  return Object.entries(oggetto).map(([chiave, carta]) => ({ ...carta, _chiave: chiave }));
+}
+
+// Genera una chiave unica pronta all'uso, senza scrivere nulla.
+export function nuovaChiaveMazzo(nomeMazzo) {
+  return push(ref(db, `mazzi/${nomeMazzo}`)).key;
 }
