@@ -85,11 +85,21 @@ export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso) {
 // --- La lobby: i giocatori si uniscono prima che la partita inizi ---
 
 export function iniziaLobby(codicePartita) {
-  return set(ref(db, `partite/${codicePartita}/lobby`), []);
+  return set(ref(db, `partite/${codicePartita}`), {
+    creataIl: Date.now(),
+    lobby: []
+  });
+}
+
+// Controlla se la partita esiste, guardando "creataIl" invece della
+// lobby — perché la lobby può essere vuota (nessuno si è ancora unito),
+// e Firebase non distingue "vuoto" da "non esiste".
+export function verificaPartitaEsiste(codicePartita) {
+  return get(ref(db, `partite/${codicePartita}/creataIl`)).then(istantanea => istantanea.val() !== null);
 }
 
 export function leggiLobbyUnaVolta(codicePartita) {
-  return get(ref(db, `partite/${codicePartita}/lobby`)).then(istantanea => istantanea.val());
+  return get(ref(db, `partite/${codicePartita}/lobby`)).then(istantanea => istantanea.val() || []);
 }
 
 export function ascoltaLobby(codicePartita, callback) {

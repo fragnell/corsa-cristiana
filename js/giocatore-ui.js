@@ -15,6 +15,16 @@ import {
   inviaIntenzioneRisposta
 } from './sincronizzazione.js';
 
+import {
+  verificaPartitaEsiste,
+  leggiLobbyUnaVolta,
+  ascoltaLobby,
+  unisciti,
+  ascoltaStato,
+  inviaIntenzioneDado,
+  inviaIntenzioneRisposta
+} from './sincronizzazione.js';
+
 let codicePartita = null;
 let mioNome = null;
 let mioId = null;
@@ -33,13 +43,14 @@ async function cercaPartita() {
   }
 
   messaggio.textContent = 'Cerco la partita...';
-  const lobby = await leggiLobbyUnaVolta(codice);
+  const esiste = await verificaPartitaEsiste(codice);
 
-  if (lobby === null || lobby === undefined) {
+  if (!esiste) {
     messaggio.textContent = '❌ Nessuna partita trovata con questo codice.';
     return;
   }
 
+  const lobby = await leggiLobbyUnaVolta(codice);
   messaggio.textContent = '';
   codicePartita = codice;
   mostraModuloRegistrazione(lobby);
