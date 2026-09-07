@@ -80,3 +80,35 @@ export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso) {
     });
   });
 }
+
+
+// --- La lobby: i giocatori si uniscono prima che la partita inizi ---
+
+export function iniziaLobby(codicePartita) {
+  return set(ref(db, `partite/${codicePartita}/lobby`), []);
+}
+
+export function leggiLobbyUnaVolta(codicePartita) {
+  return get(ref(db, `partite/${codicePartita}/lobby`)).then(istantanea => istantanea.val());
+}
+
+export function ascoltaLobby(codicePartita, callback) {
+  return onValue(ref(db, `partite/${codicePartita}/lobby`), (istantanea) => {
+    callback(istantanea.val() || []);
+  });
+}
+
+// Aggiunge un giocatore alla lobby. Controlla che il nome non sia già
+// preso (un controllo "alla buona": se due persone si iscrivono nello
+// stesso istante esatto è teoricamente possibile un conflitto, ma per una
+// partita in famiglia è un rischio trascurabile).
+export async function unisciti(codicePartita, nome, colore) {
+  const lobbyAttuale = (await leggiLobbyUnaVolta(codicePartita)) || [];
+  const nomeGiaPreso = lobbyAttuale.some(g => g.nome.toLowerCase() === nome.toLowerCase());
+  if (nomeGiaPreso) {
+    return { ok: false, motivo: 'nome-preso' };
+  }
+  const nuovaLobby = [...lobbyAttuale, { nome, colore }];
+  await set(ref(db, `partite/${codicePartita}/lobby`), nuovaLobby);
+  return { ok: true };
+}

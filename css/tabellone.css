@@ -324,3 +324,49 @@ body {
   padding: 0.2rem 0.8rem;
   border-radius: 8px;
 }
+
+
+/* --- lobby --- */
+
+#vista-lobby {
+  max-width: 500px;
+}
+
+#lista-lobby {
+  list-style: none;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+#lista-lobby li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+}
+
+.pallino-lista {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.3);
+}
+
+#btn-inizia-partita {
+  font-size: 1.3rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 10px;
+  border: 2px solid #2e7d32;
+  background: #4caf50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+#btn-inizia-partita:disabled {
+  background: #a5d6a7;
+  border-color: #a5d6a7;
+  cursor: default;
+}

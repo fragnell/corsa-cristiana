@@ -19,10 +19,22 @@
       <p id="messaggio-ingresso"></p>
     </div>
 
-    <div id="passo-scelta" class="nascosta">
-      <p>Chi sei?</p>
-      <div id="scelta-giocatore"></div>
+    <div id="passo-registrazione" class="nascosta">
+      <p>Il tuo nome:</p>
+      <input type="text" id="input-nome" placeholder="Il tuo nome" style="text-transform:none">
+      <p>Scegli un colore:</p>
+      <div id="scelta-colore"></div>
+      <br>
+      <button id="btn-conferma-registrazione">Entra in partita</button>
+      <p id="messaggio-registrazione"></p>
     </div>
+  </div>
+
+  <div id="vista-attesa" class="nascosta">
+    <h1>Ciao, <span id="nome-in-attesa"></span>!</h1>
+    <p>Aspetta che l'organizzatore inizi la partita...</p>
+    <p>Giocatori collegati:</p>
+    <ul id="lista-attesa"></ul>
   </div>
 
   <div id="gioco" class="nascosta">

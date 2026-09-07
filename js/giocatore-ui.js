@@ -1,18 +1,22 @@
 // giocatore-ui.js
-// La pagina del telefono: entra in una partita con un codice, scegli chi
-// sei, e da lì vedi solo quello che ti serve — se tocca a te tirare il
-// dado, un avviso se ti è appena capitato un Imprevisto, e la domanda di
-// Conoscenza quando tocca a te rispondere.
+// La pagina del telefono: entra in una partita con un codice, scrivi il
+// tuo nome e scegli un colore, aspetta che l'organizzatore inizi la
+// partita, e da lì vedi solo quello che ti serve — tirare il dado,
+// rispondere alla Conoscenza, un avviso per l'Imprevisto.
 
 import { raccogliRisposta } from './risposta-ui.js';
+import { PALETTE, NOMI_COLORI } from './colori.js';
 import {
-  leggiStatoUnaVolta,
+  leggiLobbyUnaVolta,
+  ascoltaLobby,
+  unisciti,
   ascoltaStato,
   inviaIntenzioneDado,
   inviaIntenzioneRisposta
 } from './sincronizzazione.js';
 
 let codicePartita = null;
+let mioNome = null;
 let mioId = null;
 let ultimoEventoVisto = null;
 let richiestaIdGestita = null;
@@ -29,44 +33,94 @@ async function cercaPartita() {
   }
 
   messaggio.textContent = 'Cerco la partita...';
-  const stato = await leggiStatoUnaVolta(codice);
+  const lobby = await leggiLobbyUnaVolta(codice);
 
-  if (!stato) {
+  if (lobby === null || lobby === undefined) {
     messaggio.textContent = '❌ Nessuna partita trovata con questo codice.';
     return;
   }
 
   messaggio.textContent = '';
   codicePartita = codice;
-  mostraSceltaGiocatore(stato);
+  mostraModuloRegistrazione(lobby);
 }
 
-function mostraSceltaGiocatore(stato) {
+function mostraModuloRegistrazione(lobby) {
   document.getElementById('passo-codice').classList.add('nascosta');
-  document.getElementById('passo-scelta').classList.remove('nascosta');
+  document.getElementById('passo-registrazione').classList.remove('nascosta');
 
-  const contenitore = document.getElementById('scelta-giocatore');
+  const coloriPresi = new Set(lobby.map(g => g.colore));
+  const contenitore = document.getElementById('scelta-colore');
   contenitore.innerHTML = '';
-  stato.giocatori.forEach(g => {
+  let coloreScelto = null;
+
+  NOMI_COLORI.forEach(colore => {
     const bottone = document.createElement('button');
-    bottone.textContent = g.nome;
-    bottone.addEventListener('click', () => entraComeGiocatore(g.id, g.nome));
+    bottone.type = 'button';
+    bottone.className = 'pallino-colore';
+    bottone.style.backgroundColor = PALETTE[colore];
+    bottone.title = colore;
+    if (coloriPresi.has(colore)) {
+      bottone.disabled = true;
+      bottone.classList.add('colore-preso');
+    } else {
+      bottone.addEventListener('click', () => {
+        document.querySelectorAll('.pallino-colore').forEach(b => b.classList.remove('selezionato'));
+        bottone.classList.add('selezionato');
+        coloreScelto = colore;
+      });
+    }
     contenitore.appendChild(bottone);
+  });
+
+  document.getElementById('btn-conferma-registrazione').onclick = async () => {
+    const nome = document.getElementById('input-nome').value.trim();
+    const messaggioReg = document.getElementById('messaggio-registrazione');
+
+    if (!nome) { messaggioReg.textContent = 'Scrivi il tuo nome.'; return; }
+    if (!coloreScelto) { messaggioReg.textContent = 'Scegli un colore.'; return; }
+
+    messaggioReg.textContent = '';
+    const risultato = await unisciti(codicePartita, nome, coloreScelto);
+
+    if (!risultato.ok) {
+      messaggioReg.textContent = risultato.motivo === 'nome-preso'
+        ? '❌ Questo nome è già stato scelto da qualcun altro. Provane un altro.'
+        : '❌ Qualcosa è andato storto, riprova.';
+      return;
+    }
+
+    mioNome = nome;
+    entraInAttesa();
+  };
+}
+
+function entraInAttesa() {
+  document.getElementById('passo-registrazione').classList.add('nascosta');
+  document.getElementById('vista-attesa').classList.remove('nascosta');
+  document.getElementById('nome-in-attesa').textContent = mioNome;
+
+  ascoltaLobby(codicePartita, (lobby) => {
+    document.getElementById('lista-attesa').innerHTML = lobby.map(g => `<li>${g.nome}</li>`).join('');
+  });
+
+  ascoltaStato(codicePartita, (stato) => {
+    if (!stato) return;
+
+    if (mioId === null) {
+      const io = stato.giocatori.find(g => g.nome === mioNome);
+      if (!io) return;
+      mioId = io.id;
+      document.getElementById('vista-attesa').classList.add('nascosta');
+      document.getElementById('gioco').classList.remove('nascosta');
+      document.getElementById('mio-nome').textContent = mioNome;
+    }
+
+    aggiornaSchermo(stato);
   });
 }
 
-function entraComeGiocatore(id, nome) {
-  mioId = id;
-  document.getElementById('ingresso').classList.add('nascosta');
-  document.getElementById('gioco').classList.remove('nascosta');
-  document.getElementById('mio-nome').textContent = nome;
-
-  ascoltaStato(codicePartita, aggiornaSchermo);
-}
-
 function aggiornaSchermo(stato) {
-  if (!stato) return;
-
   const bottoneDado = document.getElementById('btn-tira-dado');
   const statoTurno = document.getElementById('stato-turno');
   const notifica = document.getElementById('notifica-evento');

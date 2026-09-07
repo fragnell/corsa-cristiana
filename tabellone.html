@@ -8,33 +8,40 @@
 <body>
   <h1>Corsa Cristiana</h1>
 
-  <div id="codice-partita-contenitore">
-    Codice partita: <span id="codice-partita"></span>
+  <div id="vista-lobby">
+    <div id="codice-partita-contenitore">
+      Codice partita: <span id="codice-partita"></span>
+    </div>
+    <h2>Giocatori entrati: <span id="conteggio-lobby">0</span></h2>
+    <ul id="lista-lobby"></ul>
+    <button id="btn-inizia-partita" disabled>Inizia partita</button>
   </div>
 
-  <div id="tabellone"></div>
+  <div id="vista-gioco" class="nascosta">
+    <div id="tabellone"></div>
 
-  <div id="controlli">
-    <div id="turno-info"></div>
-  </div>
+    <div id="controlli">
+      <div id="turno-info"></div>
+    </div>
 
-  <div id="carta-overlay" class="carta-overlay nascosta">
-    <div id="carta" class="carta">
-      <div class="carta-retro">?</div>
-      <div class="carta-fronte">
-        <div id="carta-tipo" class="carta-tipo"></div>
-        <div id="carta-testo" class="carta-testo"></div>
-        <div id="carta-riferimento" class="carta-riferimento"></div>
-        <div id="carta-bottoni" class="carta-bottoni"></div>
+    <div id="carta-overlay" class="carta-overlay nascosta">
+      <div id="carta" class="carta">
+        <div class="carta-retro">?</div>
+        <div class="carta-fronte">
+          <div id="carta-tipo" class="carta-tipo"></div>
+          <div id="carta-testo" class="carta-testo"></div>
+          <div id="carta-riferimento" class="carta-riferimento"></div>
+          <div id="carta-bottoni" class="carta-bottoni"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="risposta-area" class="pannello-flottante nascosta"></div>
-  <div id="verdetto-area" class="pannello-flottante nascosta"></div>
+    <div id="risposta-area" class="pannello-flottante nascosta"></div>
+    <div id="verdetto-area" class="pannello-flottante nascosta"></div>
 
-  <div id="dado-overlay" class="dado-overlay nascosta">
-    <div id="dado-faccia" class="dado-faccia">⚀</div>
+    <div id="dado-overlay" class="dado-overlay nascosta">
+      <div id="dado-faccia" class="dado-faccia">⚀</div>
+    </div>
   </div>
 
   <script type="module" src="js/tabellone-ui.js"></script>

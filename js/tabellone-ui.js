@@ -1,25 +1,26 @@
 // tabellone-ui.js
 // Disegna il tabellone a spirale e manda avanti la partita in un ciclo
-// continuo. Dado e risposta di Conoscenza partono da intenzioni che
-// arrivano da Firebase, mandate dal telefono del giocatore di turno. Dopo
-// ogni turno, lo stato aggiornato viene pubblicato.
+// continuo. Prima però mostra una lobby: aspetta che i giocatori si
+// colleghino dai loro telefoni, e parte solo quando l'organizzatore
+// preme "Inizia partita".
 
+import { CONFIG } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
 import { creaMazzo, pesca } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta } from './carta-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { animaDado } from './dado-ui.js';
-import { generaCodicePartita, pubblicaStato, aspettaIntenzioneDado, aspettaIntenzioneRisposta } from './sincronizzazione.js';
-
-const PALETTE = {
-  rosso: '#e74c3c',
-  blu: '#3498db',
-  verde: '#2ecc71',
-  giallo: '#f1c40f',
-  viola: '#9b59b6',
-  arancione: '#e67e22'
-};
+import { PALETTE } from './colori.js';
+import {
+  generaCodicePartita,
+  iniziaLobby,
+  ascoltaLobby,
+  leggiLobbyUnaVolta,
+  pubblicaStato,
+  aspettaIntenzioneDado,
+  aspettaIntenzioneRisposta
+} from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
 
@@ -207,6 +208,39 @@ async function cicloDiGioco() {
   document.getElementById('turno-info').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
 }
 
+function avviaVistaLobby() {
+  const listaEl = document.getElementById('lista-lobby');
+  const bottoneInizia = document.getElementById('btn-inizia-partita');
+  const conteggioEl = document.getElementById('conteggio-lobby');
+
+  ascoltaLobby(codicePartita, (lobby) => {
+    listaEl.innerHTML = lobby.map(g =>
+      `<li><span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>${g.nome}</li>`
+    ).join('');
+    conteggioEl.textContent = `${lobby.length} (minimo ${CONFIG.giocatori.minimo}, massimo ${CONFIG.giocatori.massimo})`;
+    bottoneInizia.disabled = lobby.length < CONFIG.giocatori.minimo || lobby.length > CONFIG.giocatori.massimo;
+  });
+
+  bottoneInizia.addEventListener('click', async () => {
+    const lobbyFinale = await leggiLobbyUnaVolta(codicePartita);
+    iniziaPartitaVera(lobbyFinale);
+  });
+}
+
+async function iniziaPartitaVera(giocatoriInfo) {
+  document.getElementById('vista-lobby').classList.add('nascosta');
+  document.getElementById('vista-gioco').classList.remove('nascosta');
+
+  const coordinate = generaSpirale(8);
+  disegnaTabellone(coordinate);
+
+  stato = creaStatoIniziale(giocatoriInfo);
+  creaPedine();
+
+  await pubblicaStato(codicePartita, stato);
+  cicloDiGioco();
+}
+
 async function avvia() {
   percorso = (await caricaJSON('dati/percorso.json')).celle;
   const carteConoscenza = (await caricaJSON('dati/carte-conoscenza.json')).carte;
@@ -217,23 +251,11 @@ async function avvia() {
   mazzoImprevisto = creaMazzo(carteImprevisto);
   mazzoProva = creaMazzo(carteProva);
 
-  const coordinate = generaSpirale(8);
-  disegnaTabellone(coordinate);
-
-  stato = creaStatoIniziale([
-    { nome: 'Marco', colore: 'rosso' },
-    { nome: 'Giulia', colore: 'blu' },
-    { nome: 'Luca', colore: 'verde' },
-    { nome: 'Sara', colore: 'giallo' }
-  ]);
-
-  creaPedine();
-
   codicePartita = generaCodicePartita();
   document.getElementById('codice-partita').textContent = codicePartita;
-  await pubblicaStato(codicePartita, stato);
+  await iniziaLobby(codicePartita);
 
-  cicloDiGioco();
+  avviaVistaLobby();
 }
 
 avvia();
