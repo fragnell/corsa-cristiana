@@ -19,7 +19,8 @@ import {
   leggiLobbyUnaVolta,
   pubblicaStato,
   aspettaIntenzioneDado,
-  aspettaIntenzioneRisposta
+  aspettaIntenzioneRisposta,
+  leggiMazzoDaFirebase
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
@@ -162,6 +163,7 @@ async function giocaTurno() {
 
         const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo };
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
+        if (carta.opzioni) richiesta.opzioni = carta.opzioni;
         stato.richiestaConoscenza = richiesta;
         await pubblicaStato(codicePartita, stato);
 
@@ -243,9 +245,9 @@ async function iniziaPartitaVera(giocatoriInfo) {
 
 async function avvia() {
   percorso = (await caricaJSON('dati/percorso.json')).celle;
-  const carteConoscenza = (await caricaJSON('dati/carte-conoscenza.json')).carte;
-  const carteImprevisto = (await caricaJSON('dati/carte-imprevisto.json')).carte;
-  const carteProva = (await caricaJSON('dati/carte-prova.json')).carte;
+  const carteConoscenza = await leggiMazzoDaFirebase('conoscenza');
+  const carteImprevisto = await leggiMazzoDaFirebase('imprevisto');
+  const carteProva = await leggiMazzoDaFirebase('prova');
 
   mazzoConoscenza = creaMazzo(carteConoscenza);
   mazzoImprevisto = creaMazzo(carteImprevisto);

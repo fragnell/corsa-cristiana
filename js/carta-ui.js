@@ -21,6 +21,8 @@ function popolaContenuto(tipoCarta, carta) {
     elTesto.textContent = carta.domanda;
     if (carta.tipo === 'elenco') {
       elRiferimento.textContent = `(cita almeno ${carta.minimoRichiesto})`;
+    } else if (carta.tipo === 'scelta') {
+      elRiferimento.textContent = '(scelta multipla — guarda le opzioni sul telefono)';
     }
   } else {
     elTesto.textContent = carta.testo;

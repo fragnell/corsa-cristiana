@@ -139,3 +139,23 @@ export async function leggiMazzoDaFirebase(nomeMazzo) {
 export function nuovaChiaveMazzo(nomeMazzo) {
   return push(ref(db, `mazzi/${nomeMazzo}`)).key;
 }
+
+
+// Resta in ascolto di un mazzo intero (per il pannello impostazioni):
+// ogni volta che qualcosa cambia, richiama "callback" con l'array
+// aggiornato di carte (ciascuna con "_chiave" allegata).
+export function ascoltaMazzo(nomeMazzo, callback) {
+  return onValue(ref(db, `mazzi/${nomeMazzo}`), (istantanea) => {
+    const oggetto = istantanea.val() || {};
+    const carte = Object.entries(oggetto).map(([chiave, carta]) => ({ ...carta, _chiave: chiave }));
+    callback(carte);
+  });
+}
+
+export function salvaCarta(nomeMazzo, chiave, carta) {
+  return set(ref(db, `mazzi/${nomeMazzo}/${chiave}`), carta);
+}
+
+export function eliminaCarta(nomeMazzo, chiave) {
+  return set(ref(db, `mazzi/${nomeMazzo}/${chiave}`), null);
+}

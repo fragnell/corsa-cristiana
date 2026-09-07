@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Corsa Cristiana — Impostazioni</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <h1>⚙️ Gestione carte</h1>
+
+  <section id="sezione-conoscenza">
+    <h2>Conoscenza (<span id="conoscenza-conteggio">0</span>)</h2>
+    <button type="button" id="conoscenza-btn-nuova">➕ Nuova domanda</button>
+    <div id="conoscenza-lista"></div>
+
+    <div id="conoscenza-form" class="admin-form nascosta">
+      <h3 id="conoscenza-form-titolo"></h3>
+
+      <label>Domanda:<br>
+        <textarea id="conoscenza-input-domanda" rows="2"></textarea>
+      </label>
+
+      <label>Tipo:
+        <select id="conoscenza-tipo">
+          <option value="diretta">Diretta (una risposta)</option>
+          <option value="elenco">Elenco (più risposte)</option>
+          <option value="scelta">Scelta multipla</option>
+        </select>
+      </label>
+
+      <div id="conoscenza-campi-diretta">
+        <label>Risposta:<br>
+          <input type="text" id="conoscenza-input-risposta">
+        </label>
+      </div>
+
+      <div id="conoscenza-campi-elenco">
+        <label>Minimo richiesto:
+          <input type="number" id="conoscenza-input-minimo" min="1" value="3" style="width:60px">
+        </label>
+        <div id="conoscenza-lista-risposte"></div>
+        <div class="admin-riga-aggiungi">
+          <input type="text" id="conoscenza-input-nuova-risposta" placeholder="Aggiungi risposta possibile">
+          <button type="button" id="conoscenza-btn-aggiungi-risposta">➕</button>
+        </div>
+      </div>
+
+      <div id="conoscenza-campi-scelta">
+        <div id="conoscenza-lista-opzioni"></div>
+        <div class="admin-riga-aggiungi">
+          <input type="text" id="conoscenza-input-nuova-opzione" placeholder="Aggiungi opzione">
+          <button type="button" id="conoscenza-btn-aggiungi-opzione">➕</button>
+        </div>
+        <p class="admin-nota">Seleziona il pallino accanto all'opzione corretta.</p>
+      </div>
+
+      <div class="admin-form-bottoni">
+        <button type="button" id="conoscenza-btn-salva">💾 Salva</button>
+        <button type="button" id="conoscenza-btn-annulla">Annulla</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="sezione-imprevisto">
+    <h2>Imprevisti (<span id="imprevisto-conteggio">0</span>)</h2>
+    <button type="button" id="imprevisto-btn-nuova">➕ Nuovo imprevisto</button>
+    <div id="imprevisto-lista"></div>
+
+    <div id="imprevisto-form" class="admin-form nascosta">
+      <h3 id="imprevisto-form-titolo"></h3>
+      <label>Testo:<br>
+        <textarea id="imprevisto-input-testo" rows="3"></textarea>
+      </label>
+      <label>Riferimento (facoltativo):<br>
+        <input type="text" id="imprevisto-input-riferimento" placeholder="es. Proverbi 3:5">
+      </label>
+      <div class="admin-form-bottoni">
+        <button type="button" id="imprevisto-btn-salva">💾 Salva</button>
+        <button type="button" id="imprevisto-btn-annulla">Annulla</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="sezione-prova">
+    <h2>Prove (<span id="prova-conteggio">0</span>)</h2>
+    <button type="button" id="prova-btn-nuova">➕ Nuova prova</button>
+    <div id="prova-lista"></div>
+
+    <div id="prova-form" class="admin-form nascosta">
+      <h3 id="prova-form-titolo"></h3>
+      <label>Testo della prova:<br>
+        <textarea id="prova-input-testo" rows="3"></textarea>
+      </label>
+      <div class="admin-form-bottoni">
+        <button type="button" id="prova-btn-salva">💾 Salva</button>
+        <button type="button" id="prova-btn-annulla">Annulla</button>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="js/admin-ui.js"></script>
+</body>
+</html>

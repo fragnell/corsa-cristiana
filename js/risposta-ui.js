@@ -1,10 +1,14 @@
 // risposta-ui.js
-// Raccoglie la risposta scritta dal giocatore, la verifica in modo
-// automatico e tollerante, e mostra il verdetto con un conto alla rovescia
-// di 10 secondi — se è sbagliata, anche la risposta corretta. Non decide
-// da sola quando mostrare o nascondere la carta: quello lo coordina chi la
+// Raccoglie la risposta scritta o scelta dal giocatore, la verifica in
+// modo automatico, e mostra il verdetto con un conto alla rovescia di 10
+// secondi — se è sbagliata, anche la risposta corretta. Non decide da
+// sola quando mostrare o nascondere la carta: quello lo coordina chi la
 // usa (tabellone-ui.js), perché la carta deve restare visibile mentre il
-// giocatore scrive.
+// giocatore risponde.
+//
+// Tre tipi di domanda: "diretta" (una risposta scritta), "elenco" (più
+// risposte scritte, con un minimo richiesto), "scelta" (si tocca una
+// delle opzioni proposte, poi si conferma).
 
 function normalizza(testo) {
   return testo
@@ -38,6 +42,11 @@ export function valutaRisposta(carta, risposteDate) {
     });
     return trovate.size >= carta.minimoRichiesto;
   }
+  if (carta.tipo === 'scelta') {
+    // qui non serve tolleranza: il giocatore ha toccato esattamente una
+    // delle opzioni proposte, il confronto è sempre alla lettera.
+    return risposteDate[0] === carta.rispostaCorretta;
+  }
   return normalizza(risposteDate[0] || '') === normalizza(carta.risposta);
 }
 
@@ -47,7 +56,7 @@ export function raccogliRisposta(carta) {
     area.classList.remove('nascosta');
 
     if (carta.tipo === 'elenco') {
-            area.innerHTML = `
+      area.innerHTML = `
         <p>Scrivi una risposta alla volta e premi "Aggiungi".<br>Servono almeno ${carta.minimoRichiesto} risposte diverse.</p>
         <div id="risposta-elenco-lista"></div>
         <div class="risposta-riga">
@@ -77,6 +86,34 @@ export function raccogliRisposta(carta) {
         risolvi(lista);
       });
       input.focus();
+
+    } else if (carta.tipo === 'scelta') {
+      area.innerHTML = `
+        <div id="risposta-scelta-opzioni"></div>
+        <button id="risposta-conferma-scelta" disabled>✅ Conferma</button>
+      `;
+      const contenitoreOpzioni = document.getElementById('risposta-scelta-opzioni');
+      const bottoneConferma = document.getElementById('risposta-conferma-scelta');
+      let opzioneScelta = null;
+
+      carta.opzioni.forEach(opzione => {
+        const bottone = document.createElement('button');
+        bottone.type = 'button';
+        bottone.className = 'risposta-opzione';
+        bottone.textContent = opzione;
+        bottone.addEventListener('click', () => {
+          contenitoreOpzioni.querySelectorAll('.risposta-opzione').forEach(b => b.classList.remove('selezionata'));
+          bottone.classList.add('selezionata');
+          opzioneScelta = opzione;
+          bottoneConferma.disabled = false;
+        });
+        contenitoreOpzioni.appendChild(bottone);
+      });
+
+      bottoneConferma.addEventListener('click', () => {
+        area.classList.add('nascosta');
+        risolvi([opzioneScelta]);
+      });
 
     } else {
       area.innerHTML = `
@@ -109,9 +146,14 @@ export function mostraVerdetto(carta, corretta, risposteDate) {
 
     let rigaRispostaGiusta = '';
     if (!corretta) {
-      const rispostaGiusta = carta.tipo === 'elenco'
-        ? carta.rispostePossibili.join(', ')
-        : carta.risposta;
+      let rispostaGiusta;
+      if (carta.tipo === 'elenco') {
+        rispostaGiusta = carta.rispostePossibili.join(', ');
+      } else if (carta.tipo === 'scelta') {
+        rispostaGiusta = carta.rispostaCorretta;
+      } else {
+        rispostaGiusta = carta.risposta;
+      }
       rigaRispostaGiusta = `<p class="verdetto-risposta-giusta">Risposta corretta: ${rispostaGiusta}</p>`;
     }
 
