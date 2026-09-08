@@ -2,15 +2,33 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Migrazione carte</title>
-  <style>body { font-family: sans-serif; padding: 2rem; font-size: 1.2rem; }</style>
+  <title>Importa carte</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; font-size: 1.1rem; max-width: 500px; }
+    label { display: block; margin: 1rem 0 0.3rem; font-weight: bold; }
+    select, input[type="file"] { font-size: 1rem; padding: 0.4rem; }
+    button { font-size: 1.1rem; padding: 0.6rem 1.2rem; margin-top: 1.2rem; cursor: pointer; }
+    #risultato { margin-top: 1rem; line-height: 1.6; }
+  </style>
 </head>
 <body>
-  <h1>Migrazione carte verso Firebase</h1>
-  <p>Da premere una sola volta: copia le carte dai file JSON dentro Firebase.<br>
-     Dopo, il gioco leggerà le carte da lì invece che da questi file.</p>
-  <button id="btn-migra">Migra le carte</button>
+  <h1>Importa carte da un file JSON</h1>
+  <p>Le carte importate si <strong>aggiungono</strong> a quelle già presenti — non cancellano nulla.</p>
+
+  <label for="select-mazzo">Che tipo di carte contiene il file?</label>
+  <select id="select-mazzo">
+    <option value="conoscenza">Conoscenza</option>
+    <option value="imprevisto">Imprevisto</option>
+    <option value="prova">Prova</option>
+  </select>
+
+  <label for="input-file">File JSON:</label>
+  <input type="file" id="input-file" accept=".json">
+
+  <br>
+  <button id="btn-importa">Importa</button>
   <p id="risultato"></p>
+
   <script type="module" src="js/migra-carte.js"></script>
 </body>
 </html>
