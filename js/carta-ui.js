@@ -77,3 +77,56 @@ export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni) {
     setTimeout(() => elCarta.classList.add('girata'), 400);
   });
 }
+
+
+const DURATA_COUNTDOWN_PROVA_S = 30;
+
+// Chiede se una prova "vincolo" è stata superata, quando torna il turno
+// di chi la stava affrontando. Un conto alla rovescia di 30 secondi: se
+// scade senza risposta, si considera superata di default.
+export function chiediEsitoProvaVincolo(nomeGiocatore, prova) {
+  return new Promise(risolvi => {
+    const overlay = document.getElementById('carta-overlay');
+    const elCarta = document.getElementById('carta');
+    const elTipo = document.getElementById('carta-tipo');
+    const elTesto = document.getElementById('carta-testo');
+    const elRiferimento = document.getElementById('carta-riferimento');
+    const elBottoni = document.getElementById('carta-bottoni');
+
+    elTipo.textContent = 'PROVA';
+    elTesto.textContent = prova.testo;
+    elRiferimento.textContent = prova.riferimento || '';
+
+    let secondiRimasti = DURATA_COUNTDOWN_PROVA_S;
+
+    elBottoni.innerHTML = `
+      <p class="prova-vincolo-titolo">${nomeGiocatore}, hai superato la prova?</p>
+      <p class="prova-vincolo-countdown">Se nessuno risponde entro <span id="prova-vincolo-conto">${secondiRimasti}</span>s, si considera superata</p>
+      <button id="prova-vincolo-si">✅ Sì, superata</button>
+      <button id="prova-vincolo-no">❌ No, fallita</button>
+    `;
+
+    let concluso = false;
+    const concludi = risultato => {
+      if (concluso) return;
+      concluso = true;
+      clearInterval(timer);
+      overlay.classList.add('nascosta');
+      risolvi(risultato);
+    };
+
+    const timer = setInterval(() => {
+      secondiRimasti--;
+      const conto = document.getElementById('prova-vincolo-conto');
+      if (conto) conto.textContent = secondiRimasti;
+      if (secondiRimasti <= 0) concludi(true);
+    }, 1000);
+
+    document.getElementById('prova-vincolo-si').addEventListener('click', () => concludi(true));
+    document.getElementById('prova-vincolo-no').addEventListener('click', () => concludi(false));
+
+    elCarta.classList.remove('girata');
+    overlay.classList.remove('nascosta');
+    setTimeout(() => elCarta.classList.add('girata'), 400);
+  });
+}

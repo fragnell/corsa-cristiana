@@ -143,6 +143,9 @@ function aggiornaSchermo(stato) {
     bottoneDado.classList.add('nascosta');
     statoTurno.textContent = '';
     gestisciRichiestaConoscenza(richiesta);
+  } else if (stato.turnoDi === mioId && stato.giocatori[mioId].provaInSospeso) {
+    statoTurno.textContent = '⏳ Hai una prova in sospeso — aspetta che venga risolta sul tabellone...';
+    bottoneDado.classList.add('nascosta');
   } else if (stato.turnoDi === mioId) {
     statoTurno.textContent = '🎲 Tocca a te!';
     bottoneDado.classList.remove('nascosta');

@@ -2,13 +2,14 @@
 // Disegna il tabellone a spirale e manda avanti la partita in un ciclo
 // continuo. Prima però mostra una lobby: aspetta che i giocatori si
 // colleghino dai loro telefoni, e parte solo quando l'organizzatore
-// preme "Inizia partita".
+// preme "Inizia partita". Le prove "vincolo" restano in sospeso finché
+// non torna il turno di chi le ha pescate.
 
 import { CONFIG } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
-import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, passaTurno } from './regole.js';
+import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
 import { creaMazzo, pesca } from './mazzi.js';
-import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta } from './carta-ui.js';
+import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo } from './carta-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { animaDado } from './dado-ui.js';
 import { PALETTE } from './colori.js';
@@ -119,9 +120,52 @@ async function animaSpostamento(giocatoreId, posizioneIniziale, posizioneFinale)
   evidenziaCasella(posizioneFinale);
 }
 
+function aggiornaProveInSospeso() {
+  const contenitore = document.getElementById('prove-in-sospeso');
+  const inAttesa = stato.giocatori.filter(g => g.provaInSospeso);
+
+  if (inAttesa.length === 0) {
+    contenitore.innerHTML = '';
+    return;
+  }
+
+  contenitore.innerHTML = '<h3>Stanno affrontando una prova:</h3>' + inAttesa.map(g =>
+    `<div class="prova-sospesa-riga"><strong>${g.nome}:</strong> ${g.provaInSospeso.testo}</div>`
+  ).join('');
+}
+
+// Quando torna il turno di chi aveva una prova vincolo in sospeso, la
+// risolve PRIMA di lasciarlo tirare il dado per il proprio turno vero.
+async function risolviProvaVincoloDiTurno(giocatore) {
+  const provaInSospeso = stato.giocatori[giocatore.id].provaInSospeso;
+  const posizionePrima = stato.giocatori[giocatore.id].posizione;
+
+  const superata = await chiediEsitoProvaVincolo(giocatore.nome, provaInSospeso);
+
+  stato = risolviProvaInSospeso(stato, giocatore.id);
+  const r = applicaEsitoProva(stato, percorso, superata);
+  stato = r.stato;
+  aggiornaProveInSospeso();
+
+  const posizioneDopo = stato.giocatori[giocatore.id].posizione;
+  if (posizioneDopo !== posizionePrima) {
+    await pausa(200);
+    await animaSpostamento(giocatore.id, posizionePrima, posizioneDopo);
+  }
+
+  await pubblicaStato(codicePartita, stato);
+}
+
 async function giocaTurno() {
+  let giocatore = giocatoreDiTurno(stato);
+
+  if (stato.giocatori[giocatore.id].provaInSospeso) {
+    await risolviProvaVincoloDiTurno(giocatore);
+    if (partitaFinita(stato)) return; // il +1 potrebbe aver fatto vincere proprio ora
+    giocatore = giocatoreDiTurno(stato); // stesso giocatore, ma la posizione è cambiata
+  }
+
   const infoTurno = document.getElementById('turno-info');
-  const giocatore = giocatoreDiTurno(stato);
 
   infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...`;
   await aspettaIntenzioneDado(codicePartita, giocatore.id);
@@ -187,11 +231,23 @@ async function giocaTurno() {
     } else {
       const pescata = pesca(mazzoProva);
       mazzoProva = pescata.mazzo;
-      const superata = await mostraCartaEAspettaScelta('PROVA', pescata.carta, [
-        { etichetta: '✅ Prova superata', valore: true },
-        { etichetta: '❌ Prova fallita', valore: false }
-      ]);
-      r = applicaEsitoProva(stato, percorso, superata);
+      const carta = pescata.carta;
+
+      if (carta.vincolo) {
+        // Vincolo: si mostra, ma non si giudica adesso — resta in sospeso
+        // finché non torna il turno di chi l'ha pescata. Il turno di ORA
+        // finisce qui, senza applicare nessun bonus.
+        await mostraCartaEAspettaScelta('PROVA', carta, [{ etichetta: 'Continua', valore: null }]);
+        stato = impostaProvaInSospeso(stato, giocatore.id, carta);
+        aggiornaProveInSospeso();
+        r = { stato, evento: { tipo: 'PROVA_VINCOLO' } };
+      } else {
+        const superata = await mostraCartaEAspettaScelta('PROVA', carta, [
+          { etichetta: '✅ Prova superata', valore: true },
+          { etichetta: '❌ Prova fallita', valore: false }
+        ]);
+        r = applicaEsitoProva(stato, percorso, superata);
+      }
     }
     stato = r.stato;
 
@@ -231,7 +287,7 @@ function avviaVistaLobby() {
   });
 
   bottoneInizia.addEventListener('click', async () => {
-    bottoneInizia.disabled = true; // blocca subito: un secondo clic non deve far ripartire tutto da capo
+    bottoneInizia.disabled = true;
     const lobbyFinale = await leggiLobbyUnaVolta(codicePartita);
     iniziaPartitaVera(lobbyFinale);
   });

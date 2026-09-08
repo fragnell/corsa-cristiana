@@ -374,3 +374,34 @@ body {
   border-color: #a5d6a7;
   cursor: default;
 }
+
+
+/* --- prove vincolo: in sospeso, e la richiesta di conferma --- */
+
+#prove-in-sospeso {
+  margin: 1rem 0;
+}
+
+#prove-in-sospeso h3 {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 0.4rem;
+}
+
+.prova-sospesa-riga {
+  background: #fff3cd;
+  border: 1px solid #e0c36a;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.prova-vincolo-titolo {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.prova-vincolo-countdown {
+  color: #888;
+  font-size: 0.85rem;
+}

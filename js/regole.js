@@ -129,6 +129,24 @@ export function applicaEsitoProva(stato, percorso, superata) {
   return spostaGiocatore(nuovoStato, percorso, quantita, { tipo: 'PROVA', superata });
 }
 
+
+// Una prova "vincolo" non si giudica subito: resta segnata sul giocatore
+// finché non torna il suo turno. Non sposta la pedina — quello succede
+// solo dopo, quando si risolve con applicaEsitoProva.
+export function impostaProvaInSospeso(stato, giocatoreId, carta) {
+  const nuovoStato = copiaStato(stato);
+  nuovoStato.giocatori[giocatoreId].provaInSospeso = { testo: carta.testo, riferimento: carta.riferimento || null };
+  return nuovoStato;
+}
+
+// Toglie il segno di "prova in sospeso" — da chiamare prima di
+// applicaEsitoProva quando torna il turno di chi la stava affrontando.
+export function risolviProvaInSospeso(stato, giocatoreId) {
+  const nuovoStato = copiaStato(stato);
+  nuovoStato.giocatori[giocatoreId].provaInSospeso = null;
+  return nuovoStato;
+}
+
 // ---------- PASSAGGIO DI TURNO ----------
 
 // Passa al giocatore successivo, saltando automaticamente chi ha

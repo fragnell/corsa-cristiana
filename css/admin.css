@@ -131,3 +131,16 @@ button {
   margin-top: 0.8rem;
   line-height: 1.6;
 }
+
+.admin-label-checkbox {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: normal !important;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.admin-label-checkbox input {
+  margin-top: 0.2rem;
+}

@@ -50,6 +50,10 @@ function rigaACarta(nomeMazzo, riga) {
     const riferimento = pulisci(riga.riferimento);
     if (riferimento) carta.riferimento = riferimento;
   }
+  if (nomeMazzo === 'prova') {
+    const vincoloTesto = pulisci(riga.vincolo).toLowerCase();
+    if (vincoloTesto === 'si' || vincoloTesto === 'sì') carta.vincolo = true;
+  }
   return carta;
 }
 
