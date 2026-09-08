@@ -6,7 +6,26 @@
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-  <h1>⚙️ Gestione carte</h1>
+    <h1>⚙️ Gestione carte</h1>
+
+  <section id="sezione-importa">
+    <h2>📥 Importa carte da Excel</h2>
+    <p>Scrivi le domande in un file Excel (usa il file modello che ti ho fornito) e caricale qui — si aggiungono a quelle già presenti, non le sostituiscono mai.</p>
+
+    <label>Che tipo di carte contiene il file?</label>
+    <select id="importa-select-mazzo">
+      <option value="conoscenza">Conoscenza</option>
+      <option value="imprevisto">Imprevisto</option>
+      <option value="prova">Prova</option>
+    </select>
+
+    <label>File Excel (.xlsx):</label>
+    <input type="file" id="importa-input-file" accept=".xlsx">
+
+    <br>
+    <button type="button" id="importa-btn-importa">Importa</button>
+    <p id="importa-risultato"></p>
+  </section>
 
   <section id="sezione-conoscenza">
     <h2>Conoscenza (<span id="conoscenza-conteggio">0</span>)</h2>
@@ -101,6 +120,7 @@
     </div>
   </section>
 
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script type="module" src="js/admin-ui.js"></script>
 </body>
 </html>

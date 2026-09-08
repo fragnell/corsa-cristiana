@@ -90,3 +90,37 @@ button {
 .admin-riga-opzione span { flex: 1; }
 
 .admin-nota { color: #666; font-size: 0.85rem; font-style: italic; margin-top: 0.4rem; }
+
+
+#sezione-importa {
+  background: #eef6ff;
+  border: 2px solid #90caf9;
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+#sezione-importa label {
+  display: block;
+  margin: 0.8rem 0 0.3rem;
+  font-weight: bold;
+}
+
+#sezione-importa select,
+#sezione-importa input[type="file"] {
+  font-size: 1rem;
+  padding: 0.4rem;
+}
+
+#importa-btn-importa {
+  margin-top: 1rem;
+  background: #1976d2;
+  color: white;
+  border-color: #0d47a1;
+  font-weight: bold;
+}
+
+#importa-risultato {
+  margin-top: 0.8rem;
+  line-height: 1.6;
+}
