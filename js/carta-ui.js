@@ -26,7 +26,7 @@ function popolaContenuto(tipoCarta, carta) {
     }
   } else {
     elTesto.textContent = carta.testo;
-    if (tipoCarta === 'IMPREVISTO') {
+    if (tipoCarta === 'IMPREVISTO' || tipoCarta === 'FERMO') {
       elRiferimento.textContent = carta.riferimento || '';
     }
   }

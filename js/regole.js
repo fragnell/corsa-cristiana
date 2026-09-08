@@ -62,7 +62,7 @@ function risolviCasella(stato, percorso, casella) {
 
     case 'FERMO':
       giocatore.saltaProssimoTurno = true;
-      return { stato, evento: { tipo: 'FERMO' } };
+      return { stato, evento: { tipo: 'FERMO', riferimento: casella.riferimento, testo: casella.testo } };
 
     case 'SALTO': {
       giocatore.posizione = casella.vaiA;

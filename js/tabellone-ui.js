@@ -194,6 +194,16 @@ async function giocaTurno() {
     stato.ultimoEvento = { tipo: 'IMPREVISTO', giocatoreId: giocatore.id, id: Date.now() };
   }
 
+  if (r.evento.tipo === 'FERMO') {
+    const cartaFermo = { testo: `Ti sei scoraggiato! Fermo un turno.\n\n${r.evento.testo || ''}`, riferimento: r.evento.riferimento || '' };
+    await mostraCartaEAspettaScelta('FERMO', cartaFermo, [{ etichetta: 'Continua', valore: null }]);
+  }
+
+  if (r.evento.tipo === 'SALTO') {
+    const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${r.evento.destinazione}.` };
+    await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }]);
+  }
+
   if (r.evento.tipo === 'IN_ATTESA') {
     const posizionePrimaEsito = stato.giocatori[giocatore.id].posizione;
 
