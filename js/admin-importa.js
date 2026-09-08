@@ -74,7 +74,7 @@ function cartaARiga(nomeMazzo, carta) {
   if (nomeMazzo === 'imprevisto') {
     return { testo: carta.testo || '', riferimento: carta.riferimento || '' };
   }
-  return { testo: carta.testo || '' };
+  return { testo: carta.testo || '', vincolo: carta.vincolo ? 'sì' : '' };
 }
 
 function validaCarta(nomeMazzo, carta, indice) {
