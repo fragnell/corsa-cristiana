@@ -231,6 +231,7 @@ function avviaVistaLobby() {
   });
 
   bottoneInizia.addEventListener('click', async () => {
+    bottoneInizia.disabled = true; // blocca subito: un secondo clic non deve far ripartire tutto da capo
     const lobbyFinale = await leggiLobbyUnaVolta(codicePartita);
     iniziaPartitaVera(lobbyFinale);
   });
