@@ -112,12 +112,19 @@ button {
   padding: 0.4rem;
 }
 
-#importa-btn-importa {
+#importa-btn-importa, #importa-btn-esporta {
   margin-top: 1rem;
   background: #1976d2;
   color: white;
   border-color: #0d47a1;
   font-weight: bold;
+}
+
+#importa-btn-esporta {
+  background: #2e7d32;
+  border-color: #1b5e20;
+  margin-bottom: 0.5rem;
+  display: block;
 }
 
 #importa-risultato {

@@ -9,21 +9,16 @@
     <h1>⚙️ Gestione carte</h1>
 
   <section id="sezione-importa">
-    <h2>📥 Importa carte da Excel</h2>
-    <p>Scrivi le domande in un file Excel (usa il file modello che ti ho fornito) e caricale qui — si aggiungono a quelle già presenti, non le sostituiscono mai.</p>
+    <h2>📥📤 Importa / Esporta carte</h2>
+    <p>Esporta tutte le carte in un file Excel, modificale con calma, poi reimportale: le domande già esistenti (stesso testo esatto) vengono aggiornate, quelle nuove aggiunte. Nessuna carta viene mai cancellata da qui — per cancellare si usa il cestino qui sotto.</p>
 
-    <label>Che tipo di carte contiene il file?</label>
-    <select id="importa-select-mazzo">
-      <option value="conoscenza">Conoscenza</option>
-      <option value="imprevisto">Imprevisto</option>
-      <option value="prova">Prova</option>
-    </select>
+    <button type="button" id="importa-btn-esporta">📤 Esporta tutto in Excel</button>
 
-    <label>File Excel (.xlsx):</label>
+    <label>File Excel da importare (.xlsx):</label>
     <input type="file" id="importa-input-file" accept=".xlsx">
 
     <br>
-    <button type="button" id="importa-btn-importa">Importa</button>
+    <button type="button" id="importa-btn-importa">📥 Importa</button>
     <p id="importa-risultato"></p>
   </section>
 
