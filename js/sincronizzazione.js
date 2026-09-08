@@ -25,7 +25,8 @@ export function leggiStatoUnaVolta(codicePartita) {
   return get(ref(db, `partite/${codicePartita}/stato`)).then(istantanea => istantanea.val());
 }
 
-// Chiama "callback" ogni volta che lo stato cambia.
+// Chiama "callback" ogni volta che lo stato cambia. Restituisce una
+// funzione per smettere di ascoltare, se mai servisse.
 export function ascoltaStato(codicePartita, callback) {
   return onValue(ref(db, `partite/${codicePartita}/stato`), (istantanea) => {
     callback(istantanea.val());
@@ -56,7 +57,6 @@ export function aspettaIntenzioneDado(codicePartita, giocatoreAtteso) {
   });
 }
 
-
 export function inviaIntenzioneRisposta(codicePartita, giocatoreId, risposte) {
   return set(ref(db, `partite/${codicePartita}/intenzione`), {
     tipo: 'RISPOSTA_CONOSCENZA',
@@ -75,31 +75,20 @@ export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso) {
       if (intenzione && intenzione.tipo === 'RISPOSTA_CONOSCENZA' && intenzione.giocatoreId === giocatoreAtteso) {
         staccaAscolto();
         set(percorsoIntenzione, null);
-        risolvi(intenzione.risposte || []); // Firebase cancella gli array vuoti: senza questo, un elenco confermato senza aggiungere nulla arriverebbe come "undefined" e bloccherebbe tutto
+        risolvi(intenzione.risposte);
       }
     });
   });
 }
 
-
 // --- La lobby: i giocatori si uniscono prima che la partita inizi ---
 
 export function iniziaLobby(codicePartita) {
-  return set(ref(db, `partite/${codicePartita}`), {
-    creataIl: Date.now(),
-    lobby: []
-  });
-}
-
-// Controlla se la partita esiste, guardando "creataIl" invece della
-// lobby — perché la lobby può essere vuota (nessuno si è ancora unito),
-// e Firebase non distingue "vuoto" da "non esiste".
-export function verificaPartitaEsiste(codicePartita) {
-  return get(ref(db, `partite/${codicePartita}/creataIl`)).then(istantanea => istantanea.val() !== null);
+  return set(ref(db, `partite/${codicePartita}/lobby`), []);
 }
 
 export function leggiLobbyUnaVolta(codicePartita) {
-  return get(ref(db, `partite/${codicePartita}/lobby`)).then(istantanea => istantanea.val() || []);
+  return get(ref(db, `partite/${codicePartita}/lobby`)).then(istantanea => istantanea.val());
 }
 
 export function ascoltaLobby(codicePartita, callback) {
@@ -123,7 +112,6 @@ export async function unisciti(codicePartita, nome, colore) {
   return { ok: true };
 }
 
-
 // --- I mazzi di carte, ora dentro Firebase invece che in file statici ---
 
 // Legge un mazzo intero (conoscenza / imprevisto / prova) e restituisce
@@ -139,7 +127,6 @@ export async function leggiMazzoDaFirebase(nomeMazzo) {
 export function nuovaChiaveMazzo(nomeMazzo) {
   return push(ref(db, `mazzi/${nomeMazzo}`)).key;
 }
-
 
 // Resta in ascolto di un mazzo intero (per il pannello impostazioni):
 // ogni volta che qualcosa cambia, richiama "callback" con l'array
@@ -158,4 +145,19 @@ export function salvaCarta(nomeMazzo, chiave, carta) {
 
 export function eliminaCarta(nomeMazzo, chiave) {
   return set(ref(db, `mazzi/${nomeMazzo}/${chiave}`), null);
+}
+
+// Aggiunge una nuova frase accettata a una domanda diretta già esistente
+// — sia nella copia in memoria di questa partita (nel caso la stessa
+// carta venga ripescata più avanti), sia dentro Firebase, per tutte le
+// partite future.
+export function aggiungiRispostaACarta(carta, nuovaRisposta) {
+  const rispostaAggiornata = Array.isArray(carta.risposta)
+    ? [...carta.risposta, nuovaRisposta]
+    : [carta.risposta, nuovaRisposta];
+
+  carta.risposta = rispostaAggiornata;
+
+  const { _chiave, ...contenutoCarta } = carta;
+  return salvaCarta('conoscenza', _chiave, contenutoCarta);
 }

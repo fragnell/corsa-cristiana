@@ -20,7 +20,8 @@ import {
   pubblicaStato,
   aspettaIntenzioneDado,
   aspettaIntenzioneRisposta,
-  leggiMazzoDaFirebase
+  leggiMazzoDaFirebase,
+  aggiungiRispostaACarta
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
@@ -173,8 +174,14 @@ async function giocaTurno() {
         nascondiCarta();
 
         corretta = valutaRisposta(carta, risposteDate);
-        const accettata = await mostraVerdetto(carta, corretta, risposteDate);
-        if (accettata) break;
+        const esito = await mostraVerdetto(carta, corretta, risposteDate);
+
+        if (esito.nuovaRispostaDaAggiungere) {
+          await aggiungiRispostaACarta(carta, esito.nuovaRispostaDaAggiungere);
+        }
+        corretta = esito.corretta;
+
+        if (esito.accettata) break;
       }
       r = applicaRispostaConoscenza(stato, percorso, corretta);
     } else {

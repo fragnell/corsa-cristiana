@@ -16,8 +16,9 @@ function validaCarta(nomeMazzo, carta, indice) {
     if (!['diretta', 'elenco', 'scelta'].includes(carta.tipo)) {
       return `${n}: "tipo" deve essere diretta, elenco o scelta (trovato: ${carta.tipo})`;
     }
-    if (carta.tipo === 'diretta' && !carta.risposta) {
-      return `${n} (diretta): manca "risposta"`;
+    if (carta.tipo === 'diretta') {
+      const haRisposta = Array.isArray(carta.risposta) ? carta.risposta.length > 0 : !!carta.risposta;
+      if (!haRisposta) return `${n} (diretta): manca "risposta" (una stringa, o un elenco di frasi tutte accettate)`;
     }
     if (carta.tipo === 'elenco' && (!Array.isArray(carta.rispostePossibili) || !carta.minimoRichiesto)) {
       return `${n} (elenco): servono "rispostePossibili" (elenco) e "minimoRichiesto" (numero)`;
@@ -29,7 +30,6 @@ function validaCarta(nomeMazzo, carta, indice) {
       return `${n} (scelta): "rispostaCorretta" deve essere uguale a una delle "opzioni"`;
     }
   } else {
-    // imprevisto e prova hanno la stessa forma minima
     if (!carta.testo) return `${n}: manca "testo"`;
   }
   return null;

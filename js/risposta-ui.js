@@ -10,6 +10,8 @@
 // risposte scritte, con un minimo richiesto), "scelta" (si tocca una
 // delle opzioni proposte, poi si conferma).
 
+import { chiediPassword } from './accesso.js';
+
 function normalizza(testo) {
   return testo
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -47,7 +49,11 @@ export function valutaRisposta(carta, risposteDate) {
     // delle opzioni proposte, il confronto è sempre alla lettera.
     return risposteDate[0] === carta.rispostaCorretta;
   }
-  return normalizza(risposteDate[0] || '') === normalizza(carta.risposta);
+  // diretta: "risposta" può essere una sola stringa (le domande di
+  // sempre) o un elenco di frasi tutte accettate come corrette.
+  const rispostePossibili = Array.isArray(carta.risposta) ? carta.risposta : [carta.risposta];
+  const dataNorm = normalizza(risposteDate[0] || "");
+  return rispostePossibili.some(r => normalizza(r) === dataNorm);
 }
 
 export function raccogliRisposta(carta) {
@@ -137,52 +143,100 @@ export function raccogliRisposta(carta) {
 
 const DURATA_COUNTDOWN_S = 10;
 
+// Restituisce { accettata, corretta, nuovaRispostaDaAggiungere? }.
+// "accettata" dice se il verdetto è definitivo (true) o se il giocatore
+// deve riprovare (false, solo con "Correggi"). "corretta" è il verdetto
+// finale — di norma uguale a quello calcolato, ma può diventare true se
+// il giudice ha accettato manualmente una risposta scritta in un altro
+// modo. Se questo succede, "nuovaRispostaDaAggiungere" contiene la frase
+// da ricordare per le prossime volte.
 export function mostraVerdetto(carta, corretta, risposteDate) {
   return new Promise(risolvi => {
     const area = document.getElementById('verdetto-area');
-    area.classList.remove('nascosta');
 
-    let secondiRimasti = DURATA_COUNTDOWN_S;
+    function mostraVistaPrincipale() {
+      area.classList.remove('nascosta');
+      let secondiRimasti = DURATA_COUNTDOWN_S;
 
-    let rigaRispostaGiusta = '';
-    if (!corretta) {
-      let rispostaGiusta;
-      if (carta.tipo === 'elenco') {
-        rispostaGiusta = carta.rispostePossibili.join(', ');
-      } else if (carta.tipo === 'scelta') {
-        rispostaGiusta = carta.rispostaCorretta;
-      } else {
-        rispostaGiusta = carta.risposta;
+      let rigaRispostaGiusta = '';
+      let bottoneAccetta = '';
+      if (!corretta) {
+        let rispostaGiusta;
+        if (carta.tipo === 'elenco') {
+          rispostaGiusta = carta.rispostePossibili.join(', ');
+        } else if (carta.tipo === 'scelta') {
+          rispostaGiusta = carta.rispostaCorretta;
+        } else {
+          rispostaGiusta = Array.isArray(carta.risposta) ? carta.risposta.join(', ') : carta.risposta;
+        }
+        rigaRispostaGiusta = `<p class="verdetto-risposta-giusta">Risposta corretta: ${rispostaGiusta}</p>`;
+
+        // Ha senso solo per le domande dirette: una frase libera che può
+        // essere giusta anche se detta diversamente da come ce l'aspettavamo.
+        if (carta.tipo === 'diretta') {
+          bottoneAccetta = `<button id="verdetto-accetta">➕ Accetta risposta</button>`;
+        }
       }
-      rigaRispostaGiusta = `<p class="verdetto-risposta-giusta">Risposta corretta: ${rispostaGiusta}</p>`;
+
+      area.innerHTML = `
+        <p class="verdetto-esito">${corretta ? '✅ Corretto!' : '❌ Non risulta corretto'}</p>
+        <p class="verdetto-dettaglio">Risposta data: ${risposteDate.join(', ') || '(vuota)'}</p>
+        ${rigaRispostaGiusta}
+        <p class="verdetto-countdown">Si chiude tra <span id="verdetto-conto">${secondiRimasti}</span>s</p>
+        <button id="verdetto-ok">✅ OK</button>
+        <button id="verdetto-correggi">✏️ Correggi</button>
+        ${bottoneAccetta}
+      `;
+
+      let concluso = false;
+      const concludi = risultato => {
+        if (concluso) return;
+        concluso = true;
+        clearInterval(timer);
+        area.classList.add('nascosta');
+        risolvi(risultato);
+      };
+
+      const timer = setInterval(() => {
+        secondiRimasti--;
+        const conto = document.getElementById('verdetto-conto');
+        if (conto) conto.textContent = secondiRimasti;
+        if (secondiRimasti <= 0) concludi({ accettata: true, corretta });
+      }, 1000);
+
+      document.getElementById('verdetto-ok').addEventListener('click', () => concludi({ accettata: true, corretta }));
+      document.getElementById('verdetto-correggi').addEventListener('click', () => concludi({ accettata: false, corretta }));
+
+      const bottoneAccettaEl = document.getElementById('verdetto-accetta');
+      if (bottoneAccettaEl) {
+        bottoneAccettaEl.addEventListener('click', () => {
+          clearInterval(timer);
+          mostraConferma();
+        });
+      }
     }
 
-    area.innerHTML = `
-      <p class="verdetto-esito">${corretta ? '✅ Corretto!' : '❌ Non risulta corretto'}</p>
-      <p class="verdetto-dettaglio">Risposta data: ${risposteDate.join(', ') || '(vuota)'}</p>
-      ${rigaRispostaGiusta}
-      <p class="verdetto-countdown">Si chiude tra <span id="verdetto-conto">${secondiRimasti}</span>s</p>
-      <button id="verdetto-ok">✅ OK</button>
-      <button id="verdetto-correggi">✏️ Correggi</button>
-    `;
+    function mostraConferma() {
+      const rispostaData = risposteDate[0];
+      area.innerHTML = `
+        <p class="verdetto-esito">Accettare "${rispostaData}" come risposta corretta?</p>
+        <p class="verdetto-dettaglio">Verrà ricordata: la prossima volta questa domanda la riconoscerà subito come giusta.</p>
+        <button id="verdetto-conferma-si">✅ Sì, accetta</button>
+        <button id="verdetto-conferma-no">← Torna indietro</button>
+      `;
+      document.getElementById('verdetto-conferma-si').addEventListener('click', () => {
+        const autorizzato = chiediPassword('Solo chi gestisce le domande può confermarlo.\nInserisci la password:');
+        if (!autorizzato) {
+          alert('Password non corretta: la risposta non è stata accettata.');
+          mostraVistaPrincipale();
+          return;
+        }
+        area.classList.add('nascosta');
+        risolvi({ accettata: true, corretta: true, nuovaRispostaDaAggiungere: rispostaData });
+      });
+      document.getElementById('verdetto-conferma-no').addEventListener('click', mostraVistaPrincipale);
+    }
 
-    let concluso = false;
-    const concludi = risultato => {
-      if (concluso) return;
-      concluso = true;
-      clearInterval(timer);
-      area.classList.add('nascosta');
-      risolvi(risultato);
-    };
-
-    const timer = setInterval(() => {
-      secondiRimasti--;
-      const conto = document.getElementById('verdetto-conto');
-      if (conto) conto.textContent = secondiRimasti;
-      if (secondiRimasti <= 0) concludi(true);
-    }, 1000);
-
-    document.getElementById('verdetto-ok').addEventListener('click', () => concludi(true));
-    document.getElementById('verdetto-correggi').addEventListener('click', () => concludi(false));
+    mostraVistaPrincipale();
   });
 }

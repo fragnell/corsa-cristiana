@@ -1,8 +1,4 @@
 /* admin.css */
-/* Il pannello impostazioni: liste di carte e moduli per aggiungerle o
-   modificarle. Pensato per essere usato con calma al PC, non in fretta
-   come le altre pagine del gioco. */
-
 body {
   font-family: sans-serif;
   padding: 1.5rem;
@@ -40,9 +36,7 @@ button {
   border-bottom: 1px solid #eee;
 }
 
-.admin-riga-testo {
-  flex: 1;
-}
+.admin-riga-testo { flex: 1; }
 
 .admin-form {
   background: #f5f5f5;
@@ -52,9 +46,7 @@ button {
   margin-top: 1rem;
 }
 
-.admin-form.nascosta {
-  display: none;
-}
+.admin-form.nascosta { display: none; }
 
 .admin-form label {
   display: block;
@@ -74,61 +66,27 @@ button {
   font-family: inherit;
 }
 
-.admin-riga-aggiungi {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+.admin-riga-aggiungi { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.admin-riga-aggiungi input { flex: 1; }
+
+#conoscenza-lista-risposte,
+#conoscenza-lista-risposte-diretta { margin-top: 0.5rem; }
+#conoscenza-lista-risposte div,
+#conoscenza-lista-risposte-diretta div {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.3rem 0.5rem; background: white; border-radius: 6px; margin-bottom: 0.3rem;
 }
 
-.admin-riga-aggiungi input {
-  flex: 1;
-}
-
-#conoscenza-lista-risposte {
-  margin-top: 0.5rem;
-}
-
-#conoscenza-lista-risposte div {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.3rem 0.5rem;
-  background: white;
-  border-radius: 6px;
-  margin-bottom: 0.3rem;
-}
-
-.admin-form-bottoni {
-  margin-top: 1.2rem;
-  display: flex;
-  gap: 0.6rem;
-}
+.admin-form-bottoni { margin-top: 1.2rem; display: flex; gap: 0.6rem; }
 
 #conoscenza-btn-salva, #imprevisto-btn-salva, #prova-btn-salva {
-  background: #4caf50;
-  color: white;
-  border-color: #2e7d32;
-  font-weight: bold;
+  background: #4caf50; color: white; border-color: #2e7d32; font-weight: bold;
 }
-
 
 .admin-riga-opzione {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.5rem;
-  background: white;
-  border-radius: 6px;
-  margin-bottom: 0.3rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.5rem; background: white; border-radius: 6px; margin-bottom: 0.3rem;
 }
+.admin-riga-opzione span { flex: 1; }
 
-.admin-riga-opzione span {
-  flex: 1;
-}
-
-.admin-nota {
-  color: #666;
-  font-size: 0.85rem;
-  font-style: italic;
-  margin-top: 0.4rem;
-}
+.admin-nota { color: #666; font-size: 0.85rem; font-style: italic; margin-top: 0.4rem; }

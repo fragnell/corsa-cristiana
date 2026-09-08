@@ -1,15 +1,16 @@
 // admin-conoscenza.js
 // Sezione Conoscenza del pannello impostazioni: elenco, aggiunta,
 // modifica, cancellazione. La più complessa delle tre perché una domanda
-// può essere "diretta" (una risposta sola), "elenco" (più risposte
-// possibili, con un minimo richiesto) o "scelta" (si sceglie tra alcune
-// opzioni proposte, una delle quali è quella giusta).
+// può essere "diretta" (una o più risposte accettate), "elenco" (più
+// risposte possibili, con un minimo richiesto) o "scelta" (si sceglie tra
+// alcune opzioni proposte, una delle quali è quella giusta).
 
 import { ascoltaMazzo, salvaCarta, eliminaCarta, nuovaChiaveMazzo } from './sincronizzazione.js';
 
 const NOME_MAZZO = 'conoscenza';
 let listaRispostePossibili = []; // usata solo mentre il form "elenco" è aperto
 let listaOpzioni = [];           // usata solo mentre il form "scelta" è aperto
+let listaRisposteDirette = [];   // usata solo mentre il form "diretta" è aperto
 let opzioneCorrettaIndice = null;
 
 export function avviaSezioneConoscenza() {
@@ -27,6 +28,11 @@ export function avviaSezioneConoscenza() {
   document.getElementById('conoscenza-btn-aggiungi-opzione').addEventListener('click', aggiungiOpzione);
   document.getElementById('conoscenza-input-nuova-opzione').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); aggiungiOpzione(); }
+  });
+
+  document.getElementById('conoscenza-btn-aggiungi-risposta-diretta').addEventListener('click', aggiungiRispostaDiretta);
+  document.getElementById('conoscenza-input-nuova-risposta-diretta').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); aggiungiRispostaDiretta(); }
   });
 }
 
@@ -58,7 +64,10 @@ function mostraForm(carta) {
 
   document.getElementById('conoscenza-input-domanda').value = carta ? carta.domanda : '';
   document.getElementById('conoscenza-tipo').value = carta ? carta.tipo : 'diretta';
-  document.getElementById('conoscenza-input-risposta').value = (carta && carta.tipo === 'diretta') ? carta.risposta : '';
+  listaRisposteDirette = (carta && carta.tipo === 'diretta')
+    ? (Array.isArray(carta.risposta) ? [...carta.risposta] : [carta.risposta])
+    : [];
+  disegnaListaRisposteDirette();
   document.getElementById('conoscenza-input-minimo').value = (carta && carta.tipo === 'elenco') ? carta.minimoRichiesto : 3;
 
   listaRispostePossibili = (carta && carta.tipo === 'elenco') ? [...carta.rispostePossibili] : [];
@@ -77,9 +86,11 @@ function mostraForm(carta) {
 
     let nuovaCarta;
     if (tipo === 'diretta') {
-      const risposta = document.getElementById('conoscenza-input-risposta').value.trim();
-      if (!risposta) { alert('Scrivi la risposta.'); return; }
-      nuovaCarta = { domanda, tipo: 'diretta', risposta };
+      if (listaRisposteDirette.length === 0) { alert('Aggiungi almeno una risposta.'); return; }
+      nuovaCarta = {
+        domanda, tipo: 'diretta',
+        risposta: listaRisposteDirette.length === 1 ? listaRisposteDirette[0] : [...listaRisposteDirette]
+      };
 
     } else if (tipo === 'elenco') {
       const minimoRichiesto = parseInt(document.getElementById('conoscenza-input-minimo').value, 10) || 1;
@@ -128,6 +139,33 @@ function disegnaListaRispostePossibili() {
       const indice = parseInt(bottone.dataset.indice, 10);
       listaRispostePossibili.splice(indice, 1);
       disegnaListaRispostePossibili();
+    });
+  });
+}
+
+// --- risposte accettate (tipo "diretta") ---
+
+function aggiungiRispostaDiretta() {
+  const input = document.getElementById('conoscenza-input-nuova-risposta-diretta');
+  const valore = input.value.trim();
+  if (!valore) return;
+  listaRisposteDirette.push(valore);
+  input.value = '';
+  disegnaListaRisposteDirette();
+  input.focus();
+}
+
+function disegnaListaRisposteDirette() {
+  const contenitore = document.getElementById('conoscenza-lista-risposte-diretta');
+  contenitore.innerHTML = listaRisposteDirette.map((r, indice) =>
+    `<div>${r} <button type="button" data-indice="${indice}" class="admin-btn-rimuovi-risposta-diretta">✕</button></div>`
+  ).join('');
+
+  contenitore.querySelectorAll('.admin-btn-rimuovi-risposta-diretta').forEach(bottone => {
+    bottone.addEventListener('click', () => {
+      const indice = parseInt(bottone.dataset.indice, 10);
+      listaRisposteDirette.splice(indice, 1);
+      disegnaListaRisposteDirette();
     });
   });
 }
