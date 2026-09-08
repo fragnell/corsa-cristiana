@@ -4,7 +4,7 @@
 // intenzioni dei giocatori. Un solo file che conosce i percorsi dentro il
 // database, così tabellone e telefono restano sempre d'accordo tra loro.
 
-import { db, ref, set, get, onValue, push } from './rete.js';
+import { db, ref, set, get, onValue, push, runTransaction } from './rete.js';
 
 // Un codice a 4 lettere, facile da leggere e da dettare a voce.
 // Niente I/O: si confondono troppo facilmente con 1/0.
@@ -100,14 +100,43 @@ export function ascoltaLobby(codicePartita, callback) {
   });
 }
 
+// Aggiunge un giocatore alla lobby, controllando nome e colore in modo
+// sicuro anche se più persone si iscrivono nello stesso istante — usa una
+// "transazione" di Firebase: il tentativo di scrittura viene ricontrollato
+// sui dati più freschi possibile appena prima di scrivere, e ritentato da
+// solo se qualcosa è cambiato nel frattempo. Niente più finestra in cui
+// due persone possono leggere "libero" nello stesso momento.
+//
+// Nota per il futuro: quando arriveranno gli avatar, "colore" smetterà di
+// essere scelto direttamente — diventerà una proprietà intrinseca
+// dell'avatar scelto (ogni avatar avrà il suo colore fisso). Il controllo
+// di unicità qui sotto si sposterà quindi sull'avatar scelto invece che
+// sul colore ("g.avatar === avatarScelto" al posto di "g.colore ===
+// colore"), ma la "cornice" della transazione — quella che rende il
+// controllo sicuro anche con più persone insieme — resta identica: è
+// la stessa che protegge il colore oggi che proteggerà l'avatar domani.
 export async function unisciti(codicePartita, nome, colore) {
-  const lobbyAttuale = (await leggiLobbyUnaVolta(codicePartita)) || [];
-  const nomeGiaPreso = lobbyAttuale.some(g => g.nome.toLowerCase() === nome.toLowerCase());
-  if (nomeGiaPreso) {
-    return { ok: false, motivo: 'nome-preso' };
+  const percorsoLobby = ref(db, `partite/${codicePartita}/lobby`);
+  let motivoFallimento = null;
+
+  const risultato = await runTransaction(percorsoLobby, (lobbyAttuale) => {
+    const lobby = lobbyAttuale || [];
+
+    if (lobby.some(g => g.nome.toLowerCase() === nome.toLowerCase())) {
+      motivoFallimento = 'nome-preso';
+      return; // undefined: annulla il tentativo, non scrive nulla
+    }
+    if (lobby.some(g => g.colore === colore)) {
+      motivoFallimento = 'colore-preso';
+      return;
+    }
+
+    return [...lobby, { nome, colore }];
+  });
+
+  if (!risultato.committed) {
+    return { ok: false, motivo: motivoFallimento || 'sconosciuto' };
   }
-  const nuovaLobby = [...lobbyAttuale, { nome, colore }];
-  await set(ref(db, `partite/${codicePartita}/lobby`), nuovaLobby);
   return { ok: true };
 }
 

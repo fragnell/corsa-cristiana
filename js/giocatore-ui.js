@@ -87,9 +87,15 @@ function mostraModuloRegistrazione(lobby) {
     const risultato = await unisciti(codicePartita, nome, coloreScelto);
 
     if (!risultato.ok) {
-      messaggioReg.textContent = risultato.motivo === 'nome-preso'
-        ? '❌ Questo nome è già stato scelto da qualcun altro. Provane un altro.'
-        : '❌ Qualcosa è andato storto, riprova.';
+      if (risultato.motivo === 'nome-preso') {
+        messaggioReg.textContent = '❌ Questo nome è già stato scelto da qualcun altro. Provane un altro.';
+      } else if (risultato.motivo === 'colore-preso') {
+        messaggioReg.textContent = '❌ Qualcuno ha scelto questo colore un attimo prima di te. Scegline un altro.';
+        const lobbyAggiornata = await leggiLobbyUnaVolta(codicePartita);
+        mostraModuloRegistrazione(lobbyAggiornata); // rinfresca i pallini: quello appena preso ora risulta disabilitato
+      } else {
+        messaggioReg.textContent = '❌ Qualcosa è andato storto, riprova.';
+      }
       return;
     }
 
