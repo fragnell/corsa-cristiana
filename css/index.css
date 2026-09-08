@@ -1,0 +1,73 @@
+/* index.css */
+/* La porta d'ingresso: semplice, un'unica scelta grande al centro,
+   i link secondari piccoli e defilati in fondo. */
+
+body {
+  font-family: sans-serif;
+  padding: 2rem;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.nascosta {
+  display: none;
+}
+
+.sottotitolo {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+#btn-gioca {
+  font-size: 1.5rem;
+  padding: 1.2rem 3rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.scelta-bottone {
+  display: block;
+  font-size: 1.3rem;
+  padding: 1.2rem;
+  margin: 1rem 0;
+  background: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.link-indietro {
+  background: none;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+footer a {
+  color: #888;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}

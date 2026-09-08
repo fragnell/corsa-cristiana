@@ -7,6 +7,10 @@ body {
   padding: 1.5rem;
 }
 
+.nascosta {
+  display: none;
+}
+
 #tabellone {
   display: grid;
   grid-template-columns: repeat(8, 64px);
