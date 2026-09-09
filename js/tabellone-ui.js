@@ -169,6 +169,7 @@ async function giocaTurno() {
 
   infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...`;
   await aspettaIntenzioneDado(codicePartita, giocatore.id);
+  stato.turnoInCorso = true; // il dado di questo turno è già stato tirato: qualunque pubblicazione intermedia (Imprevisto, ecc.) non deve far ricomparire il pulsante sul telefono
 
   const posizionePrima = giocatore.posizione;
   const dado = tiraDado();
@@ -273,6 +274,7 @@ async function giocaTurno() {
   if (!partitaFinita(stato)) {
     stato = passaTurno(stato);
   }
+  stato.turnoInCorso = false; // si riparte da capo: il prossimo giocatore deve rivedere il pulsante del dado
 
   await pubblicaStato(codicePartita, stato);
 }

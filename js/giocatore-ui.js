@@ -154,6 +154,11 @@ function aggiornaSchermo(stato) {
   } else if (stato.turnoDi === mioId && stato.giocatori[mioId].provaInSospeso) {
     statoTurno.textContent = '⏳ Hai una prova in sospeso — aspetta che venga risolta sul tabellone...';
     bottoneDado.classList.add('nascosta');
+  } else if (stato.turnoDi === mioId && stato.turnoInCorso) {
+    // il dado di questo turno è già stato tirato: si sta ancora
+    // risolvendo un effetto (per esempio un Imprevisto) sul tabellone
+    statoTurno.textContent = '';
+    bottoneDado.classList.add('nascosta');
   } else if (stato.turnoDi === mioId) {
     statoTurno.textContent = '🎲 Tocca a te!';
     bottoneDado.classList.remove('nascosta');
