@@ -1,45 +1,173 @@
 /* index.css */
-/* La porta d'ingresso: semplice, un'unica scelta grande al centro,
-   i link secondari piccoli e defilati in fondo. */
+/* La porta d'ingresso, con lo sfondo illustrato e il pannello centrale
+   in stile "libro per bambini" — coerente su schermo largo (tablet, TV)
+   e su telefono in verticale, dato che questa pagina la apre sia chi
+   organizza sia ogni singolo giocatore. */
+
+* {
+  box-sizing: border-box;
+}
 
 body {
-  font-family: sans-serif;
-  padding: 2rem;
-  text-align: center;
-  max-width: 500px;
-  margin: 0 auto;
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Nunito', sans-serif;
+  background-image: url('../img/sfondo-home.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5.5rem 1.5rem 2rem;
 }
 
 .nascosta {
   display: none;
 }
 
-.sottotitolo {
-  color: #666;
-  margin-bottom: 2rem;
+/* --- barra in alto con i link secondari --- */
+
+.barra-alto {
+  position: fixed;
+  top: 1.2rem;
+  right: 1.2rem;
+  display: flex;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  padding: 0.5rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
-#btn-gioca {
+.pillola {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: white;
+  color: #1a3a5c;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* --- il pannello centrale --- */
+
+.pannello {
+  background: rgba(250, 248, 240, 0.96);
+  border-radius: 28px;
+  padding: 2.5rem 3rem;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.pannello h1 {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.6rem;
+  margin: 0 0 0.6rem;
+}
+
+.titolo-blu { color: #1a3a5c; }
+.titolo-verde { color: #2e7d32; }
+
+.sottotitolo {
+  font-size: 1.05rem;
+  color: #444;
+  margin: 0 0 1.6rem;
+}
+
+/* --- il bottone Gioca --- */
+
+.bottone-gioca {
+  font-family: 'Fredoka', sans-serif;
   font-size: 1.5rem;
-  padding: 1.2rem 3rem;
+  font-weight: 600;
+  padding: 1rem 2.5rem;
   background: #4caf50;
   color: white;
   border: none;
-  border-radius: 14px;
+  border-radius: 999px;
   cursor: pointer;
-  font-weight: bold;
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
 }
+
+.bottone-gioca .freccia {
+  font-size: 1.6rem;
+  vertical-align: -2px;
+}
+
+/* --- le tre caratteristiche --- */
+
+.caratteristiche {
+  display: flex;
+  justify-content: center;
+  gap: 1.8rem;
+  margin: 1.8rem 0 1.4rem;
+}
+
+.caratteristica {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  max-width: 100px;
+}
+
+.icona {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.icona-arancione { background: #fff0d9; }
+.icona-azzurra   { background: #dceeff; }
+.icona-rosa      { background: #ffe0ea; }
+
+/* --- la citazione --- */
+
+.citazione {
+  font-style: italic;
+  color: #666;
+  font-size: 0.95rem;
+  border-top: 1px solid #e0dcd0;
+  padding-top: 1.2rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.fonte-citazione {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-style: normal;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: #999;
+}
+
+/* --- vista scelta (tabellone / giocatore) --- */
 
 .scelta-bottone {
   display: block;
-  font-size: 1.3rem;
-  padding: 1.2rem;
-  margin: 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 1.1rem;
+  margin: 0.8rem 0;
   background: #3498db;
   color: white;
   text-decoration: none;
-  border-radius: 12px;
-  font-weight: bold;
+  border-radius: 16px;
 }
 
 .link-indietro {
@@ -48,26 +176,32 @@ body {
   color: #666;
   text-decoration: underline;
   cursor: pointer;
-  margin-top: 1rem;
+  margin-top: 0.8rem;
   font-size: 1rem;
+  font-family: inherit;
 }
 
-footer {
-  margin-top: 4rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  align-items: center;
-}
+/* --- schermi stretti (telefono in verticale) --- */
 
-footer a {
-  color: #888;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
+@media (max-width: 480px) {
+  body { padding: 4.5rem 1rem 1.5rem; }
 
-footer a:hover {
-  text-decoration: underline;
+  .pannello {
+    padding: 1.8rem 1.5rem;
+    border-radius: 22px;
+  }
+
+  .pannello h1 { font-size: 2rem; }
+
+  .caratteristiche { gap: 1rem; }
+  .caratteristica { font-size: 0.75rem; max-width: 80px; }
+  .icona { width: 38px; height: 38px; font-size: 1.1rem; }
+
+  .barra-alto {
+    flex-direction: column;
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+
+  .pillola span { display: none; }
 }

@@ -4,29 +4,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Corsa Cristiana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
 
+  <header class="barra-alto">
+    <a href="admin.html" class="pillola">⚙️ Amministratore</a>
+    <a href="contatti.html" class="pillola">✉️ Contatta lo sviluppatore</a>
+  </header>
+
   <div id="vista-iniziale">
-    <h1>Corsa Cristiana</h1>
-    <p class="sottotitolo">Un gioco da tavolo biblico per tutta la famiglia</p>
-    <button id="btn-gioca">🎮 Gioca</button>
+    <div class="pannello">
+      <h1><span class="titolo-blu">Corsa</span> <span class="titolo-verde">Cristiana</span></h1>
+      <p class="sottotitolo">Gioca, impara e metti alla prova la tua conoscenza biblica</p>
+
+      <button type="button" id="btn-gioca" class="bottone-gioca">🎮 Gioca <span class="freccia">›</span></button>
+
+      <div class="caratteristiche">
+        <div class="caratteristica">
+          <span class="icona icona-arancione">👥</span>
+          <span>Divertiamoci<br>insieme</span>
+        </div>
+        <div class="caratteristica">
+          <span class="icona icona-azzurra">📖</span>
+          <span>Impariamo<br>dalla Bibbia</span>
+        </div>
+        <div class="caratteristica">
+          <span class="icona icona-rosa">❤️</span>
+          <span>Edifichiamo<br>la fede</span>
+        </div>
+      </div>
+
+      <p class="citazione">"...corriamo con perseveranza la corsa che ci sta davanti"<br><span class="fonte-citazione">EBREI 12:1</span></p>
+    </div>
   </div>
 
   <div id="vista-scelta" class="nascosta">
-    <h1>Corsa Cristiana</h1>
-    <p>Da quale dispositivo stai giocando?</p>
-    <a href="tabellone.html" class="scelta-bottone">📺 Sono il tabellone</a>
-    <a href="giocatore.html" class="scelta-bottone">📱 Sono un giocatore</a>
-    <br>
-    <button id="btn-indietro" class="link-indietro">← Indietro</button>
-  </div>
+    <div class="pannello">
+      <h1><span class="titolo-blu">Corsa</span> <span class="titolo-verde">Cristiana</span></h1>
+      <p class="sottotitolo">Da quale dispositivo stai giocando?</p>
 
-    <footer>
-    <a href="admin.html">⚙️ Amministratore</a>
-    <a href="contatti.html">✉️ Contatta lo sviluppatore</a>
-  </footer>
+      <a href="tabellone.html" class="scelta-bottone">📺 Sono il tabellone</a>
+      <a href="giocatore.html" class="scelta-bottone">📱 Sono un giocatore</a>
+
+      <br>
+      <button type="button" id="btn-indietro" class="link-indietro">← Indietro</button>
+    </div>
+  </div>
 
   <script type="module" src="js/index-ui.js"></script>
 </body>
