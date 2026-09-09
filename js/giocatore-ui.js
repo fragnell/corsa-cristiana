@@ -135,6 +135,8 @@ function aggiornaSchermo(stato) {
   const notifica = document.getElementById('notifica-evento');
   const giocatoreDiTurno = stato.giocatori[stato.turnoDi];
 
+  document.getElementById('mia-posizione').textContent = `Sei sulla casella ${stato.giocatori[mioId].posizione}`;
+
   if (stato.vincitore != null) {
     const vincitore = stato.giocatori[stato.vincitore];
     statoTurno.textContent = `🏆 Ha vinto ${vincitore.nome}!`;

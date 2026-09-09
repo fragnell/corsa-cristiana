@@ -189,9 +189,11 @@ async function giocaTurno() {
   if (r.evento.tipo === 'IMPREVISTO') {
     const pescata = pesca(mazzoImprevisto);
     mazzoImprevisto = pescata.mazzo;
-    await mostraCartaEAspettaScelta('IMPREVISTO', pescata.carta, [{ etichetta: 'Continua', valore: null }]);
 
     stato.ultimoEvento = { tipo: 'IMPREVISTO', giocatoreId: giocatore.id, id: Date.now() };
+    await pubblicaStato(codicePartita, stato); // pubblica subito: il telefono deve saperlo mentre la carta è ancora sul tabellone, non dopo
+
+    await mostraCartaEAspettaScelta('IMPREVISTO', pescata.carta, [{ etichetta: 'Continua', valore: null }]);
   }
 
   if (r.evento.tipo === 'FERMO') {
