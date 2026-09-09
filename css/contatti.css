@@ -1,0 +1,24 @@
+/* contatti.css */
+/* Solo le aggiunte specifiche di questa pagina — il resto (bottoni,
+   layout generale) arriva già da index.css. */
+
+button.scelta-bottone {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.scelta-bottone-verde {
+  background: #2e7d32;
+}
+
+.testo-supporto {
+  text-align: left;
+  line-height: 1.6;
+  margin: 1.5rem 0;
+}
+
+.testo-supporto p {
+  margin-bottom: 1rem;
+}
