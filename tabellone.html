@@ -9,13 +9,21 @@
 <body>
 
   <div id="vista-lobby">
-    <h1>Corsa Cristiana</h1>
-    <div id="codice-partita-contenitore">
-      Codice partita: <span id="codice-partita"></span>
+    <div id="scena-lobby">
+      <div id="lobby-codice-area">
+        <h2>Codice partita</h2>
+        <div id="codice-partita-box"><span id="codice-partita"></span></div>
+        <p>Condividi questo codice con gli altri giocatori</p>
+      </div>
+
+      <div id="lobby-giocatori-area">
+        <h2>Giocatori entrati</h2>
+        <div id="conteggio-lobby-contenitore"><span id="conteggio-lobby">0</span></div>
+        <ul id="lista-lobby"></ul>
+      </div>
+
+      <button id="btn-inizia-partita" disabled>▶ Inizia partita</button>
     </div>
-    <h2>Giocatori entrati: <span id="conteggio-lobby">0</span></h2>
-    <ul id="lista-lobby"></ul>
-    <button id="btn-inizia-partita" disabled>Inizia partita</button>
   </div>
 
   <div id="vista-gioco" class="nascosta">
