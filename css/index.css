@@ -13,12 +13,14 @@ body {
   min-height: 100vh;
   font-family: 'Nunito', sans-serif;
   background-image: url('../img/sfondo-home.jpg');
-  background-size: cover;
-  background-position: center;
+  background-size: contain;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-color: #7ec4f5;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 5.5rem 1.5rem 2rem;
+  padding: 6.5rem 1.5rem 2rem;
 }
 
 .nascosta {
@@ -88,7 +90,7 @@ body {
   font-size: 1.5rem;
   font-weight: 600;
   padding: 1rem 2.5rem;
-  background: #4caf50;
+  background: #054b07;
   color: white;
   border: none;
   border-radius: 999px;
@@ -182,6 +184,16 @@ body {
 }
 
 /* --- schermi stretti (telefono in verticale) --- */
+/* --- schermi più alti che larghi (telefono in verticale, o qualunque
+   finestra stretta) --- l'immagine tornerebbe troppo schiacciata con
+   "contain", quindi qui si preferisce "cover": si perde il cartello ma
+   non ci sono mai bande vuote, e resta in vista il tavolo con le pedine */
+
+@media (max-aspect-ratio: 4/5) {
+  body {
+    background-size: cover;
+  }
+}
 
 @media (max-width: 480px) {
   body { padding: 4.5rem 1rem 1.5rem; }

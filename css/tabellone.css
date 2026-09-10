@@ -108,8 +108,10 @@ body {
 }
 
 .carta {
-  width: 320px;
-  min-height: 380px;
+  width: 480px;
+  max-width: 90vw;
+  min-height: 500px;
+  max-height: 85vh;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s;
