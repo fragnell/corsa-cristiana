@@ -2,13 +2,14 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Corsa Cristiana — Tabellone</title>
   <link rel="stylesheet" href="css/tabellone.css">
 </head>
 <body>
-  <h1>Corsa Cristiana</h1>
 
   <div id="vista-lobby">
+    <h1>Corsa Cristiana</h1>
     <div id="codice-partita-contenitore">
       Codice partita: <span id="codice-partita"></span>
     </div>
@@ -18,13 +19,24 @@
   </div>
 
   <div id="vista-gioco" class="nascosta">
-    <div id="tabellone"></div>
+    <div id="scena">
+      <div id="tabellone"></div>
 
-    <div id="controlli">
-      <div id="turno-info"></div>
+      <div id="pannello-sospeso" class="pannello-laterale">
+        <div class="pannello-titolo">In sospeso</div>
+        <div id="prove-in-sospeso"></div>
+      </div>
+
+      <div id="pannello-legenda" class="pannello-laterale">
+        <div class="pannello-titolo">Legenda</div>
+        <div id="legenda-lista"></div>
+      </div>
+
+      <div id="pannello-turno" class="pannello-laterale">
+        <div class="pannello-titolo">Turno</div>
+        <div id="turno-info"></div>
+      </div>
     </div>
-
-    <div id="prove-in-sospeso"></div>
 
     <div id="carta-overlay" class="carta-overlay nascosta">
       <div id="carta" class="carta">

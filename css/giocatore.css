@@ -46,6 +46,16 @@ button {
   margin: 1.5rem 0;
 }
 
+#mia-prova-sospesa {
+  background: #fff3cd;
+  border: 1px solid #e0c36a;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin: 1rem 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
 #messaggio-ingresso {
   color: #c0392b;
   font-weight: bold;

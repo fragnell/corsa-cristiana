@@ -4,73 +4,161 @@
 
 body {
   font-family: sans-serif;
+  margin: 0;
   padding: 1.5rem;
+  background: #1a1a1a;
 }
 
 .nascosta {
   display: none;
 }
 
+/* --- la scena: sfondo illustrato, sempre in proporzione 16:9 --- */
+/* La dimensione si adatta a qualunque schermo restando sempre orizzontale
+   e mantenendo esattamente le proporzioni dell'immagine, così i riquadri
+   posizionati in percentuale (sotto) restano sempre allineati al punto
+   giusto, che lo schermo sia un tablet o una TV. */
+
+#scena {
+  position: relative;
+  width: min(100vw, calc(100vh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  background-image: url('../img/sfondo-tabellone.jpg');
+  background-size: cover;
+  background-position: center;
+  font-size: 1.3vw;
+}
+
+/* --- il tabellone vero, posizionato dentro il pannello di legno --- */
+
 #tabellone {
+  position: absolute;
+  left: 10.5%;
+  top: 22%;
+  width: 60%;
+  height: 59%;
   display: grid;
-  grid-template-columns: repeat(8, 64px);
-  grid-template-rows: repeat(8, 64px);
-  gap: 3px;
-  margin: 1.5rem 0;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 0.3em;
 }
 
 .casella {
-  border: 1px solid #999;
-  border-radius: 6px;
+  border-radius: 0.5em;
+  box-shadow: 0 0.15em 0.3em rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 2px;
-  font-size: 0.65rem;
+  padding: 0.2em;
   position: relative;
   overflow: hidden;
 }
 
 .casella .numero {
   font-weight: bold;
-  font-size: 0.75rem;
+  font-size: 0.75em;
+  color: #444;
 }
 
-.casella-CONOSCENZA  { background: #cfe3ff; }
-.casella-IMPREVISTO  { background: #ffe2ad; }
-.casella-PROVA       { background: #ffc9c9; }
-.casella-SALTO       { background: #c8f7d4; }
-.casella-FERMO       { background: #ff9e9e; }
-.casella-PARTENZA    { background: #baff9e; }
-.casella-ARRIVO      { background: #ffe066; }
+.casella-CONOSCENZA  { background: #f0e2cc; }
+.casella-IMPREVISTO  { background: #ffd28a; }
+.casella-PROVA       { background: #ffb3c6; }
+.casella-SALTO       { background: #a8dab5; }
+.casella-FERMO       { background: #f2a0a0; }
+.casella-PARTENZA    { background: #8bd17c; }
+.casella-ARRIVO      { background: #ffd54f; }
+
+.casella-PARTENZA .numero::after { content: ' 🚩'; }
+.casella-ARRIVO .numero::after   { content: ' 🏆'; }
 
 .pedine {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 0.1em;
   margin-top: auto;
 }
 
 .pedina {
-  width: 15px;
-  height: 15px;
+  width: 0.9em;
+  height: 0.9em;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6rem;
+  font-size: 0.6em;
   color: white;
   font-weight: bold;
-  border: 1px solid rgba(0,0,0,0.3);
+  border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-#controlli {
-  font-size: 1.1rem;
-  min-height: 2rem;
+/* --- i tre riquadri laterali (già disegnati nell'immagine: qui va solo
+   il contenuto vero, posizionato nella parte chiara sotto/accanto
+   all'icona già presente nello sfondo) --- */
+
+.pannello-laterale {
+  position: absolute;
+  left: 82%;
+  width: 14%;
+  overflow: hidden;
+  font-size: 0.9em;
+  color: #4a3b2a;
 }
 
-/* --- animazioni delle pedine --- */
+.pannello-titolo {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 0.3em;
+}
+
+#pannello-sospeso {
+  top: 23%;
+  height: 22%;
+  padding: 0.3em 0.6em;
+}
+
+#pannello-legenda {
+  top: 53%;
+  height: 16%;
+  padding: 0.2em 0.6em;
+}
+
+#pannello-turno {
+  top: 76%;
+  height: 12%;
+  padding: 0.2em 0.6em;
+}
+
+#legenda-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  font-size: 0.65em;
+}
+
+.legenda-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.legenda-pallino {
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 0.25em;
+  flex-shrink: 0;
+}
+
+#turno-info {
+  font-size: 0.85em;
+  font-weight: bold;
+  line-height: 1.3;
+}
+
+.casella.evidenziata {
+  animation: evidenzia-casella 0.45s ease-in-out;
+}
 
 @keyframes salto-pedina {
   0%, 100% { transform: scale(1); }
@@ -83,11 +171,7 @@ body {
 
 @keyframes evidenzia-casella {
   0%, 100% { transform: scale(1); z-index: 1; }
-  50%      { transform: scale(1.2); z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-}
-
-.casella.evidenziata {
-  animation: evidenzia-casella 0.45s ease-in-out;
+  50%      { transform: scale(1.2); z-index: 10; box-shadow: 0 0 0.6em rgba(0,0,0,0.5); }
 }
 
 /* --- la carta pescata --- */
@@ -317,7 +401,6 @@ body {
   animation: dado-scatto-anim 0.09s ease-out;
 }
 
-
 #codice-partita-contenitore {
   font-size: 1.3rem;
   margin-bottom: 1rem;
@@ -331,7 +414,6 @@ body {
   padding: 0.2rem 0.8rem;
   border-radius: 8px;
 }
-
 
 /* --- lobby --- */
 
@@ -378,25 +460,12 @@ body {
   cursor: default;
 }
 
-
 /* --- prove vincolo: in sospeso, e la richiesta di conferma --- */
 
-#prove-in-sospeso {
-  margin: 1rem 0;
-}
-
-#prove-in-sospeso h3 {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 0.4rem;
-}
-
 .prova-sospesa-riga {
-  background: #fff3cd;
-  border: 1px solid #e0c36a;
-  border-radius: 8px;
-  padding: 0.5rem 0.8rem;
-  margin-bottom: 0.4rem;
+  font-size: 0.85em;
+  line-height: 1.3;
+  margin-bottom: 0.4em;
 }
 
 .prova-vincolo-titolo {

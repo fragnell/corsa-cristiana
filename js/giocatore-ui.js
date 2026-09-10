@@ -137,6 +137,15 @@ function aggiornaSchermo(stato) {
 
   document.getElementById('mia-posizione').textContent = `Sei sulla casella ${stato.giocatori[mioId].posizione}`;
 
+  const elProvaSospesa = document.getElementById('mia-prova-sospesa');
+  const mioProvaSospesa = stato.giocatori[mioId].provaInSospeso;
+  if (mioProvaSospesa) {
+    elProvaSospesa.textContent = `⏳ Prova in corso: ${mioProvaSospesa.testo}`;
+    elProvaSospesa.classList.remove('nascosta');
+  } else {
+    elProvaSospesa.classList.add('nascosta');
+  }
+
   if (stato.vincitore != null) {
     const vincitore = stato.giocatori[stato.vincitore];
     statoTurno.textContent = `🏆 Ha vinto ${vincitore.nome}!`;

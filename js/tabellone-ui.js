@@ -32,9 +32,7 @@ const TIPI_LEGENDA = [
   { tipo: 'IMPREVISTO', etichetta: 'Imprevisto' },
   { tipo: 'SALTO', etichetta: 'Salto' },
   { tipo: 'FERMO', etichetta: 'Fermo' },
-  { tipo: 'PROVA', etichetta: 'Prova' },
-  { tipo: 'PARTENZA', etichetta: 'Partenza' },
-  { tipo: 'ARRIVO', etichetta: 'Arrivo' }
+  { tipo: 'PROVA', etichetta: 'Prova' }
 ];
 
 function disegnaLegenda() {
@@ -157,7 +155,7 @@ function aggiornaProveInSospeso() {
   }
 
     contenitore.innerHTML = inAttesa.map(g =>
-    `<div class="prova-sospesa-riga"><strong>${g.nome}:</strong> ${g.provaInSospeso.testo}</div>`
+    `<div class="prova-sospesa-riga">${g.nome}</div>`
   ).join('');
 }
 
