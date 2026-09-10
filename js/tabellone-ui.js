@@ -27,6 +27,23 @@ import {
 
 const DURATA_SALTO_MS = 300;
 
+const TIPI_LEGENDA = [
+  { tipo: 'CONOSCENZA', etichetta: 'Conoscenza' },
+  { tipo: 'IMPREVISTO', etichetta: 'Imprevisto' },
+  { tipo: 'SALTO', etichetta: 'Salto' },
+  { tipo: 'FERMO', etichetta: 'Fermo' },
+  { tipo: 'PROVA', etichetta: 'Prova' },
+  { tipo: 'PARTENZA', etichetta: 'Partenza' },
+  { tipo: 'ARRIVO', etichetta: 'Arrivo' }
+];
+
+function disegnaLegenda() {
+  const contenitore = document.getElementById('legenda-lista');
+  contenitore.innerHTML = TIPI_LEGENDA.map(t =>
+    `<div class="legenda-riga"><span class="legenda-pallino casella-${t.tipo}"></span>${t.etichetta}</div>`
+  ).join('');
+}
+
 let percorso = [];
 let stato = null;
 let mazzoConoscenza, mazzoImprevisto, mazzoProva;
@@ -37,19 +54,29 @@ function pausa(ms) {
   return new Promise(risolvi => setTimeout(risolvi, ms));
 }
 
-function generaSpirale(n) {
+// Genera le coordinate di una spirale rettangolare (righe x colonne),
+// partendo dal basso a sinistra e girando in senso antiorario verso
+// l'interno — stessa direzione della vecchia spirale quadrata. Applicata
+// a una griglia quadrata (righe === colonne) produce esattamente lo
+// stesso percorso di quella originale: è una generalizzazione, non un
+// algoritmo diverso.
+function generaSpirale(righe, colonne) {
   const coordinate = [];
-  const strati = Math.ceil(n / 2);
-  for (let strato = 0; strato < strati; strato++) {
-    const min = strato;
-    const max = n - 1 - strato;
-    if (min > max) break;
-    if (min === max) { coordinate.push({ riga: min, colonna: min }); continue; }
-    for (let c = min; c <= max; c++) coordinate.push({ riga: max, colonna: c });
-    for (let r = max - 1; r >= min; r--) coordinate.push({ riga: r, colonna: max });
-    for (let c = max - 1; c >= min; c--) coordinate.push({ riga: min, colonna: c });
-    for (let r = min + 1; r <= max - 1; r++) coordinate.push({ riga: r, colonna: min });
+  let rigaMin = 0, rigaMax = righe - 1;
+  let colMin = 0, colMax = colonne - 1;
+
+  while (rigaMin <= rigaMax && colMin <= colMax) {
+    for (let c = colMin; c <= colMax; c++) coordinate.push({ riga: rigaMax, colonna: c });
+    for (let r = rigaMax - 1; r >= rigaMin; r--) coordinate.push({ riga: r, colonna: colMax });
+    if (rigaMin < rigaMax) {
+      for (let c = colMax - 1; c >= colMin; c--) coordinate.push({ riga: rigaMin, colonna: c });
+    }
+    if (colMin < colMax) {
+      for (let r = rigaMin + 1; r <= rigaMax - 1; r++) coordinate.push({ riga: r, colonna: colMin });
+    }
+    rigaMin++; rigaMax--; colMin++; colMax--;
   }
+
   return coordinate;
 }
 
@@ -129,7 +156,7 @@ function aggiornaProveInSospeso() {
     return;
   }
 
-  contenitore.innerHTML = '<h3>Stanno affrontando una prova:</h3>' + inAttesa.map(g =>
+    contenitore.innerHTML = inAttesa.map(g =>
     `<div class="prova-sospesa-riga"><strong>${g.nome}:</strong> ${g.provaInSospeso.testo}</div>`
   ).join('');
 }
@@ -311,8 +338,9 @@ async function iniziaPartitaVera(giocatoriInfo) {
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
 
-  const coordinate = generaSpirale(8);
+  const coordinate = generaSpirale(6, 11);
   disegnaTabellone(coordinate);
+  disegnaLegenda();
 
   stato = creaStatoIniziale(giocatoriInfo);
   creaPedine();
