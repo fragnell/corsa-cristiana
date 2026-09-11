@@ -38,7 +38,7 @@ export const CONFIG = {
 
   // Numero giocatori ammessi
   giocatori: {
-    minimo: 4,
+    minimo: 1,
     massimo: 12
   }
 
