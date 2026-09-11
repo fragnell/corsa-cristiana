@@ -43,3 +43,17 @@ export const CONFIG = {
   }
 
 };
+
+
+// Unisce le personalizzazioni salvate su Firebase sopra ai valori di base
+// qui sopra — se una sezione non è stata toccata, resta quella di sempre.
+export function unisciConfig(base, override) {
+  return {
+    dado: { ...base.dado, ...(override.dado || {}) },
+    conoscenza: { ...base.conoscenza, ...(override.conoscenza || {}) },
+    imprevisto: { ...base.imprevisto, ...(override.imprevisto || {}) },
+    prova: { ...base.prova, ...(override.prova || {}) },
+    regole: { ...base.regole, ...(override.regole || {}) },
+    giocatori: { ...base.giocatori, ...(override.giocatori || {}) }
+  };
+}

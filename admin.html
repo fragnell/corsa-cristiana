@@ -6,7 +6,14 @@
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-    <h1>⚙️ Gestione carte</h1>
+    <h1>⚙️ Impostazioni</h1>
+
+  <div id="admin-tabs">
+    <button type="button" id="tab-btn-carte" class="admin-tab-btn admin-tab-attiva">📇 Carte</button>
+    <button type="button" id="tab-btn-regole" class="admin-tab-btn">🔧 Regole</button>
+  </div>
+
+  <div id="tab-carte">
 
   <section id="sezione-importa">
     <h2>📥📤 Importa / Esporta carte</h2>
@@ -118,6 +125,72 @@
       </div>
     </div>
   </section>
+
+  </div>
+
+  <div id="tab-regole" class="nascosta">
+    <section id="sezione-regole">
+      <h2>🔧 Regole del gioco</h2>
+      <p>Questi valori sostituiscono quelli di base scritti nel codice. Se non salvi mai nulla qui, resta valido il comportamento di sempre.</p>
+
+      <h3>Conoscenza</h3>
+      <label>Bonus risposta corretta:
+        <input type="number" id="regole-conoscenza-bonus">
+      </label>
+      <label>Malus risposta errata:
+        <input type="number" id="regole-conoscenza-malus">
+      </label>
+      <label>Sfida — bonus vincitore:
+        <input type="number" id="regole-conoscenza-sfida-bonus">
+      </label>
+      <label>Sfida — malus perdente:
+        <input type="number" id="regole-conoscenza-sfida-malus">
+      </label>
+      <p class="admin-nota">I due valori della Sfida sono pronti per quando costruiremo quella meccanica — per ora non hanno alcun effetto in partita.</p>
+
+      <h3>Imprevisto</h3>
+      <label>Malus (sempre negativo):
+        <input type="number" id="regole-imprevisto-malus">
+      </label>
+
+      <h3>Prova</h3>
+      <label>Bonus superata:
+        <input type="number" id="regole-prova-bonus">
+      </label>
+      <label>Malus fallita:
+        <input type="number" id="regole-prova-malus">
+      </label>
+
+      <h3>Comportamenti generali</h3>
+      <label class="admin-label-checkbox">
+        <input type="checkbox" id="regole-bonus-attiva-casella">
+        Un movimento-bonus (es. Conoscenza) attiva la casella su cui atterra
+      </label>
+      <label class="admin-label-checkbox">
+        <input type="checkbox" id="regole-salto-attiva-casella">
+        Un Salto attiva la casella di arrivo
+      </label>
+      <label class="admin-label-checkbox">
+        <input type="checkbox" id="regole-arrivo-libero">
+        Superare la casella finale basta per vincere (nessun rimbalzo indietro)
+      </label>
+      <p class="admin-nota">Questi tre interruttori vengono salvati, ma il motore oggi si comporta sempre come se fossero Bonus=NO, Salto=NO, Arrivo libero=SÌ — cambiarli qui non modifica ancora la partita vera. È un prossimo passo.</p>
+
+      <h3>Giocatori</h3>
+      <label>Minimo:
+        <input type="number" id="regole-giocatori-minimo" min="1">
+      </label>
+      <label>Massimo:
+        <input type="number" id="regole-giocatori-massimo" min="1">
+      </label>
+
+      <div class="admin-form-bottoni">
+        <button type="button" id="regole-btn-salva">💾 Salva regole</button>
+        <button type="button" id="regole-btn-ripristina">↺ Ripristina i valori di base</button>
+      </div>
+      <p id="regole-risultato"></p>
+    </section>
+  </div>
 
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script type="module" src="js/admin-ui.js"></script>

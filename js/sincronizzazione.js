@@ -178,3 +178,19 @@ export function aggiungiRispostaACarta(carta, nuovaRisposta) {
   const { _chiave, ...contenutoCarta } = carta;
   return salvaCarta('conoscenza', _chiave, contenutoCarta);
 }
+
+
+// --- Regole personalizzate dal pannello (sovrascrivono config.js) ---
+
+export async function leggiConfigDaFirebase() {
+  const istantanea = await get(ref(db, 'configurazione'));
+  return istantanea.val() || {};
+}
+
+export async function salvaConfigDaFirebase(configParziale) {
+  await set(ref(db, 'configurazione'), configParziale);
+}
+
+export async function eliminaConfigDaFirebase() {
+  await remove(ref(db, 'configurazione'));
+}

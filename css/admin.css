@@ -144,3 +144,55 @@ button {
 .admin-label-checkbox input {
   margin-top: 0.2rem;
 }
+
+
+/* --- schede Carte / Regole --- */
+
+#admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-tab-btn {
+  font-size: 1.05rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px 8px 0 0;
+  border: 2px solid #999;
+  border-bottom: none;
+  background: #eee;
+}
+
+.admin-tab-btn.admin-tab-attiva {
+  background: white;
+  border-color: #1976d2;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+#sezione-regole h3 {
+  margin-top: 1.5rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+}
+
+#sezione-regole label {
+  display: block;
+  margin: 0.6rem 0;
+}
+
+#sezione-regole input[type="number"] {
+  width: 80px;
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+  margin-left: 0.5rem;
+}
+
+#regole-btn-salva {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}

@@ -1,17 +1,19 @@
 // regole.js
 // Il motore del gioco: dado, movimento, risoluzione delle caselle.
 // Funzioni pure: ricevono uno stato, restituiscono un nuovo stato — non modificano mai l'originale.
-// Chi chiama queste funzioni deve passare "percorso" (il contenuto di percorso.json):
-// così regole.js non si preoccupa di come viene caricato il file, e resta facile da testare.
+// Ogni funzione accetta anche "config" come ultimo parametro — se non lo
+// passi, usa i valori di base di config.js. Così il pannello Regole può
+// sovrascrivere i numeri senza che nulla si rompa se una partita parte
+// senza personalizzazioni.
 
 import { CONFIG } from './config.js';
 
 // ---------- IL DADO ----------
 
-export function tiraDado() {
+export function tiraDado(config = CONFIG) {
   let totale = 0;
-  for (let i = 0; i < CONFIG.dado.numeroDadi; i++) {
-    totale += 1 + Math.floor(Math.random() * CONFIG.dado.facce);
+  for (let i = 0; i < config.dado.numeroDadi; i++) {
+    totale += 1 + Math.floor(Math.random() * config.dado.facce);
   }
   return totale;
 }
@@ -22,8 +24,6 @@ function trovaCasella(percorso, numero) {
   return percorso.find(c => c.numero === numero);
 }
 
-// La casella con il numero più alto: essendo numerate 1..N senza buchi,
-// coincide con quante caselle ci sono in tutto. Non è un numero scritto a mano.
 function ultimaCasella(percorso) {
   return percorso.length;
 }
@@ -32,9 +32,6 @@ function copiaStato(stato) {
   return structuredClone(stato);
 }
 
-// Sposta il giocatore di turno di "quantita" caselle (può essere negativa).
-// Non attiva mai la casella su cui atterra: usata per i bonus/malus di
-// Conoscenza, Imprevisto e Prova.
 function spostaGiocatore(stato, percorso, quantita, evento) {
   const giocatore = stato.giocatori[stato.turnoDi];
   let nuovaPosizione = giocatore.posizione + quantita;
@@ -45,20 +42,19 @@ function spostaGiocatore(stato, percorso, quantita, evento) {
     return { stato, evento: { tipo: 'VITTORIA' } };
   }
 
-  if (nuovaPosizione < 1) nuovaPosizione = 1; // non si scende mai sotto la partenza
+  if (nuovaPosizione < 1) nuovaPosizione = 1;
 
   giocatore.posizione = nuovaPosizione;
   return { stato, evento };
 }
 
-// Guarda che tipo di casella è e applica subito l'effetto, se non richiede un giudice.
-function risolviCasella(stato, percorso, casella) {
+function risolviCasella(stato, percorso, casella, config) {
   const giocatore = stato.giocatori[stato.turnoDi];
 
   switch (casella.tipo) {
 
     case 'IMPREVISTO':
-      return spostaGiocatore(stato, percorso, CONFIG.imprevisto.malus, { tipo: 'IMPREVISTO' });
+      return spostaGiocatore(stato, percorso, config.imprevisto.malus, { tipo: 'IMPREVISTO' });
 
     case 'FERMO':
       giocatore.saltaProssimoTurno = true;
@@ -66,17 +62,13 @@ function risolviCasella(stato, percorso, casella) {
 
     case 'SALTO': {
       giocatore.posizione = casella.vaiA;
-      // saltoAttivaCasella è false nella configurazione attuale: la casella
-      // di arrivo resta silenziosa. Per farla attivare, si interviene qui.
       return { stato, evento: { tipo: 'SALTO', destinazione: casella.vaiA, nomeEvento: casella.evento } };
     }
 
     case 'CONOSCENZA':
-      // Il giocatore resta qui: serve applicaRispostaConoscenza per completare l'effetto.
       return { stato, evento: { tipo: 'IN_ATTESA', casella: 'CONOSCENZA' } };
 
     case 'PROVA':
-      // Il giocatore resta qui: serve applicaEsitoProva per completare l'effetto.
       return { stato, evento: { tipo: 'IN_ATTESA', casella: 'PROVA' } };
 
     case 'PARTENZA':
@@ -90,8 +82,7 @@ function risolviCasella(stato, percorso, casella) {
 
 // ---------- MOVIMENTO ----------
 
-// Muove il giocatore di turno di "valoreDado" caselle e risolve dove atterra.
-export function muoviGiocatore(stato, percorso, valoreDado) {
+export function muoviGiocatore(stato, percorso, valoreDado, config = CONFIG) {
   const nuovoStato = copiaStato(stato);
   const giocatore = nuovoStato.giocatori[nuovoStato.turnoDi];
   nuovoStato.ultimoLancio = valoreDado;
@@ -106,41 +97,33 @@ export function muoviGiocatore(stato, percorso, valoreDado) {
 
   giocatore.posizione = nuovaPosizione;
   const casella = trovaCasella(percorso, nuovaPosizione);
-  return risolviCasella(nuovoStato, percorso, casella);
+  return risolviCasella(nuovoStato, percorso, casella, config);
 }
 
 // ---------- ESITI CHE RICHIEDONO UN GIUDICE ----------
 
-// Da chiamare dopo che il giudice ha detto se la risposta alla Conoscenza era giusta.
-export function applicaRispostaConoscenza(stato, percorso, corretta) {
+export function applicaRispostaConoscenza(stato, percorso, corretta, config = CONFIG) {
   const nuovoStato = copiaStato(stato);
   const quantita = corretta
-    ? CONFIG.conoscenza.bonusRispostaCorretta
-    : CONFIG.conoscenza.malusRispostaErrata;
+    ? config.conoscenza.bonusRispostaCorretta
+    : config.conoscenza.malusRispostaErrata;
   return spostaGiocatore(nuovoStato, percorso, quantita, { tipo: 'CONOSCENZA', corretta });
 }
 
-// Da chiamare dopo che il gruppo ha detto se la Prova è stata superata.
-export function applicaEsitoProva(stato, percorso, superata) {
+export function applicaEsitoProva(stato, percorso, superata, config = CONFIG) {
   const nuovoStato = copiaStato(stato);
   const quantita = superata
-    ? CONFIG.prova.bonusSuperata
-    : CONFIG.prova.malusFallita;
+    ? config.prova.bonusSuperata
+    : config.prova.malusFallita;
   return spostaGiocatore(nuovoStato, percorso, quantita, { tipo: 'PROVA', superata });
 }
 
-
-// Una prova "vincolo" non si giudica subito: resta segnata sul giocatore
-// finché non torna il suo turno. Non sposta la pedina — quello succede
-// solo dopo, quando si risolve con applicaEsitoProva.
 export function impostaProvaInSospeso(stato, giocatoreId, carta) {
   const nuovoStato = copiaStato(stato);
   nuovoStato.giocatori[giocatoreId].provaInSospeso = { testo: carta.testo, riferimento: carta.riferimento || null };
   return nuovoStato;
 }
 
-// Toglie il segno di "prova in sospeso" — da chiamare prima di
-// applicaEsitoProva quando torna il turno di chi la stava affrontando.
 export function risolviProvaInSospeso(stato, giocatoreId) {
   const nuovoStato = copiaStato(stato);
   nuovoStato.giocatori[giocatoreId].provaInSospeso = null;
@@ -149,8 +132,6 @@ export function risolviProvaInSospeso(stato, giocatoreId) {
 
 // ---------- PASSAGGIO DI TURNO ----------
 
-// Passa al giocatore successivo, saltando automaticamente chi ha
-// saltaProssimoTurno attivo (le caselle FERMO).
 export function passaTurno(stato) {
   const nuovoStato = copiaStato(stato);
   const n = nuovoStato.giocatori.length;
