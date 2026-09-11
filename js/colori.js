@@ -13,7 +13,9 @@ export const PALETTE = {
   rosa: '#e84393',
   turchese: '#1abc9c',
   marrone: '#795548',
-  grigio: '#7f8c8d'
+  grigio: '#7f8c8d',
+  indaco: '#6c5ce7',
+  lime: '#a3cb38'
 };
 
 export const NOMI_COLORI = Object.keys(PALETTE);

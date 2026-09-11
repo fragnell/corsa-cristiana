@@ -8,48 +8,60 @@
 </head>
 <body>
 
-  <div id="ingresso">
-    <h1>Corsa Cristiana</h1>
+  <div id="scena">
+    <div id="pannello-contenuto">
 
-    <div id="passo-codice">
-      <p>Codice della partita:</p>
-      <input type="text" id="input-codice" maxlength="4" placeholder="ABCD">
-      <br>
-      <button id="btn-cerca">Cerca partita</button>
-      <p id="messaggio-ingresso"></p>
+      <div id="ingresso">
+        <div id="passo-codice">
+          <p>Codice della partita:</p>
+          <input type="text" id="input-codice" maxlength="4" placeholder="ABCD">
+          <br>
+          <button id="btn-cerca">Cerca partita</button>
+          <p id="messaggio-ingresso"></p>
+        </div>
+
+        <div id="passo-registrazione" class="nascosta">
+          <p>Il tuo nome:</p>
+          <input type="text" id="input-nome" placeholder="Il tuo nome" style="text-transform:none">
+          <p>Scegli un colore:</p>
+          <div id="scelta-colore"></div>
+          <br>
+          <button id="btn-conferma-registrazione">Entra in partita</button>
+          <p id="messaggio-registrazione"></p>
+        </div>
+      </div>
+
+      <div id="vista-attesa" class="nascosta">
+        <h1>Ciao, <span id="nome-in-attesa"></span>!</h1>
+        <p>Aspetta che l'organizzatore inizi la partita...</p>
+        <p>Giocatori collegati:</p>
+        <ul id="lista-attesa"></ul>
+      </div>
+
+      <div id="gioco" class="nascosta">
+        <h2 id="mio-nome"></h2>
+        <p id="mia-posizione"></p>
+        <div id="mia-prova-sospesa" class="nascosta"></div>
+        <div id="stato-turno"></div>
+        <button id="btn-tira-dado" class="nascosta">🎲 Tira il dado</button>
+
+        <div id="area-domanda-conoscenza" class="nascosta">
+          <p id="domanda-conoscenza"></p>
+        </div>
+        <div id="risposta-area" class="nascosta"></div>
+
+        <div id="notifica-evento"></div>
+      </div>
+
+    </div>
     </div>
 
-    <div id="passo-registrazione" class="nascosta">
-      <p>Il tuo nome:</p>
-      <input type="text" id="input-nome" placeholder="Il tuo nome" style="text-transform:none">
-      <p>Scegli un colore:</p>
-      <div id="scelta-colore"></div>
-      <br>
-      <button id="btn-conferma-registrazione">Entra in partita</button>
-      <p id="messaggio-registrazione"></p>
+  <div id="verdetto-overlay" class="nascosta">
+    <div id="verdetto-overlay-contenuto">
+      <p id="verdetto-overlay-testo"></p>
+      <p id="verdetto-overlay-countdown"></p>
+      <button id="verdetto-overlay-ok">OK</button>
     </div>
-  </div>
-
-  <div id="vista-attesa" class="nascosta">
-    <h1>Ciao, <span id="nome-in-attesa"></span>!</h1>
-    <p>Aspetta che l'organizzatore inizi la partita...</p>
-    <p>Giocatori collegati:</p>
-    <ul id="lista-attesa"></ul>
-  </div>
-
-  <div id="gioco" class="nascosta">
-    <h2 id="mio-nome"></h2>
-    <p id="mia-posizione"></p>
-    <div id="mia-prova-sospesa" class="nascosta"></div>
-    <div id="stato-turno"></div>
-    <button id="btn-tira-dado" class="nascosta">🎲 Tira il dado</button>
-
-    <div id="area-domanda-conoscenza" class="nascosta">
-      <p id="domanda-conoscenza"></p>
-    </div>
-    <div id="risposta-area" class="nascosta"></div>
-
-    <div id="notifica-evento"></div>
   </div>
 
   <script type="module" src="js/giocatore-ui.js"></script>

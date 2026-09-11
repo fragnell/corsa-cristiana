@@ -63,11 +63,11 @@ export function raccogliRisposta(carta) {
 
     if (carta.tipo === 'elenco') {
       area.innerHTML = `
-        <p>Scrivi una risposta alla volta e premi "Aggiungi".<br>Servono almeno ${carta.minimoRichiesto} risposte diverse.</p>
+        <p>Scrivi una risposta alla volta e premi "+".<br>Servono almeno ${carta.minimoRichiesto} risposte diverse.</p>
         <div id="risposta-elenco-lista"></div>
         <div class="risposta-riga">
           <input type="text" id="risposta-input" placeholder="Scrivi qui...">
-          <button id="risposta-aggiungi">➕ Aggiungi</button>
+          <button id="risposta-aggiungi">➕</button>
         </div>
         <p id="risposta-elenco-messaggio"></p>
         <button id="risposta-conferma">✅ Conferma</button>
@@ -125,7 +125,7 @@ export function raccogliRisposta(carta) {
       area.innerHTML = `
         <div class="risposta-riga">
           <input type="text" id="risposta-input" placeholder="Scrivi la risposta...">
-          <button id="risposta-invia">✅ Invia</button>
+          <button id="risposta-invia">✅</button>
         </div>
       `;
       const input = document.getElementById('risposta-input');

@@ -30,6 +30,9 @@ function popolaContenuto(tipoCarta, carta) {
       elRiferimento.textContent = carta.riferimento || '';
     }
   }
+
+  // testo lungo: dimensione più contenuta, per essere sicuri che entri nella carta
+  elTesto.classList.toggle('carta-testo-lungo', elTesto.textContent.length > 70);
 }
 
 export function mostraCarta(tipoCarta, carta) {

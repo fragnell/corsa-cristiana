@@ -134,7 +134,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.15em;
-  font-size: 0.65em;
+  font-size: 0.7em;
 }
 
 .legenda-riga {
@@ -244,9 +244,13 @@ body {
 }
 
 .carta-testo {
-  font-size: 1.15rem;
+  font-size: 1.95rem;
   line-height: 1.4;
   white-space: pre-line;
+}
+
+.carta-testo.carta-testo-lungo {
+  font-size: 1.3rem;
 }
 
 .carta-riferimento {
@@ -401,63 +405,123 @@ body {
   animation: dado-scatto-anim 0.09s ease-out;
 }
 
-#codice-partita-contenitore {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
+/* --- lobby: sfondo illustrato, sempre in proporzione 3:2 come l'immagine --- */
+
+#scena-lobby {
+  position: relative;
+  width: min(100vw, calc(100vh * 3 / 2));
+  aspect-ratio: 3 / 2;
+  margin: 0 auto;
+  background-image: url('../img/sfondo-lobby.jpg');
+  background-size: cover;
+  background-position: center;
+  font-size: 1.6vw;
+  color: #5a4630;
+}
+
+#lobby-codice-area {
+  position: absolute;
+  left: 6%;
+  top: 20.5%;
+  width: 88%;
+  text-align: center;
+}
+
+#lobby-codice-area h2 {
+  margin: 0 0 0.3em;
+  font-size: 1.5em;
+  color: #4a3320;
+}
+
+#codice-partita-box {
+  display: inline-block;
+  background: rgba(252, 193, 0, 0.45);
+  border-radius: 0.7em;
+  padding: 0.2em 1em;
 }
 
 #codice-partita {
   font-weight: bold;
-  font-size: 2rem;
-  letter-spacing: 0.25em;
-  background: #fff3cd;
-  padding: 0.2rem 0.8rem;
-  border-radius: 8px;
+  font-size: 2.5em;
+  letter-spacing: 0.3em;
+  color: #7a4a10;
 }
 
-/* --- lobby --- */
+#lobby-codice-area p {
+  margin: 0.5em 0 0;
+  font-size: 1em;
+  color: #1f1203;
+}
 
-#vista-lobby {
-  max-width: 500px;
+#lobby-giocatori-area {
+  position: absolute;
+  left: 10%;
+  top: 45%;
+  width: 82%;
+  height: 26%;
+  text-align: center;
+}
+
+#lobby-giocatori-area h2 {
+  margin: 0 0 0.1em;
+  font-size: 1.5em;
+  color: #2e6b3e;
+}
+
+#conteggio-lobby-contenitore {
+  font-size: 1em;
+  color: #000000;
+  margin-bottom: 0.5em;
 }
 
 #lista-lobby {
   list-style: none;
+  margin: 0;
   padding: 0;
-  font-size: 1.2rem;
+  columns: 3;
+  column-gap: 2em;
+  font-size: 1em;
+  text-align:left;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
 #lista-lobby li {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.3rem 0;
+  gap: 0.4em;
+  padding: 0.3em 1;
+  break-inside: avoid;
 }
 
 .pallino-lista {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
+  width: 0.9em;
+  height: 0.9em;
   border-radius: 50%;
-  border: 1px solid rgba(0,0,0,0.3);
+  flex-shrink: 0;
+  border: 1px solid rgba(8, 8, 8, 0.3);
 }
 
 #btn-inizia-partita {
-  font-size: 1.3rem;
-  padding: 0.8rem 1.6rem;
-  border-radius: 10px;
-  border: 2px solid #2e7d32;
-  background: #4caf50;
+  position: absolute;
+  left: 50%;
+  top: 76%;
+  transform: translateX(-50%);
+  font-size: 1.3em;
+  padding: 0.5em 1.8em;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(#5cbf5c, #3fa53f);
   color: white;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 1rem;
+  box-shadow: 0 0.2em 0.4em rgba(0, 0, 0, 0.3);
 }
 
 #btn-inizia-partita:disabled {
-  background: #a5d6a7;
-  border-color: #a5d6a7;
+  background: #b9c4b3;
   cursor: default;
+  box-shadow: none;
 }
 
 /* --- prove vincolo: in sospeso, e la richiesta di conferma --- */

@@ -256,6 +256,10 @@ async function giocaTurno() {
         nascondiCarta();
 
         corretta = valutaRisposta(carta, risposteDate);
+
+        stato.ultimoVerdetto = { giocatoreId: giocatore.id, corretta, id: Date.now() };
+        await pubblicaStato(codicePartita, stato); // pubblica subito: il telefono deve saperlo nello stesso istante del tabellone
+
         const esito = await mostraVerdetto(carta, corretta, risposteDate);
 
         if (esito.nuovaRispostaDaAggiungere) {
