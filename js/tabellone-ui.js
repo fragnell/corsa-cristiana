@@ -27,7 +27,8 @@ import {
   leggiMazzoDaFirebase,
   leggiConfigDaFirebase,
   aggiungiRispostaACarta,
-  rifiutaJuniorInLobby
+  rifiutaJuniorInLobby,
+  ascoltaPresenza
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;

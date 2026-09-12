@@ -4,7 +4,7 @@
 // intenzioni dei giocatori. Un solo file che conosce i percorsi dentro il
 // database, così tabellone e telefono restano sempre d'accordo tra loro.
 
-import { db, ref, set, get, onValue, push, runTransaction } from './rete.js';
+import { db, ref, set, get, onValue, push, runTransaction, onDisconnect } from './rete.js';
 
 // Un codice a 4 lettere, facile da leggere e da dettare a voce.
 // Niente I/O: si confondono troppo facilmente con 1/0.
@@ -175,6 +175,30 @@ export async function unisciti(codicePartita, nome, colore, junior) {
     return { ok: false, motivo: motivoFallimento || 'sconosciuto' };
   }
   return { ok: true };
+}
+
+
+// --- Presenza: sa il server, non il client, quando un dispositivo sparisce ---
+
+// Da chiamare una volta che un giocatore ha il proprio id (a partita
+// iniziata). Usa .info/connected, il percorso speciale che Firebase offre
+// sempre per sapere quando la connessione è (ri)stabilita — così, anche
+// se la connessione cade e poi torna, il segnale si registra di nuovo da
+// solo, senza bisogno di ricordarsene altrove.
+export function impostaPresenza(codicePartita, giocatoreId) {
+  const percorsoPresenza = ref(db, `partite/${codicePartita}/presenza/${giocatoreId}`);
+  onValue(ref(db, '.info/connected'), (istantanea) => {
+    if (istantanea.val() === true) {
+      onDisconnect(percorsoPresenza).set(false);
+      set(percorsoPresenza, true);
+    }
+  });
+}
+
+export function ascoltaPresenza(codicePartita, callback) {
+  return onValue(ref(db, `partite/${codicePartita}/presenza`), (istantanea) => {
+    callback(istantanea.val() || {});
+  });
 }
 
 // Toglie il segno "junior" da un giocatore già in lobby — usata quando il
