@@ -45,8 +45,8 @@ export const CONFIG = {
   // Quanto aspettare prima di procedere da soli, se un giocatore non
   // risponde (disconnesso, distratto, telefono in stand-by...)
   timeout: {
-    dadoMs: 60000,       // un minuto per tirare il dado
-    rispostaMs: 90000    // un minuto e mezzo per rispondere a Conoscenza
+    dadoMs: 8000,       // un minuto per tirare il dado
+    rispostaMs: 8000    // un minuto e mezzo per rispondere a Conoscenza
   }
 
 };

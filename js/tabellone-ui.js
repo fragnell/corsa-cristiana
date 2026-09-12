@@ -247,7 +247,7 @@ async function giocaTurno() {
       while (true) {
         await mostraCarta('CONOSCENZA', carta);
 
-        const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo };
+                const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo, scadenza: Date.now() + configPartita.timeout.rispostaMs };
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
         if (carta.opzioni) richiesta.opzioni = carta.opzioni;
         stato.richiestaConoscenza = richiesta;

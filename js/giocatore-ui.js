@@ -234,9 +234,23 @@ async function rispondiAConoscenza(richiesta) {
   document.getElementById('domanda-conoscenza').textContent = richiesta.domanda;
   document.getElementById('area-domanda-conoscenza').classList.remove('nascosta');
 
+  const elConto = document.getElementById('conoscenza-countdown');
+  let timerConto = null;
+
+  if (richiesta.scadenza) {
+    const aggiornaConto = () => {
+      const restanti = Math.max(0, Math.round((richiesta.scadenza - Date.now()) / 1000));
+      elConto.textContent = `⏱️ ${restanti}s per rispondere`;
+      elConto.classList.toggle('conoscenza-countdown-urgente', restanti <= 15);
+    };
+    aggiornaConto();
+    timerConto = setInterval(aggiornaConto, 1000);
+  }
+
   const cartaFinta = { tipo: richiesta.tipo, minimoRichiesto: richiesta.minimoRichiesto, opzioni: richiesta.opzioni };
   const risposteDate = await raccogliRisposta(cartaFinta);
 
+  if (timerConto) clearInterval(timerConto);
   document.getElementById('area-domanda-conoscenza').classList.add('nascosta');
   document.getElementById('stato-turno').textContent = 'Risposta inviata! In attesa del tabellone...';
 
