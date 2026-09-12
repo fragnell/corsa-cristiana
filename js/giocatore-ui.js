@@ -1,9 +1,10 @@
 // giocatore-ui.js
-// La pagina del telefono: entra in una partita con un codice, scrivi il
-// tuo nome, scegli un colore ed eventualmente la modalità junior, aspetta
-// che l'organizzatore inizi la partita, e da lì vedi solo quello che ti
-// serve — tirare il dado, rispondere alla Conoscenza, un avviso per
-// l'Imprevisto.
+// La pagina del telefono: entra in una partita con un codice. Se la
+// partita non è ancora iniziata, scrivi il tuo nome, scegli un colore ed
+// eventualmente la modalità junior. Se invece è già in corso (per
+// esempio dopo un refresh accidentale della pagina), ti viene chiesto
+// semplicemente chi sei tra i giocatori già dentro — nessuna nuova
+// registrazione, rientri direttamente dove eri rimasto.
 
 import { raccogliRisposta } from './risposta-ui.js';
 import { PALETTE, NOMI_COLORI } from './colori.js';
@@ -11,6 +12,7 @@ import { PALETTE, NOMI_COLORI } from './colori.js';
 import {
   verificaPartitaEsiste,
   leggiLobbyUnaVolta,
+  leggiStatoUnaVolta,
   ascoltaLobby,
   unisciti,
   ascoltaStato,
@@ -25,8 +27,8 @@ let mioId = null;
 let ultimoEventoVisto = null;
 let ultimoVerdettoVisto = null;
 let richiestaIdGestita = null;
-let richiestaIdCorrente = null;   // la domanda per cui sto aspettando ATTIVAMENTE una risposta
-let annullaRispostaCorrente = null; // da chiamare se il tabellone smette di aspettarla
+let richiestaIdCorrente = null;
+let annullaRispostaCorrente = null;
 
 document.getElementById('btn-cerca').addEventListener('click', cercaPartita);
 
@@ -47,10 +49,45 @@ async function cercaPartita() {
     return;
   }
 
-  const lobby = await leggiLobbyUnaVolta(codice);
+  const statoAttuale = await leggiStatoUnaVolta(codice);
   messaggio.textContent = '';
   codicePartita = codice;
-  mostraModuloRegistrazione(lobby);
+
+  if (statoAttuale) {
+    mostraSchermataRientro(statoAttuale);
+  } else {
+    const lobby = await leggiLobbyUnaVolta(codice);
+    mostraModuloRegistrazione(lobby);
+  }
+}
+
+function mostraSchermataRientro(statoAttuale) {
+  document.getElementById('passo-codice').classList.add('nascosta');
+  document.getElementById('passo-rientro').classList.remove('nascosta');
+
+  const contenitore = document.getElementById('lista-rientro');
+  contenitore.innerHTML = '';
+
+  statoAttuale.giocatori.forEach(g => {
+    const bottone = document.createElement('button');
+    bottone.type = 'button';
+    bottone.className = 'bottone-rientro';
+    bottone.innerHTML = `<span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>${g.nome}`;
+    bottone.addEventListener('click', () => rientraComeGiocatore(g));
+    contenitore.appendChild(bottone);
+  });
+}
+
+function rientraComeGiocatore(giocatore) {
+  mioNome = giocatore.nome;
+  mioId = giocatore.id;
+
+  document.getElementById('passo-rientro').classList.add('nascosta');
+  document.getElementById('gioco').classList.remove('nascosta');
+  document.getElementById('mio-nome').textContent = mioNome;
+  impostaPresenza(codicePartita, mioId);
+
+  ascoltaStato(codicePartita, aggiornaSchermo);
 }
 
 function mostraModuloRegistrazione(lobby) {
@@ -163,10 +200,6 @@ function aggiornaSchermo(stato) {
   const richiesta = stato.richiestaConoscenza;
   const staRispondendoIo = richiesta && richiesta.giocatoreId === mioId;
 
-  // Se il tabellone ha smesso di aspettare proprio la domanda a cui stavo
-  // rispondendo (scaduto il tempo, o passata ad altro), chiudo qui anche
-  // sul telefono — non deve restare la possibilità di rispondere a
-  // qualcosa che è già stato deciso senza di me.
   if (richiestaIdCorrente !== null && (!richiesta || richiesta.id !== richiestaIdCorrente) && annullaRispostaCorrente) {
     annullaRispostaCorrente();
   }
@@ -277,7 +310,6 @@ async function rispondiAConoscenza(richiesta) {
   richiestaIdCorrente = null;
 
   if (risultato === '__SCADUTA__') {
-    // Il tabellone ha già deciso senza di noi: non mandiamo nulla.
     return;
   }
 

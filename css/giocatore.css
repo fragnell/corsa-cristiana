@@ -295,3 +295,23 @@ button {
 #conoscenza-countdown.conoscenza-countdown-urgente {
   color: #c62828;
 }
+
+
+#lista-rientro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.bottone-rientro {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.2rem;
+  padding: 0.8rem 1.2rem;
+  background: white;
+  color: #333;
+  border: 2px solid #999;
+  border-radius: 12px;
+}

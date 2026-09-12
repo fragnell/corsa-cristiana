@@ -610,3 +610,17 @@ body {
   color: #888;
   font-size: 0.85rem;
 }
+
+
+#codice-partita-badge {
+  position: absolute;
+  bottom: 1%;
+  left: 6%;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.3em 0.7em;
+  border-radius: 0.5em;
+  font-size: 0.7em;
+  color: #4a3b2a;
+  font-weight: bold;
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.2);
+}

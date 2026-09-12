@@ -362,6 +362,8 @@ async function iniziaPartitaVera(giocatoriInfo) {
   disegnaTabellone(coordinate);
   disegnaLegenda();
 
+  document.getElementById('codice-partita-gioco').textContent = codicePartita;
+
   stato = creaStatoIniziale(giocatoriInfo);
   creaPedine();
 
