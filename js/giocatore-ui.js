@@ -15,7 +15,8 @@ import {
   unisciti,
   ascoltaStato,
   inviaIntenzioneDado,
-  inviaIntenzioneRisposta
+  inviaIntenzioneRisposta,
+  impostaPresenza
 } from './sincronizzazione.js';
 
 let codicePartita = null;
@@ -128,6 +129,7 @@ function entraInAttesa() {
       document.getElementById('vista-attesa').classList.add('nascosta');
       document.getElementById('gioco').classList.remove('nascosta');
       document.getElementById('mio-nome').textContent = mioNome;
+      impostaPresenza(codicePartita, mioId);
     }
 
     aggiornaSchermo(stato);

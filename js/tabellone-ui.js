@@ -55,6 +55,7 @@ let mazzoConoscenzaJunior = null;
 let codicePartita = '';
 const pedineDom = new Map();
 const richiesteJuniorGestite = new Set();
+let presenzaGiocatori = {};
 
 function pausa(ms) {
   return new Promise(risolvi => setTimeout(risolvi, ms));
@@ -192,7 +193,9 @@ async function giocaTurno() {
 
   const infoTurno = document.getElementById('turno-info');
 
-  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono... (se non risponde entro un minuto, si procede comunque)`;
+  const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
+  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...` +
+    (sembraDisconnesso ? ' ⚠️ Il suo dispositivo sembra disconnesso.' : ' (se non risponde entro un minuto, si procede comunque)');
   await aspettaIntenzioneDado(codicePartita, giocatore.id, configPartita.timeout.dadoMs);
   stato.turnoInCorso = true;
 
@@ -360,6 +363,8 @@ async function iniziaPartitaVera(giocatoriInfo) {
 
   stato = creaStatoIniziale(giocatoriInfo);
   creaPedine();
+
+  ascoltaPresenza(codicePartita, (presenza) => { presenzaGiocatori = presenza; });
 
   await pubblicaStato(codicePartita, stato);
   cicloDiGioco();
