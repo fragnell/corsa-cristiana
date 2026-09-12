@@ -6,18 +6,18 @@
 import { CONFIG } from './config.js';
 
 // Crea un singolo giocatore
-function creaGiocatore(indice, nome, colore) {
-  return {
-    id: indice,              // 0, 1, 2... la sua posizione nell'elenco giocatori
+function creaGiocatore(indice, nome, colore, junior) {
+  const giocatore = {
+    id: indice,
     nome: nome,
     colore: colore,
-    posizione: 1,             // tutti partono dalla casella 1 (PARTENZA)
+    posizione: 1,
     saltaProssimoTurno: false
   };
+  if (junior) giocatore.junior = true;
+  return giocatore;
 }
 
-// Crea lo stato iniziale di una partita nuova.
-// giocatoriInfo: elenco di oggetti { nome, colore }
 export function creaStatoIniziale(giocatoriInfo) {
   const n = giocatoriInfo.length;
 
@@ -28,10 +28,10 @@ export function creaStatoIniziale(giocatoriInfo) {
   }
 
   return {
-    giocatori: giocatoriInfo.map((g, indice) => creaGiocatore(indice, g.nome, g.colore)),
-    turnoDi: 0,          // indice del giocatore di turno, si parte dal primo
-    ultimoLancio: null,  // risultato dell'ultimo tiro di dado, per mostrarlo a schermo
-    vincitore: null      // resta null finché nessuno vince
+    giocatori: giocatoriInfo.map((g, indice) => creaGiocatore(indice, g.nome, g.colore, g.junior)),
+    turnoDi: 0,
+    ultimoLancio: null,
+    vincitore: null
   };
 }
 

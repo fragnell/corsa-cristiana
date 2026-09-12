@@ -3,14 +3,15 @@
 // modifica, cancellazione. La più complessa delle tre perché una domanda
 // può essere "diretta" (una o più risposte accettate), "elenco" (più
 // risposte possibili, con un minimo richiesto) o "scelta" (si sceglie tra
-// alcune opzioni proposte, una delle quali è quella giusta).
+// alcune opzioni proposte, una delle quali è quella giusta). Solo per il
+// tipo "scelta" esiste anche la spunta "junior".
 
 import { ascoltaMazzo, salvaCarta, eliminaCarta, nuovaChiaveMazzo } from './sincronizzazione.js';
 
 const NOME_MAZZO = 'conoscenza';
-let listaRispostePossibili = []; // usata solo mentre il form "elenco" è aperto
-let listaOpzioni = [];           // usata solo mentre il form "scelta" è aperto
-let listaRisposteDirette = [];   // usata solo mentre il form "diretta" è aperto
+let listaRispostePossibili = [];
+let listaOpzioni = [];
+let listaRisposteDirette = [];
 let opzioneCorrettaIndice = null;
 
 export function avviaSezioneConoscenza() {
@@ -45,8 +46,9 @@ function disegnaLista(carte) {
     riga.className = 'admin-riga-carta';
     const etichetteTipo = { elenco: '📋', scelta: '🔘', diretta: '💬' };
     const etichettaTipo = etichetteTipo[carta.tipo] || '💬';
+    const etichettaJunior = carta.junior ? ' 🟢<small>junior</small>' : '';
     riga.innerHTML = `
-      <span class="admin-riga-testo">${etichettaTipo} ${carta.domanda}</span>
+      <span class="admin-riga-testo">${etichettaTipo} ${carta.domanda}${etichettaJunior}</span>
       <button type="button" class="admin-btn-modifica">✏️</button>
       <button type="button" class="admin-btn-elimina">🗑️</button>
     `;
@@ -64,6 +66,8 @@ function mostraForm(carta) {
 
   document.getElementById('conoscenza-input-domanda').value = carta ? carta.domanda : '';
   document.getElementById('conoscenza-tipo').value = carta ? carta.tipo : 'diretta';
+  document.getElementById('conoscenza-input-junior').checked = !!(carta && carta.junior);
+
   listaRisposteDirette = (carta && carta.tipo === 'diretta')
     ? (Array.isArray(carta.risposta) ? [...carta.risposta] : [carta.risposta])
     : [];
@@ -101,6 +105,7 @@ function mostraForm(carta) {
       if (listaOpzioni.length < 2) { alert('Aggiungi almeno due opzioni.'); return; }
       if (opzioneCorrettaIndice === null) { alert('Seleziona quale opzione è quella corretta.'); return; }
       nuovaCarta = { domanda, tipo: 'scelta', opzioni: [...listaOpzioni], rispostaCorretta: listaOpzioni[opzioneCorrettaIndice] };
+      if (document.getElementById('conoscenza-input-junior').checked) nuovaCarta.junior = true;
     }
 
     const chiave = carta ? carta._chiave : nuovaChiaveMazzo(NOME_MAZZO);
@@ -115,8 +120,6 @@ function aggiornaCampiVisibili() {
   document.getElementById('conoscenza-campi-elenco').classList.toggle('nascosta', tipo !== 'elenco');
   document.getElementById('conoscenza-campi-scelta').classList.toggle('nascosta', tipo !== 'scelta');
 }
-
-// --- risposte possibili (tipo "elenco") ---
 
 function aggiungiRispostaPossibile() {
   const input = document.getElementById('conoscenza-input-nuova-risposta');
@@ -143,8 +146,6 @@ function disegnaListaRispostePossibili() {
   });
 }
 
-// --- risposte accettate (tipo "diretta") ---
-
 function aggiungiRispostaDiretta() {
   const input = document.getElementById('conoscenza-input-nuova-risposta-diretta');
   const valore = input.value.trim();
@@ -169,8 +170,6 @@ function disegnaListaRisposteDirette() {
     });
   });
 }
-
-// --- opzioni (tipo "scelta") ---
 
 function aggiungiOpzione() {
   const input = document.getElementById('conoscenza-input-nuova-opzione');

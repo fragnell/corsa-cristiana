@@ -38,17 +38,32 @@ export function inviaIntenzioneDado(codicePartita, giocatoreId) {
   });
 }
 
-export function aspettaIntenzioneDado(codicePartita, giocatoreAtteso) {
+// Aspetta che il giocatore atteso tiri il dado, ma non per sempre: se
+// scade il tempo (timeoutMs), procede comunque — il valore del dado resta
+// deciso da tiraDado() indipendentemente da cosa ha fatto scattare il
+// turno, quindi non cambia nulla sulla casualità.
+export function aspettaIntenzioneDado(codicePartita, giocatoreAtteso, timeoutMs) {
   return new Promise(risolvi => {
     const percorsoIntenzione = ref(db, `partite/${codicePartita}/intenzione`);
+    let concluso = false;
+
     const staccaAscolto = onValue(percorsoIntenzione, (istantanea) => {
       const intenzione = istantanea.val();
       if (intenzione && intenzione.tipo === 'TIRA_DADO' && intenzione.giocatoreId === giocatoreAtteso) {
-        staccaAscolto();
-        set(percorsoIntenzione, null);
-        risolvi();
+        concludi();
       }
     });
+
+    const timer = setTimeout(concludi, timeoutMs);
+
+    function concludi() {
+      if (concluso) return;
+      concluso = true;
+      clearTimeout(timer);
+      staccaAscolto();
+      set(percorsoIntenzione, null);
+      risolvi();
+    }
   });
 }
 
@@ -60,17 +75,32 @@ export function inviaIntenzioneRisposta(codicePartita, giocatoreId, risposte) {
   });
 }
 
-export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso) {
+// Stesso principio del dado: se scade il tempo senza risposta, si
+// procede con un elenco vuoto — che per come valutaRisposta controlla
+// diretta/elenco/scelta risulta sempre in una risposta sbagliata, senza
+// bisogno di un caso speciale.
+export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso, timeoutMs) {
   return new Promise(risolvi => {
     const percorsoIntenzione = ref(db, `partite/${codicePartita}/intenzione`);
+    let concluso = false;
+
     const staccaAscolto = onValue(percorsoIntenzione, (istantanea) => {
       const intenzione = istantanea.val();
       if (intenzione && intenzione.tipo === 'RISPOSTA_CONOSCENZA' && intenzione.giocatoreId === giocatoreAtteso) {
-        staccaAscolto();
-        set(percorsoIntenzione, null);
-        risolvi(intenzione.risposte || []); // Firebase cancella gli array vuoti: senza questo, un elenco confermato senza aggiungere nulla arriverebbe come "undefined" e bloccherebbe tutto
+        concludi(intenzione.risposte || []);
       }
     });
+
+    const timer = setTimeout(() => concludi([]), timeoutMs);
+
+    function concludi(risposte) {
+      if (concluso) return;
+      concluso = true;
+      clearTimeout(timer);
+      staccaAscolto();
+      set(percorsoIntenzione, null);
+      risolvi(risposte);
+    }
   });
 }
 
@@ -115,7 +145,12 @@ export function ascoltaLobby(codicePartita, callback) {
 // colore"), ma la "cornice" della transazione — quella che rende il
 // controllo sicuro anche con più persone insieme — resta identica: è
 // la stessa che protegge il colore oggi che proteggerà l'avatar domani.
-export async function unisciti(codicePartita, nome, colore) {
+// Aggiunge un giocatore alla lobby, controllando nome e colore in modo
+// sicuro anche se più persone si iscrivono nello stesso istante (stessa
+// transazione di sempre). "junior" è facoltativo: se true, viene salvato
+// insieme al resto — la conferma dal tabellone avviene altrove, guardando
+// la lobby e reagendo a questo stesso campo.
+export async function unisciti(codicePartita, nome, colore, junior) {
   const percorsoLobby = ref(db, `partite/${codicePartita}/lobby`);
   let motivoFallimento = null;
 
@@ -124,20 +159,38 @@ export async function unisciti(codicePartita, nome, colore) {
 
     if (lobby.some(g => g.nome.toLowerCase() === nome.toLowerCase())) {
       motivoFallimento = 'nome-preso';
-      return; // undefined: annulla il tentativo, non scrive nulla
+      return;
     }
     if (lobby.some(g => g.colore === colore)) {
       motivoFallimento = 'colore-preso';
       return;
     }
 
-    return [...lobby, { nome, colore }];
+    const nuovoGiocatore = { nome, colore };
+    if (junior) nuovoGiocatore.junior = true;
+    return [...lobby, nuovoGiocatore];
   });
 
   if (!risultato.committed) {
     return { ok: false, motivo: motivoFallimento || 'sconosciuto' };
   }
   return { ok: true };
+}
+
+// Toglie il segno "junior" da un giocatore già in lobby — usata quando il
+// tabellone rifiuta la richiesta (il gruppo ha detto di no, o si è scelto
+// esplicitamente "no" al countdown). Il giocatore resta in lobby, gioca
+// solo con le domande normali.
+export async function rifiutaJuniorInLobby(codicePartita, nome) {
+  const percorsoLobby = ref(db, `partite/${codicePartita}/lobby`);
+  await runTransaction(percorsoLobby, (lobbyAttuale) => {
+    const lobby = lobbyAttuale || [];
+    return lobby.map(g => {
+      if (g.nome !== nome) return g;
+      const { junior, ...resto } = g;
+      return resto;
+    });
+  });
 }
 
 // --- I mazzi di carte, dentro Firebase invece che in file statici ---

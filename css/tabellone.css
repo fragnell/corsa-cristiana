@@ -58,20 +58,40 @@ body {
 
 .casella .numero {
   font-weight: bold;
-  font-size: 0.75em;
-  color: #444;
+  font-size: 0.65em;
+  color: #000000;
 }
 
-.casella-CONOSCENZA  { background: #f0e2cc; }
-.casella-IMPREVISTO  { background: #ffd28a; }
-.casella-PROVA       { background: #ffb3c6; }
+.casella-CONOSCENZA {
+  background-color: #f0e2cc;
+  background-image: url('../img/icona-conoscenza.png');
+  background-size: 70%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-IMPREVISTO {
+  background-color: #ffd28a;
+  background-image: url('../img/icona-imprevisto.png');
+  background-size: 70%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-PROVA {
+  background-color: #ffb3c6;
+  background-image: url('../img/icona-prova.png');
+  background-size: 55%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
 .casella-SALTO       { background: #a8dab5; }
 .casella-FERMO       { background: #f2a0a0; }
 .casella-PARTENZA    { background: #8bd17c; }
 .casella-ARRIVO      { background: #ffd54f; }
 
 .casella-PARTENZA .numero::after { content: ' 🚩'; }
-.casella-ARRIVO .numero::after   { content: ' 🏆'; }
 
 .pedine {
   display: flex;
@@ -81,16 +101,16 @@ body {
 }
 
 .pedina {
-  width: 0.9em;
-  height: 0.9em;
+  width: 1.2em;
+  height: 1.2em;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6em;
+  font-size: 0.7em;
   color: white;
   font-weight: bold;
-  border: 1px solid rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.3);
 }
 
 /* --- i tre riquadri laterali (già disegnati nell'immagine: qui va solo

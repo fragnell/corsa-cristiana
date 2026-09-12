@@ -20,7 +20,7 @@ export const CONFIG = {
 
   // Caselle IMPREVISTO
   imprevisto: {
-    malus: -2   // sempre negativo: arretra di 2
+    malus: -5   // sempre negativo: arretra di 5
   },
 
   // Caselle PROVA
@@ -40,6 +40,13 @@ export const CONFIG = {
   giocatori: {
     minimo: 1,
     massimo: 12
+  },
+
+  // Quanto aspettare prima di procedere da soli, se un giocatore non
+  // risponde (disconnesso, distratto, telefono in stand-by...)
+  timeout: {
+    dadoMs: 60000,       // un minuto per tirare il dado
+    rispostaMs: 90000    // un minuto e mezzo per rispondere a Conoscenza
   }
 
 };
@@ -54,6 +61,7 @@ export function unisciConfig(base, override) {
     imprevisto: { ...base.imprevisto, ...(override.imprevisto || {}) },
     prova: { ...base.prova, ...(override.prova || {}) },
     regole: { ...base.regole, ...(override.regole || {}) },
-    giocatori: { ...base.giocatori, ...(override.giocatori || {}) }
+    giocatori: { ...base.giocatori, ...(override.giocatori || {}) },
+    timeout: { ...base.timeout, ...(override.timeout || {}) }
   };
 }

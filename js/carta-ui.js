@@ -133,3 +133,55 @@ export function chiediEsitoProvaVincolo(nomeGiocatore, prova) {
     setTimeout(() => elCarta.classList.add('girata'), 400);
   });
 }
+
+
+const DURATA_COUNTDOWN_JUNIOR_S = 30;
+
+// Chiede conferma al gruppo quando qualcuno spunta "modalità junior" in
+// fase di registrazione — stessa struttura del countdown della prova
+// vincolo, riusa lo stesso overlay della carta.
+export function chiediConfermaJunior(nomeGiocatore) {
+  return new Promise(risolvi => {
+    const overlay = document.getElementById('carta-overlay');
+    const elCarta = document.getElementById('carta');
+    const elTipo = document.getElementById('carta-tipo');
+    const elTesto = document.getElementById('carta-testo');
+    const elRiferimento = document.getElementById('carta-riferimento');
+    const elBottoni = document.getElementById('carta-bottoni');
+
+    elTipo.textContent = 'MODALITÀ JUNIOR';
+    elTesto.textContent = `${nomeGiocatore} ha chiesto la modalità junior (domande più semplici, a scelta multipla). Va bene per il gruppo?`;
+    elRiferimento.textContent = '';
+
+    let secondiRimasti = DURATA_COUNTDOWN_JUNIOR_S;
+
+    elBottoni.innerHTML = `
+      <p class="prova-vincolo-countdown">Se nessuno risponde entro <span id="junior-conto">${secondiRimasti}</span>s, si accetta</p>
+      <button id="junior-si">✅ Va bene</button>
+      <button id="junior-no">❌ No, gioca normale</button>
+    `;
+
+    let concluso = false;
+    const concludi = risultato => {
+      if (concluso) return;
+      concluso = true;
+      clearInterval(timer);
+      overlay.classList.add('nascosta');
+      risolvi(risultato);
+    };
+
+    const timer = setInterval(() => {
+      secondiRimasti--;
+      const conto = document.getElementById('junior-conto');
+      if (conto) conto.textContent = secondiRimasti;
+      if (secondiRimasti <= 0) concludi(true);
+    }, 1000);
+
+    document.getElementById('junior-si').addEventListener('click', () => concludi(true));
+    document.getElementById('junior-no').addEventListener('click', () => concludi(false));
+
+    elCarta.classList.remove('girata');
+    overlay.classList.remove('nascosta');
+    setTimeout(() => elCarta.classList.add('girata'), 400);
+  });
+}

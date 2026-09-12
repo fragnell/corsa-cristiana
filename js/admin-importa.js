@@ -42,6 +42,8 @@ function rigaACarta(nomeMazzo, riga) {
       if (opzioni.length > 0) carta.opzioni = opzioni;
       const corretta = pulisci(riga.rispostaCorretta);
       if (corretta) carta.rispostaCorretta = corretta;
+      const juniorTesto = pulisci(riga.junior).toLowerCase();
+      if (juniorTesto === 'si' || juniorTesto === 'sì') carta.junior = true;
     }
     return carta;
   }
@@ -68,7 +70,8 @@ function cartaARiga(nomeMazzo, carta) {
       minimoRichiesto: carta.tipo === 'elenco' ? (carta.minimoRichiesto || '') : '',
       rispostePossibili: carta.tipo === 'elenco' ? (carta.rispostePossibili || []).join('; ') : '',
       opzioni: carta.tipo === 'scelta' ? (carta.opzioni || []).join('; ') : '',
-      rispostaCorretta: carta.tipo === 'scelta' ? (carta.rispostaCorretta || '') : ''
+      rispostaCorretta: carta.tipo === 'scelta' ? (carta.rispostaCorretta || '') : '',
+      junior: carta.tipo === 'scelta' && carta.junior ? 'sì' : ''
     };
   }
   if (nomeMazzo === 'imprevisto') {

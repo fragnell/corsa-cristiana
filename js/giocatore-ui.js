@@ -1,8 +1,9 @@
 // giocatore-ui.js
 // La pagina del telefono: entra in una partita con un codice, scrivi il
-// tuo nome e scegli un colore, aspetta che l'organizzatore inizi la
-// partita, e da lì vedi solo quello che ti serve — tirare il dado,
-// rispondere alla Conoscenza, un avviso per l'Imprevisto.
+// tuo nome, scegli un colore ed eventualmente la modalità junior, aspetta
+// che l'organizzatore inizi la partita, e da lì vedi solo quello che ti
+// serve — tirare il dado, rispondere alla Conoscenza, un avviso per
+// l'Imprevisto.
 
 import { raccogliRisposta } from './risposta-ui.js';
 import { PALETTE, NOMI_COLORI } from './colori.js';
@@ -79,13 +80,14 @@ function mostraModuloRegistrazione(lobby) {
 
   document.getElementById('btn-conferma-registrazione').onclick = async () => {
     const nome = document.getElementById('input-nome').value.trim();
+    const junior = document.getElementById('input-junior').checked;
     const messaggioReg = document.getElementById('messaggio-registrazione');
 
     if (!nome) { messaggioReg.textContent = 'Scrivi il tuo nome.'; return; }
     if (!coloreScelto) { messaggioReg.textContent = 'Scegli un colore.'; return; }
 
     messaggioReg.textContent = '';
-    const risultato = await unisciti(codicePartita, nome, coloreScelto);
+    const risultato = await unisciti(codicePartita, nome, coloreScelto, junior);
 
     if (!risultato.ok) {
       if (risultato.motivo === 'nome-preso') {
@@ -93,7 +95,7 @@ function mostraModuloRegistrazione(lobby) {
       } else if (risultato.motivo === 'colore-preso') {
         messaggioReg.textContent = '❌ Qualcuno ha scelto questo colore un attimo prima di te. Scegline un altro.';
         const lobbyAggiornata = await leggiLobbyUnaVolta(codicePartita);
-        mostraModuloRegistrazione(lobbyAggiornata); // rinfresca i pallini: quello appena preso ora risulta disabilitato
+        mostraModuloRegistrazione(lobbyAggiornata);
       } else {
         messaggioReg.textContent = '❌ Qualcosa è andato storto, riprova.';
       }
@@ -165,8 +167,6 @@ function aggiornaSchermo(stato) {
     statoTurno.textContent = '⏳ Hai una prova in sospeso — aspetta che venga risolta sul tabellone...';
     bottoneDado.classList.add('nascosta');
   } else if (stato.turnoDi === mioId && stato.turnoInCorso) {
-    // il dado di questo turno è già stato tirato: si sta ancora
-    // risolvendo un effetto (per esempio un Imprevisto) sul tabellone
     statoTurno.textContent = '';
     bottoneDado.classList.add('nascosta');
   } else if (stato.turnoDi === mioId) {
@@ -177,7 +177,7 @@ function aggiornaSchermo(stato) {
     bottoneDado.classList.add('nascosta');
   }
 
-    const evento = stato.ultimoEvento;
+  const evento = stato.ultimoEvento;
   if (evento && evento.giocatoreId === mioId && evento.id !== ultimoEventoVisto) {
     ultimoEventoVisto = evento.id;
     if (evento.tipo === 'IMPREVISTO') {
@@ -248,4 +248,3 @@ document.getElementById('btn-tira-dado').addEventListener('click', () => {
   document.getElementById('stato-turno').textContent = 'Tirato! In attesa del tabellone...';
   inviaIntenzioneDado(codicePartita, mioId);
 });
-
