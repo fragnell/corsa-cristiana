@@ -132,13 +132,17 @@ export function risolviProvaInSospeso(stato, giocatoreId) {
 
 // ---------- PASSAGGIO DI TURNO ----------
 
+// Passa al giocatore successivo, saltando chi ha saltaProssimoTurno
+// attivo (le caselle FERMO, per UN turno) e chi ha abbandonato la
+// partita (per SEMPRE — a differenza di saltaProssimoTurno, questo
+// segno non viene mai tolto).
 export function passaTurno(stato) {
   const nuovoStato = copiaStato(stato);
   const n = nuovoStato.giocatori.length;
   let prossimo = (nuovoStato.turnoDi + 1) % n;
 
   let tentativi = 0;
-  while (nuovoStato.giocatori[prossimo].saltaProssimoTurno && tentativi < n) {
+  while ((nuovoStato.giocatori[prossimo].saltaProssimoTurno || nuovoStato.giocatori[prossimo].abbandonato) && tentativi < n) {
     nuovoStato.giocatori[prossimo].saltaProssimoTurno = false;
     prossimo = (prossimo + 1) % n;
     tentativi++;

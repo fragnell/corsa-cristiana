@@ -112,19 +112,19 @@ button {
   border-radius: 10px;
   padding: 1rem;
   margin: 1.5rem 0 0.5rem;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: bold;
 }
 
 #risposta-area {
-  margin: 0.5rem 0 1.5rem;
+  margin: 0.5rem 0 1rem;
 }
 
 #risposta-area .risposta-riga {
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  margin: 0.6rem 0;
+  margin: 0.3rem 0;
 }
 
 #risposta-area input[type="text"] {
@@ -137,8 +137,8 @@ button {
 
 #risposta-aggiungi {
   flex-shrink: 0;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   padding: 0;
   font-size: 1.2rem;
@@ -202,13 +202,13 @@ button {
 #risposta-scelta-opzioni {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin: 0.8rem 0;
+  gap: 0.3rem;
+  margin: 0.3rem 0;
 }
 
 .risposta-opzione {
   font-size: 1.1rem;
-  padding: 0.9rem;
+  padding: 0.5rem;
   border-radius: 10px;
   border: 2px solid #999;
   background: white;
@@ -314,4 +314,17 @@ button {
   color: #333;
   border: 2px solid #999;
   border-radius: 12px;
+}
+
+
+.bottone-abbandona {
+  margin-top: 2rem;
+  background: none;
+  border: none;
+  color: #999;
+  text-decoration: underline;
+  font-size: 0.85rem;
+  font-weight: normal;
+  box-shadow: none;
+  padding: 0.5rem;
 }

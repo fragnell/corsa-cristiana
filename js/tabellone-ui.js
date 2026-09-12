@@ -57,6 +57,7 @@ let codicePartita = '';
 const pedineDom = new Map();
 const richiesteJuniorGestite = new Set();
 let presenzaGiocatori = {};
+const abbandoniGestiti = new Set();
 
 function pausa(ms) {
   return new Promise(risolvi => setTimeout(risolvi, ms));
@@ -367,7 +368,20 @@ async function iniziaPartitaVera(giocatoriInfo) {
   stato = creaStatoIniziale(giocatoriInfo);
   creaPedine();
 
-  ascoltaPresenza(codicePartita, (presenza) => { presenzaGiocatori = presenza; });
+    ascoltaPresenza(codicePartita, (presenza) => { presenzaGiocatori = presenza; });
+
+  ascoltaAbbandoni(codicePartita, (abbandoni) => {
+    let cambiato = false;
+    Object.keys(abbandoni).forEach(idTesto => {
+      const id = Number(idTesto);
+      if (abbandoni[idTesto] && !abbandoniGestiti.has(id) && stato.giocatori[id]) {
+        abbandoniGestiti.add(id);
+        stato.giocatori[id].abbandonato = true;
+        cambiato = true;
+      }
+    });
+    if (cambiato) pubblicaStato(codicePartita, stato);
+  });
 
   await pubblicaStato(codicePartita, stato);
   cicloDiGioco();

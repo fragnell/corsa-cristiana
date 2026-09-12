@@ -4,7 +4,7 @@
 // intenzioni dei giocatori. Un solo file che conosce i percorsi dentro il
 // database, così tabellone e telefono restano sempre d'accordo tra loro.
 
-import { db, ref, set, get, onValue, push, runTransaction, onDisconnect } from './rete.js';
+import { db, ref, set, get, onValue, push, runTransaction, remove, onDisconnect } from './rete.js';
 
 // Un codice a 4 lettere, facile da leggere e da dettare a voce.
 // Niente I/O: si confondono troppo facilmente con 1/0.
@@ -270,4 +270,21 @@ export async function salvaConfigDaFirebase(configParziale) {
 
 export async function eliminaConfigDaFirebase() {
   await remove(ref(db, 'configurazione'));
+}
+
+
+// --- Abbandono volontario ---
+// Il telefono non scrive mai "abbandonato" direttamente dentro stato
+// (verrebbe cancellato alla prossima pubblicazione del tabellone, che
+// non ne saprebbe nulla) — manda invece un segnale a parte, che il
+// tabellone recepisce e scrive lui stesso, come già fa con dado e
+// risposte.
+export async function richiediAbbandono(codicePartita, giocatoreId) {
+  await set(ref(db, `partite/${codicePartita}/abbandoni/${giocatoreId}`), true);
+}
+
+export function ascoltaAbbandoni(codicePartita, callback) {
+  return onValue(ref(db, `partite/${codicePartita}/abbandoni`), (istantanea) => {
+    callback(istantanea.val() || {});
+  });
 }

@@ -18,7 +18,8 @@ import {
   ascoltaStato,
   inviaIntenzioneDado,
   inviaIntenzioneRisposta,
-  impostaPresenza
+  impostaPresenza,
+  richiediAbbandono
 } from './sincronizzazione.js';
 
 let codicePartita = null;
@@ -321,4 +322,15 @@ document.getElementById('btn-tira-dado').addEventListener('click', () => {
   document.getElementById('btn-tira-dado').classList.add('nascosta');
   document.getElementById('stato-turno').textContent = 'Tirato! In attesa del tabellone...';
   inviaIntenzioneDado(codicePartita, mioId);
+});
+
+
+document.getElementById('btn-abbandona').addEventListener('click', async () => {
+  const conferma = confirm('Sei sicuro di voler abbandonare la partita? Non potrai più giocare in questa partita.');
+  if (!conferma) return;
+
+  await richiediAbbandono(codicePartita, mioId);
+
+  document.getElementById('gioco').classList.add('nascosta');
+  document.getElementById('messaggio-abbandonato').classList.remove('nascosta');
 });
