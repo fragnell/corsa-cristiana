@@ -24,6 +24,8 @@ let mioId = null;
 let ultimoEventoVisto = null;
 let ultimoVerdettoVisto = null;
 let richiestaIdGestita = null;
+let richiestaIdCorrente = null;   // la domanda per cui sto aspettando ATTIVAMENTE una risposta
+let annullaRispostaCorrente = null; // da chiamare se il tabellone smette di aspettarla
 
 document.getElementById('btn-cerca').addEventListener('click', cercaPartita);
 
@@ -159,6 +161,14 @@ function aggiornaSchermo(stato) {
   const richiesta = stato.richiestaConoscenza;
   const staRispondendoIo = richiesta && richiesta.giocatoreId === mioId;
 
+  // Se il tabellone ha smesso di aspettare proprio la domanda a cui stavo
+  // rispondendo (scaduto il tempo, o passata ad altro), chiudo qui anche
+  // sul telefono — non deve restare la possibilità di rispondere a
+  // qualcosa che è già stato deciso senza di me.
+  if (richiestaIdCorrente !== null && (!richiesta || richiesta.id !== richiestaIdCorrente) && annullaRispostaCorrente) {
+    annullaRispostaCorrente();
+  }
+
   if (staRispondendoIo) {
     bottoneDado.classList.add('nascosta');
     statoTurno.textContent = '';
@@ -231,6 +241,8 @@ function gestisciRichiestaConoscenza(richiesta) {
 }
 
 async function rispondiAConoscenza(richiesta) {
+  richiestaIdCorrente = richiesta.id;
+
   document.getElementById('domanda-conoscenza').textContent = richiesta.domanda;
   document.getElementById('area-domanda-conoscenza').classList.remove('nascosta');
 
@@ -248,13 +260,26 @@ async function rispondiAConoscenza(richiesta) {
   }
 
   const cartaFinta = { tipo: richiesta.tipo, minimoRichiesto: richiesta.minimoRichiesto, opzioni: richiesta.opzioni };
-  const risposteDate = await raccogliRisposta(cartaFinta);
+
+  const rispostaUtente = raccogliRisposta(cartaFinta);
+  const scaduta = new Promise(risolvi => {
+    annullaRispostaCorrente = () => risolvi('__SCADUTA__');
+  });
+
+  const risultato = await Promise.race([rispostaUtente, scaduta]);
 
   if (timerConto) clearInterval(timerConto);
   document.getElementById('area-domanda-conoscenza').classList.add('nascosta');
-  document.getElementById('stato-turno').textContent = 'Risposta inviata! In attesa del tabellone...';
+  annullaRispostaCorrente = null;
+  richiestaIdCorrente = null;
 
-  inviaIntenzioneRisposta(codicePartita, mioId, risposteDate);
+  if (risultato === '__SCADUTA__') {
+    // Il tabellone ha già deciso senza di noi: non mandiamo nulla.
+    return;
+  }
+
+  document.getElementById('stato-turno').textContent = 'Risposta inviata! In attesa del tabellone...';
+  inviaIntenzioneRisposta(codicePartita, mioId, risultato);
 }
 
 document.getElementById('btn-tira-dado').addEventListener('click', () => {
