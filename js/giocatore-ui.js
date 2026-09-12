@@ -270,6 +270,7 @@ async function rispondiAConoscenza(richiesta) {
 
   if (timerConto) clearInterval(timerConto);
   document.getElementById('area-domanda-conoscenza').classList.add('nascosta');
+  document.getElementById('risposta-area').classList.add('nascosta');
   annullaRispostaCorrente = null;
   richiestaIdCorrente = null;
 
