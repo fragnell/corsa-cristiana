@@ -10,8 +10,8 @@ body {
 
 #scena {
   position: relative;
-  width: min(100vw, calc(100vh * 941 / 1672));
-  aspect-ratio: 941 / 1672;
+  width: min(100vw, calc(100vh * 941 / 1772));
+  aspect-ratio: 941 / 1772;
   margin: 0 auto;
   background-image: url('../img/sfondo-telefono.jpg');
   background-size: cover;
@@ -20,10 +20,10 @@ body {
 
 #pannello-contenuto {
   position: absolute;
-  left: 9%;
-  top: 25%;
-  width: 82%;
-  height: 58%;
+  left: 5%;
+  top: 17%;
+  width: 89%;
+  height: 77%;
   box-sizing: border-box;
   padding: 0.8rem 1rem;
   overflow-y: auto;
@@ -156,7 +156,7 @@ button {
   overflow-y: auto;
   margin: 0.5rem 0;
   background: white;
-  padding: 0.5rem;
+  padding: 0.1rem;
   border-radius: 6px;
 }
 
@@ -318,13 +318,13 @@ button {
 
 
 .bottone-abbandona {
-  margin-top: 2rem;
+  margin-top: 3rem;
   background: none;
   border: none;
-  color: #999;
-  text-decoration: underline;
-  font-size: 0.85rem;
-  font-weight: normal;
+  color: #ec0909;
+  text-decoration:underline;
+  font-size: 0.95rem;
+  font-weight:bold;
   box-shadow: none;
   padding: 0.5rem;
 }

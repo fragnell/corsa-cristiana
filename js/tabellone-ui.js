@@ -28,7 +28,8 @@ import {
   leggiConfigDaFirebase,
   aggiungiRispostaACarta,
   rifiutaJuniorInLobby,
-  ascoltaPresenza
+  ascoltaPresenza,
+  ascoltaAbbandoni
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
