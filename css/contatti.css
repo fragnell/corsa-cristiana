@@ -40,6 +40,33 @@ button.scelta-bottone {
   margin: 1.5rem 0;
 }
 
+.scelta-bottone-ambra {
+  background: #b5541f;
+}
+
+.scelta-bottone-corallo {
+  background: #c0392b;
+}
+
+#vista-menu h1 {
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 14px;
+  padding: 0.6rem 1.5rem;
+  width: fit-content;
+  margin: 0 auto 1rem;
+}
+
+.menu-box {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin: 1.5rem 0;
+}
+
 .testo-supporto {
   text-align: left;
   line-height: 1.6;
