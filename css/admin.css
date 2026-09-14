@@ -205,3 +205,59 @@ button {
   border-color: #2e7d32;
   font-weight: bold;
 }
+
+
+/* --- richiesta password, all'ingresso del pannello --- */
+
+.password-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 600;
+}
+
+.password-overlay.nascosta { display: none; }
+
+.password-box {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 90vw;
+  width: 320px;
+  text-align: center;
+}
+
+.password-box p { margin: 0 0 1rem; }
+
+.password-box input[type="password"] {
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #999;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.password-bottoni {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.password-bottoni button {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+#password-conferma {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}

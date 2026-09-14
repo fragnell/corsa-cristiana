@@ -224,8 +224,8 @@ export function mostraVerdetto(carta, corretta, risposteDate) {
         <button id="verdetto-conferma-si">✅ Sì, accetta</button>
         <button id="verdetto-conferma-no">← Torna indietro</button>
       `;
-      document.getElementById('verdetto-conferma-si').addEventListener('click', () => {
-        const autorizzato = chiediPassword('Solo chi gestisce le domande può confermarlo.\nInserisci la password:');
+      document.getElementById('verdetto-conferma-si').addEventListener('click', async () => {
+        const autorizzato = await chiediPassword('Solo chi gestisce le domande può confermarlo.\nInserisci la password:');
         if (!autorizzato) {
           alert('Password non corretta: la risposta non è stata accettata.');
           mostraVistaPrincipale();
