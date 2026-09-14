@@ -341,9 +341,59 @@ async function cicloDiGioco() {
   while (!partitaFinita(stato)) {
     await giocaTurno();
   }
-  const vincitore = stato.giocatori[stato.vincitore];
-  document.getElementById('turno-info').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
+  mostraVittoria();
 }
+
+function mostraVittoria() {
+  const vincitore = stato.giocatori[stato.vincitore];
+  document.getElementById('vittoria-titolo').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
+  document.getElementById('vittoria-bottoni').classList.remove('nascosta');
+  document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
+  document.getElementById('vittoria-overlay').classList.remove('nascosta');
+
+  const video = document.getElementById('vittoria-video');
+  video.currentTime = 0;
+  video.play().catch(() => {}); // se il browser blocca l'autoplay, non è un errore grave da segnalare
+}
+
+function disegnaClassificaConoscenza() {
+  const contenitore = document.getElementById('vittoria-statistiche-lista');
+
+  const classifica = stato.giocatori.map(g => {
+    const totali = g.conoscenzaTotali || 0;
+    const corrette = g.conoscenzaCorrette || 0;
+    const percentuale = totali > 0 ? Math.round((corrette / totali) * 100) : 0;
+    return { nome: g.nome, colore: g.colore, corrette, totali, percentuale };
+  });
+
+  classifica.sort((a, b) => b.percentuale - a.percentuale);
+
+  contenitore.innerHTML = classifica.map((g, indice) => `
+    <div class="classifica-riga">
+      <span class="classifica-posizione">${indice + 1}°</span>
+      <span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>
+      <span class="classifica-nome">${g.nome}</span>
+      <span class="classifica-percentuale">${g.totali > 0 ? `${g.corrette}/${g.totali} (${g.percentuale}%)` : 'nessuna Conoscenza risposta'}</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('vittoria-btn-nuova').addEventListener('click', () => location.reload());
+
+document.getElementById('vittoria-btn-chiudi').addEventListener('click', () => {
+  window.location.href = 'index.html';
+});
+
+document.getElementById('vittoria-btn-statistiche').addEventListener('click', () => {
+  disegnaClassificaConoscenza();
+  document.getElementById('vittoria-bottoni').classList.add('nascosta');
+  document.getElementById('vittoria-statistiche-vista').classList.remove('nascosta');
+});
+
+document.getElementById('vittoria-btn-indietro').addEventListener('click', () => {
+  document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
+  document.getElementById('vittoria-bottoni').classList.remove('nascosta');
+});
 
 async function gestisciRichiestaJunior(nome) {
   const accettata = await chiediConfermaJunior(nome);
