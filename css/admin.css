@@ -261,3 +261,52 @@ button {
   border-color: #2e7d32;
   font-weight: bold;
 }
+
+
+/* --- scheda Statistiche --- */
+
+.statistiche-riga {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.statistiche-domanda {
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+
+.statistiche-percentuale {
+  display: inline-block;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.statistiche-percentuale.statistiche-basse {
+  color: #c62828;
+}
+
+.statistiche-dettaglio {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.statistiche-opzioni {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.statistiche-riga.statistiche-mai-proposta {
+  opacity: 0.6;
+}
+
+#statistiche-btn-azzera {
+  background: #c62828;
+  color: white;
+  border-color: #8e1c1c;
+}

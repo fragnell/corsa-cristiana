@@ -9,6 +9,7 @@ import { avviaSezioneConoscenza } from './admin-conoscenza.js';
 import { avviaSezioneImprevisto } from './admin-imprevisto.js';
 import { avviaSezioneProva } from './admin-prova.js';
 import { avviaSezioneRegole } from './admin-regole.js';
+import { avviaSezioneStatistiche } from './admin-statistiche.js';
 
 async function avvia() {
   const autorizzato = await chiediPassword(
@@ -21,6 +22,7 @@ async function avvia() {
     avviaSezioneImprevisto();
     avviaSezioneProva();
     avviaSezioneRegole();
+    avviaSezioneStatistiche();
 
     document.getElementById('tab-btn-carte').addEventListener('click', () => {
       mostraTab('carte');
@@ -28,6 +30,10 @@ async function avvia() {
 
     document.getElementById('tab-btn-regole').addEventListener('click', () => {
       mostraTab('regole');
+    });
+
+    document.getElementById('tab-btn-statistiche').addEventListener('click', () => {
+      mostraTab('statistiche');
     });
 
   } else {
@@ -46,12 +52,20 @@ function mostraTab(nome) {
     .classList.toggle('nascosta', nome !== 'regole');
 
   document
+    .getElementById('tab-statistiche')
+    .classList.toggle('nascosta', nome !== 'statistiche');
+
+  document
     .getElementById('tab-btn-carte')
     .classList.toggle('admin-tab-attiva', nome === 'carte');
 
   document
     .getElementById('tab-btn-regole')
     .classList.toggle('admin-tab-attiva', nome === 'regole');
+
+  document
+    .getElementById('tab-btn-statistiche')
+    .classList.toggle('admin-tab-attiva', nome === 'statistiche');
 }
 
 avvia();

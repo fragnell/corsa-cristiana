@@ -4,7 +4,7 @@
 // nei prossimi passaggi.
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js';
-import { getDatabase, ref, set, get, onValue, push, runTransaction, remove, onDisconnect } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js';
+import { getDatabase, ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js';
 const firebaseConfig = {
   apiKey: "AIzaSyAg_QRYERrb_HRWryiecFFRQ_nn9OC1PSo",
   authDomain: "corsa-cristiana.firebaseapp.com",
@@ -17,4 +17,4 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
-export { ref, set, get, onValue, push, runTransaction, remove, onDisconnect };
+export { ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update };

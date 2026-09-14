@@ -29,7 +29,8 @@ import {
   aggiungiRispostaACarta,
   rifiutaJuniorInLobby,
   ascoltaPresenza,
-  ascoltaAbbandoni
+  ascoltaAbbandoni,
+  registraEsitoConoscenza
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
@@ -250,6 +251,8 @@ async function giocaTurno() {
       const carta = pescata.carta;
 
       let corretta;
+      let correzioneManuale = false;
+      let ultimeRisposteDate = [];
       while (true) {
         await mostraCarta('CONOSCENZA', carta);
 
@@ -260,6 +263,7 @@ async function giocaTurno() {
         await pubblicaStato(codicePartita, stato);
 
         const risposteDate = await aspettaIntenzioneRisposta(codicePartita, giocatore.id, configPartita.timeout.rispostaMs);
+        ultimeRisposteDate = risposteDate;
 
         stato.richiestaConoscenza = null;
         nascondiCarta();
@@ -272,12 +276,23 @@ async function giocaTurno() {
         const esito = await mostraVerdetto(carta, corretta, risposteDate);
 
         if (esito.nuovaRispostaDaAggiungere) {
+          correzioneManuale = true;
           await aggiungiRispostaACarta(carta, esito.nuovaRispostaDaAggiungere);
         }
         corretta = esito.corretta;
 
         if (esito.accettata) break;
       }
+
+      let indiceOpzioneSbagliata = null;
+      if (!corretta && carta.tipo === 'scelta') {
+        const indice = carta.opzioni.indexOf(ultimeRisposteDate[0]);
+        if (indice !== -1) indiceOpzioneSbagliata = indice;
+      }
+      if (carta._chiave) {
+        registraEsitoConoscenza(carta._chiave, { corretta, correzioneManuale, indiceOpzioneSbagliata });
+      }
+
       r = applicaRispostaConoscenza(stato, percorso, corretta, configPartita);
     } else {
       const pescata = pesca(mazzoProva);

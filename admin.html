@@ -11,6 +11,7 @@
   <div id="admin-tabs">
     <button type="button" id="tab-btn-carte" class="admin-tab-btn admin-tab-attiva">📇 Carte</button>
     <button type="button" id="tab-btn-regole" class="admin-tab-btn">🔧 Regole</button>
+    <button type="button" id="tab-btn-statistiche" class="admin-tab-btn">📊 Statistiche</button>
   </div>
 
   <div id="tab-carte">
@@ -193,6 +194,17 @@
         <button type="button" id="regole-btn-ripristina">↺ Ripristina i valori di base</button>
       </div>
       <p id="regole-risultato"></p>
+    </section>
+  </div>
+
+  <div id="tab-statistiche" class="nascosta">
+    <section id="sezione-statistiche">
+      <h2>📊 Statistiche Conoscenza</h2>
+      <p>Domande ordinate dalla percentuale di corrette più bassa (le più sospette) alla più alta. Quelle mai uscite in nessuna partita sono in fondo.</p>
+      <div id="statistiche-lista"></div>
+      <div class="admin-form-bottoni">
+        <button type="button" id="statistiche-btn-azzera">🗑️ Azzera tutte le statistiche</button>
+      </div>
     </section>
   </div>
 

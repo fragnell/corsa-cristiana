@@ -241,7 +241,10 @@ export function salvaCarta(nomeMazzo, chiave, carta) {
   return set(ref(db, `mazzi/${nomeMazzo}/${chiave}`), carta);
 }
 
+// Cancella la carta E le sue statistiche insieme — statistiche di una
+// domanda che non esiste più non hanno senso da tenere.
 export function eliminaCarta(nomeMazzo, chiave) {
+  set(ref(db, `statistiche/${nomeMazzo}/${chiave}`), null);
   return set(ref(db, `mazzi/${nomeMazzo}/${chiave}`), null);
 }
 
@@ -256,6 +259,35 @@ export function aggiungiRispostaACarta(carta, nuovaRisposta) {
   return salvaCarta('conoscenza', _chiave, contenutoCarta);
 }
 
+
+// --- Statistiche sulle domande Conoscenza ---
+// Uso increment() invece di leggere-e-sommare: ogni risposta alza il
+// numero giusto da sola, senza mai dover leggere prima cosa c'era — è
+// quello che rende possibile lo "spara e dimentica" vero, senza
+// rallentare né rischiare di bloccare una partita.
+
+export function registraEsitoConoscenza(chiave, { corretta, correzioneManuale, indiceOpzioneSbagliata }) {
+  const aggiornamenti = {
+    [`statistiche/conoscenza/${chiave}/proposte`]: increment(1),
+    [`statistiche/conoscenza/${chiave}/${corretta ? 'corrette' : 'errate'}`]: increment(1)
+  };
+  if (correzioneManuale) {
+    aggiornamenti[`statistiche/conoscenza/${chiave}/correzioniManuali`] = increment(1);
+  }
+  if (!corretta && indiceOpzioneSbagliata !== null && indiceOpzioneSbagliata !== undefined) {
+    aggiornamenti[`statistiche/conoscenza/${chiave}/opzioniSbagliate/${indiceOpzioneSbagliata}`] = increment(1);
+  }
+  return update(ref(db), aggiornamenti);
+}
+
+export async function leggiStatisticheDaFirebase() {
+  const istantanea = await get(ref(db, 'statistiche/conoscenza'));
+  return istantanea.val() || {};
+}
+
+export async function azzeraStatistiche() {
+  await set(ref(db, 'statistiche/conoscenza'), null);
+}
 
 // --- Regole personalizzate dal pannello (sovrascrivono config.js) ---
 
