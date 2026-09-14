@@ -17,8 +17,28 @@ button.scelta-bottone {
   text-align: left;
   line-height: 1.6;
   margin: 1.5rem 0;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 14px;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+
+.link-supporto-esterno {
+  display: block;
+  text-align: center;
+  text-decoration: none;
 }
 
 .testo-supporto p {
   margin-bottom: 1rem;
+}
+
+
+#vista-supporto h1 {
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 14px;
+  padding: 0.6rem 1.5rem;
+  width: fit-content;
+  margin: 0 auto 1rem;
 }
