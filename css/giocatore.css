@@ -33,6 +33,13 @@ body {
   text-align: center;
   color: #3a2410;
 }
+#mio-nome {
+  margin: 0 0 0.3rem;
+}
+
+#mia-posizione {
+  margin: 0 0 1rem;
+}
 
 input[type="text"] {
   font-size: 1.4rem;
