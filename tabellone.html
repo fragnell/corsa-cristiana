@@ -89,6 +89,25 @@
     </div>
   </div>
 
+  <div id="vittoria-overlay" class="vittoria-overlay nascosta">
+    <div class="vittoria-box">
+      <video id="vittoria-video" src="img/vittoria.mp4" muted loop playsinline></video>
+      <h2 id="vittoria-titolo"></h2>
+
+      <div id="vittoria-bottoni">
+        <button id="vittoria-btn-nuova">🔄 Gioca un'altra partita</button>
+        <button id="vittoria-btn-statistiche">📊 Statistiche</button>
+        <button id="vittoria-btn-chiudi">🚪 Chiudi</button>
+      </div>
+
+      <div id="vittoria-statistiche-vista" class="nascosta">
+        <h3>Classifica Conoscenza</h3>
+        <div id="vittoria-statistiche-lista"></div>
+        <button id="vittoria-btn-indietro">← Indietro</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/tabellone-ui.js"></script>
 </body>
 </html>

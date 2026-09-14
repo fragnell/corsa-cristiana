@@ -680,3 +680,105 @@ body {
   border-color: #2e7d32;
   font-weight: bold;
 }
+
+
+/* --- schermata di vittoria --- */
+
+.vittoria-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 700;
+}
+
+.vittoria-overlay.nascosta { display: none; }
+
+.vittoria-box {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: center;
+}
+
+#vittoria-video {
+  width: 100%;
+  max-height: 250px;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  background: #222;
+}
+
+#vittoria-titolo {
+  font-size: 1.6rem;
+  margin: 0 0 1.2rem;
+}
+
+#vittoria-bottoni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+#vittoria-bottoni button {
+  font-size: 1.1rem;
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+#vittoria-btn-nuova {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}
+
+#vittoria-btn-statistiche {
+  background: #1976d2;
+  color: white;
+  border-color: #0d47a1;
+  font-weight: bold;
+}
+
+.classifica-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  text-align: left;
+}
+
+.classifica-posizione {
+  font-weight: bold;
+  width: 2rem;
+}
+
+.classifica-nome {
+  flex: 1;
+  font-weight: bold;
+}
+
+.classifica-percentuale {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+#vittoria-btn-indietro {
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+}

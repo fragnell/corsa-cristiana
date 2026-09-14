@@ -293,6 +293,14 @@ async function giocaTurno() {
         registraEsitoConoscenza(carta._chiave, { corretta, correzioneManuale, indiceOpzioneSbagliata });
       }
 
+      // Contatori personali per la classifica di fine partita — scritti
+      // sul giocatore dentro lo stato ATTUALE (mai sull'oggetto "giocatore"
+      // catturato a inizio turno, che a questo punto potrebbe essere
+      // una copia già superata: il motore clona lo stato a ogni passo).
+      const giocatoreAttuale = stato.giocatori[giocatore.id];
+      giocatoreAttuale.conoscenzaTotali = (giocatoreAttuale.conoscenzaTotali || 0) + 1;
+      if (corretta) giocatoreAttuale.conoscenzaCorrette = (giocatoreAttuale.conoscenzaCorrette || 0) + 1;
+
       r = applicaRispostaConoscenza(stato, percorso, corretta, configPartita);
     } else {
       const pescata = pesca(mazzoProva);
