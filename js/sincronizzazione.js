@@ -320,3 +320,18 @@ export function ascoltaAbbandoni(codicePartita, callback) {
     callback(istantanea.val() || {});
   });
 }
+
+
+// --- Statistiche globali di utilizzo (solo numeri, niente identità) ---
+
+export function registraPartitaConclusa(numeroGiocatori) {
+  return update(ref(db), {
+    'statistiche/globali/partiteConcluse': increment(1),
+    'statistiche/globali/giocatoriTotali': increment(numeroGiocatori)
+  });
+}
+
+export async function leggiStatisticheGlobali() {
+  const istantanea = await get(ref(db, 'statistiche/globali'));
+  return istantanea.val() || { partiteConcluse: 0, giocatoriTotali: 0 };
+}

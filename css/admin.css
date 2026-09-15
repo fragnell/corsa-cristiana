@@ -310,3 +310,30 @@ button {
   color: white;
   border-color: #8e1c1c;
 }
+
+
+.statistiche-riepilogo {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.riepilogo-numero {
+  flex: 1;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+.riepilogo-numero strong {
+  display: block;
+  font-size: 1.6rem;
+  color: #1976d2;
+}
+
+.riepilogo-numero span {
+  font-size: 0.8rem;
+  color: #666;
+}

@@ -5,8 +5,7 @@
 // sbagliata viene scelta più spesso. Le domande mai uscite compaiono in
 // fondo, segnate come tali.
 
-import { ascoltaMazzo, leggiStatisticheDaFirebase, azzeraStatistiche } from './sincronizzazione.js';
-
+import { ascoltaMazzo, leggiStatisticheDaFirebase, azzeraStatistiche, leggiStatisticheGlobali } from './sincronizzazione.js';
 let ultimeCarte = [];
 let ultimeStatistiche = {};
 
@@ -17,6 +16,7 @@ export function avviaSezioneStatistiche() {
   });
 
   caricaStatistiche();
+  caricaStatisticheGlobali();
 
   document.getElementById('statistiche-btn-azzera').addEventListener('click', async () => {
     if (!confirm('Azzerare tutte le statistiche di tutte le domande? Non si può annullare.')) return;
@@ -28,6 +28,17 @@ export function avviaSezioneStatistiche() {
 async function caricaStatistiche() {
   ultimeStatistiche = await leggiStatisticheDaFirebase();
   disegna();
+}
+
+
+async function caricaStatisticheGlobali() {
+  const globali = await leggiStatisticheGlobali();
+  const media = globali.partiteConcluse > 0 ? (globali.giocatoriTotali / globali.partiteConcluse).toFixed(1) : '—';
+  document.getElementById('statistiche-globali').innerHTML = `
+    <div class="riepilogo-numero"><strong>${globali.partiteConcluse}</strong><span>partite concluse</span></div>
+    <div class="riepilogo-numero"><strong>${globali.giocatoriTotali}</strong><span>giocatori in totale</span></div>
+    <div class="riepilogo-numero"><strong>${media}</strong><span>media a partita</span></div>
+  `;
 }
 
 function disegna() {

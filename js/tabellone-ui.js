@@ -29,9 +29,10 @@ import {
   aggiungiRispostaACarta,
   rifiutaJuniorInLobby,
   ascoltaPresenza,
-    ascoltaAbbandoni,
+  ascoltaAbbandoni,
   registraEsitoConoscenza,
-  leggiStatisticheDaFirebase
+  leggiStatisticheDaFirebase,
+  registraPartitaConclusa
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
@@ -362,9 +363,11 @@ function mostraVittoria() {
   document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
   document.getElementById('vittoria-overlay').classList.remove('nascosta');
 
+  registraPartitaConclusa(stato.giocatori.length);
+
   const video = document.getElementById('vittoria-video');
   video.currentTime = 0;
-  video.play().catch(() => {}); // se il browser blocca l'autoplay, non è un errore grave da segnalare
+  video.play().catch(() => {});
 }
 
 function disegnaClassificaConoscenza() {
