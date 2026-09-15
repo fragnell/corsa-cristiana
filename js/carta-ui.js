@@ -32,7 +32,7 @@ function popolaContenuto(tipoCarta, carta) {
   }
 
   // testo lungo: dimensione più contenuta, per essere sicuri che entri nella carta
-  elTesto.classList.toggle('carta-testo-lungo', elTesto.textContent.length > 210);
+  elTesto.classList.toggle('carta-testo-lungo', elTesto.textContent.length > 190);
 }
 
 // Il terzo parametro è facoltativo: se lo passi, sotto la carta compare

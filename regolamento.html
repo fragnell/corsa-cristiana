@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corsa Cristiana — Come si gioca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/regolamento.css">
+</head>
+<body>
+
+  <div id="vista-menu">
+    <div class="pannello-menu">
+      <h1>📖 Come si gioca</h1>
+      <p class="sottotitolo">Tutto quello che serve sapere prima di iniziare</p>
+
+      <div class="menu-box">
+        <button type="button" id="btn-regolamento" class="scelta-bottone scelta-bottone-blu">📘 Regolamento</button>
+        <button type="button" id="btn-video" class="scelta-bottone scelta-bottone-ambra">🎬 Video tutorial</button>
+      </div>
+
+      <a href="index.html" class="link-indietro">← Torna al gioco</a>
+    </div>
+  </div>
+
+  <div id="vista-regolamento" class="nascosta">
+    <div class="contenitore-regolamento">
+
+      <a href="#" id="btn-indietro-regolamento" class="link-indietro link-indietro-in-alto">← Indietro</a>
+
+      <h1 class="titolo-pagina">📘 Regolamento</h1>
+      <p class="intro-regolamento">Corsa Cristiana è un gioco biblico pensato per divertirsi insieme, mettere alla prova la propria conoscenza della Bibbia e affrontare alcune simpatiche prove durante il percorso. L'obiettivo è semplice: avanzare lungo il percorso e raggiungere la casella 63 o oltre prima degli altri giocatori.</p>
+
+      <div class="card">
+        <h2>📱 Cosa serve per giocare</h2>
+        <p>Ogni partita richiede un dispositivo dedicato al tabellone, utilizzato da tutti i partecipanti, e un dispositivo per ciascun giocatore — preferibilmente il proprio smartphone.</p>
+        <p>Per il tabellone è consigliabile un dispositivo con uno schermo abbastanza grande, come una Smart TV, un PC oppure un tablet di almeno 11 pollici, così è più semplice per tutti vedere il percorso, le pedine e le domande.</p>
+      </div>
+
+      <div class="card">
+        <h2>🎮 Creare una partita</h2>
+        <p>Dal dispositivo che farà da tabellone, dalla pagina principale: <strong>Gioca → Sono il tabellone</strong>. Il tabellone creerà automaticamente una partita con un codice di 4 lettere.</p>
+        <p>Ogni partecipante dovrà poi: aprire Corsa Cristiana, cliccare <strong>Gioca → Sono un giocatore</strong>, inserire il codice della partita e cliccare <strong>Cerca partita</strong>.</p>
+        <p>Se il codice è corretto, il giocatore sceglie il proprio nome e colore — e per i più piccoli, la modalità Junior. Quando tutto è pronto: <strong>Entra in partita</strong>.</p>
+      </div>
+
+      <div class="card">
+        <h2>▶️ Iniziare la partita</h2>
+        <p>Sul tabellone compaiono tutti i giocatori man mano che entrano. Quando tutti sono pronti, il tabellone preme <strong>Inizia partita</strong> — da quel momento comincia la Corsa Cristiana!</p>
+      </div>
+
+      <div class="card card-attenzione">
+        <h2>⚠️ Attenzione al tabellone</h2>
+        <p>Il dispositivo usato come tabellone mantiene la situazione della partita per tutta la sua durata. Se la sua pagina viene chiusa o ricaricata accidentalmente, la partita viene persa e serve ricominciare da capo — meglio non chiuderla, non ricaricarla, e se possibile dedicarci un dispositivo apposta.</p>
+        <p><strong>Se invece è il dispositivo di un giocatore</strong> a uscire accidentalmente, non serve ricominciare: basta rientrare con lo stesso codice di 4 lettere (sempre visibile in basso a sinistra sul tabellone — su alcuni schermi serve scorrere leggermente) e selezionare di nuovo il proprio nome tra quelli già in partita.</p>
+      </div>
+
+      <div class="card">
+        <h2>🎲 Come si gioca</h2>
+        <p>Funziona in modo simile al classico gioco dell'oca. A turno, il giocatore lancia il dado, avanza del numero di caselle indicato, e affronta l'effetto della casella su cui è arrivato. Una volta applicato l'effetto, non si subisce nuovamente l'effetto della casella su cui ci si è fermati di conseguenza.</p>
+      </div>
+
+      <h2 class="titolo-sezione">Le caselle</h2>
+
+      <div class="card card-conoscenza">
+        <h2>🧠 Caselle Conoscenza</h2>
+        <p>Le più numerose del percorso. Bisogna rispondere a una domanda biblica, di tre tipi possibili: <strong>risposta libera</strong>, <strong>elenco</strong> (più risposte richieste) o <strong>scelta multipla</strong>. Risposta corretta: bonus. Risposta sbagliata: si resta fermi.</p>
+        <p>Le domande sono in continuo aggiornamento, per rendere le partite sempre più varie.</p>
+        <p class="nota-card">✏️ <strong>Correzione:</strong> per le domande a risposta libera, se la risposta era chiaramente corretta ma scritta male (un errore di battitura), dal tabellone si può premere <strong>"Correggi"</strong> per un periodo di tempo limitato — la domanda torna al giocatore per inserirla di nuovo. Serve solo per errori di battitura evidenti, non per cambiare una risposta davvero sbagliata.</p>
+      </div>
+
+      <div class="card card-imprevisto">
+        <h2>⚠️ Caselle Imprevisto</h2>
+        <p>Rendono la corsa un po' più difficile: arrivando su una di queste caselle, si subisce sempre un malus che fa arretrare sul tabellone.</p>
+      </div>
+
+      <div class="card card-salto">
+        <h2>🚀 Caselle Salto</h2>
+        <p>Rappresentano occasioni edificanti che permettono uno sprint lungo il percorso — arrivandoci, si avanza secondo le indicazioni mostrate dal gioco.</p>
+      </div>
+
+      <div class="card card-fermo">
+        <h2>😔 Caselle Scoraggiamento</h2>
+        <p>Momenti in cui è necessario fermarsi e riprendere le forze: chi arriva su una di queste caselle salta il turno successivo.</p>
+      </div>
+
+      <div class="card card-prova">
+        <h2>💪 Caselle Prova</h2>
+        <p>Rappresentano alcune delle difficoltà associate alla grande tribolazione: il giocatore affronta una prova fisica o comportamentale — per esempio cantare, rimanere in silenzio, tenere gli occhi chiusi, o altre azioni indicate dal gioco.</p>
+        <p>Prova superata: bonus. Prova non superata: si resta fermi.</p>
+        <p class="nota-card">⏳ <strong>Prove sospese:</strong> alcune prove non si giudicano subito, ma restano "in sospeso" fino al turno successivo di chi le ha pescate (per esempio: "resta con gli occhi chiusi finché non torna il tuo turno"). Il tabellone se ne ricorda da solo e te lo ricorda quando tornerà il tuo turno.</p>
+      </div>
+
+      <div class="card card-arrivo">
+        <h2>🏁 Casella di arrivo</h2>
+        <p>Il traguardo è alla casella 63. A differenza del tradizionale gioco dell'oca, non serve arrivarci esattamente: vince chi raggiunge la 63 o una casella successiva.</p>
+      </div>
+
+      <div class="card">
+        <h2>🧒 Modalità Junior</h2>
+        <p>Pensata per coinvolgere anche i giocatori più piccoli: chi la attiva riceve domande pensate per la sua età, a scelta multipla — non serve nemmeno che sappia già leggere. Un adulto o un altro giocatore può leggere la domanda al suo posto e aiutarlo a scegliere la risposta sul dispositivo. Così anche i più piccoli possono partecipare, rispondere e sentirsi parte della Corsa Cristiana.</p>
+      </div>
+
+      <div class="card">
+        <h2>🏆 Al termine della partita</h2>
+        <p>Quando un giocatore raggiunge il traguardo, viene mostrato il risultato finale, con tre possibilità:</p>
+        <p><strong>🔄 Rigioca</strong> — inizia subito una nuova partita; il sistema fa in modo che non vengano riproposte le stesse domande della partita appena conclusa, per partite sempre più varie.</p>
+        <p><strong>📊 Statistiche</strong> — mostra come sono andati i giocatori nelle domande Conoscenza.</p>
+        <p><strong>🚪 Chiudi</strong> — termina semplicemente la sessione di gioco.</p>
+      </div>
+
+      <div class="card">
+        <h2>🔎 Altre sezioni del sito</h2>
+        <p><strong>⚙️ Amministratore</strong> — dedicata alla gestione e allo sviluppo del gioco, non necessaria per partecipare a una partita.</p>
+        <p>Per comunicare con lo sviluppatore ci sono tre strade distinte:</p>
+        <p><strong>✉️ Contatta lo sviluppatore</strong> — per un messaggio generico.</p>
+        <p><strong>🐛 Segnala un problema / Proponi una modifica</strong> — per un bug riscontrato o un'idea da proporre.</p>
+        <p><strong>☕ Supporta lo sviluppo</strong> — per chi desidera sostenere il progetto con un contributo libero, mai richiesto per giocare.</p>
+      </div>
+
+      <a href="#" id="btn-indietro-regolamento-fondo" class="link-indietro">← Torna al menu</a>
+    </div>
+  </div>
+
+  <div id="vista-video" class="nascosta">
+    <div class="pannello-menu">
+      <h1>🎬 Video tutorial</h1>
+      <div class="segnaposto-video">
+        <p>Il video tutorial arriverà presto!</p>
+        <p class="nota-piccola">Nel frattempo, dai un'occhiata al 📘 Regolamento.</p>
+      </div>
+      <a href="#" id="btn-indietro-video" class="link-indietro">← Indietro</a>
+    </div>
+  </div>
+
+  <script type="module" src="js/regolamento-ui.js"></script>
+</body>
+</html>
