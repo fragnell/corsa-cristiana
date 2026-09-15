@@ -18,7 +18,7 @@ document.getElementById('btn-regolamento').addEventListener('click', () => {
 
 document.getElementById('btn-video').addEventListener('click', () => {
   mostra('vista-video');
-  window.scrollTo(0, 0);
+  document.getElementById('vista-video').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 document.getElementById('btn-indietro-regolamento').addEventListener('click', (e) => {
