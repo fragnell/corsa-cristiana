@@ -228,17 +228,17 @@ async function giocaTurno() {
     stato.ultimoEvento = { tipo: 'IMPREVISTO', giocatoreId: giocatore.id, id: Date.now() };
     await pubblicaStato(codicePartita, stato);
 
-    await mostraCartaEAspettaScelta('IMPREVISTO', pescata.carta, [{ etichetta: 'Continua', valore: null }]);
+    await mostraCartaEAspettaScelta('IMPREVISTO', pescata.carta, [{ etichetta: 'Continua', valore: null }], true);
   }
 
   if (r.evento.tipo === 'FERMO') {
     const cartaFermo = { testo: `Ti sei scoraggiato! Fermo un turno.\n\n${r.evento.testo || ''}`, riferimento: r.evento.riferimento || '' };
-    await mostraCartaEAspettaScelta('FERMO', cartaFermo, [{ etichetta: 'Continua', valore: null }]);
+    await mostraCartaEAspettaScelta('FERMO', cartaFermo, [{ etichetta: 'Continua', valore: null }], true);
   }
 
   if (r.evento.tipo === 'SALTO') {
     const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${r.evento.destinazione}.` };
-    await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }]);
+        await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
   }
 
   if (r.evento.tipo === 'IN_ATTESA') {
@@ -330,7 +330,7 @@ async function giocaTurno() {
         const superata = await mostraCartaEAspettaScelta('PROVA', carta, [
           { etichetta: '✅ Prova superata', valore: true },
           { etichetta: '❌ Prova fallita', valore: false }
-        ]);
+        ], true);
         r = applicaEsitoProva(stato, percorso, superata, configPartita);
       }
     }
@@ -379,19 +379,40 @@ function disegnaClassificaConoscenza() {
     const totali = g.conoscenzaTotali || 0;
     const corrette = g.conoscenzaCorrette || 0;
     const percentuale = totali > 0 ? Math.round((corrette / totali) * 100) : 0;
-    return { nome: g.nome, colore: g.colore, corrette, totali, percentuale };
+    return { nome: g.nome, colore: g.colore, corrette, totali, percentuale, storico: g.rispostoStorico || [] };
   });
 
   classifica.sort((a, b) => b.percentuale - a.percentuale);
 
-  contenitore.innerHTML = classifica.map((g, indice) => `
-    <div class="classifica-riga">
-      <span class="classifica-posizione">${indice + 1}°</span>
-      <span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>
-      <span class="classifica-nome">${g.nome}</span>
-      <span class="classifica-percentuale">${g.totali > 0 ? `${g.corrette}/${g.totali} (${g.percentuale}%)` : 'nessuna Conoscenza risposta'}</span>
-    </div>
-  `).join('');
+  contenitore.innerHTML = classifica.map((g, indice) => {
+    const idDettaglio = `classifica-dettaglio-${indice}`;
+
+    const righeDettaglio = g.storico.length > 0
+      ? g.storico.map(r => `
+          <div class="dettaglio-domanda-riga ${r.corretta ? 'dettaglio-corretta' : 'dettaglio-errata'}">
+            <span>${r.corretta ? '✅' : '❌'}</span> <span>${r.domanda}</span>
+          </div>
+        `).join('')
+      : '<p class="dettaglio-vuoto">Nessuna domanda Conoscenza risposta.</p>';
+
+    return `
+      <div class="classifica-riga classifica-cliccabile" data-target="${idDettaglio}">
+        <span class="classifica-posizione">${indice + 1}°</span>
+        <span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>
+        <span class="classifica-nome">${g.nome}</span>
+        <span class="classifica-percentuale">${g.totali > 0 ? `${g.corrette}/${g.totali} (${g.percentuale}%)` : 'nessuna Conoscenza risposta'}</span>
+        <span class="classifica-freccia">▾</span>
+      </div>
+      <div id="${idDettaglio}" class="classifica-dettaglio nascosta">${righeDettaglio}</div>
+    `;
+  }).join('');
+
+  contenitore.querySelectorAll('.classifica-cliccabile').forEach(riga => {
+    riga.addEventListener('click', () => {
+      document.getElementById(riga.dataset.target).classList.toggle('nascosta');
+      riga.classList.toggle('classifica-aperta');
+    });
+  });
 }
 
 document.getElementById('vittoria-btn-nuova').addEventListener('click', () => location.reload());

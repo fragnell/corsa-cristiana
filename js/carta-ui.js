@@ -74,7 +74,14 @@ export function nascondiCarta() {
   document.getElementById('carta-overlay').classList.add('nascosta');
 }
 
-export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni) {
+const DURATA_COUNTDOWN_SCELTA_S = 30;
+
+// Il quarto parametro è facoltativo: se true, aggiunge un countdown di
+// 30 secondi — se nessuno tocca nulla sul tabellone (bloccato, TV che si
+// impianta, distrazione), si procede da soli con la PRIMA opzione
+// dell'elenco. Per questo l'ordine delle opzioni conta: la prima deve
+// sempre essere quella "sicura" da usare come default.
+export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni, conCountdown) {
   return new Promise(risolvi => {
     const overlay = document.getElementById('carta-overlay');
     const elCarta = document.getElementById('carta');
@@ -82,16 +89,37 @@ export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni) {
 
     popolaContenuto(tipoCarta, carta);
 
+    let concluso = false;
+    let timer = null;
+    const concludi = valore => {
+      if (concluso) return;
+      concluso = true;
+      if (timer) clearInterval(timer);
+      overlay.classList.add('nascosta');
+      risolvi(valore);
+    };
+
     elBottoni.innerHTML = '';
     opzioni.forEach(opz => {
       const bottone = document.createElement('button');
       bottone.textContent = opz.etichetta;
-      bottone.addEventListener('click', () => {
-        overlay.classList.add('nascosta');
-        risolvi(opz.valore);
-      });
+      bottone.addEventListener('click', () => concludi(opz.valore));
       elBottoni.appendChild(bottone);
     });
+
+    if (conCountdown) {
+      let secondiRimasti = DURATA_COUNTDOWN_SCELTA_S;
+      const elConto = document.createElement('p');
+      elConto.className = 'prova-vincolo-countdown';
+      elConto.textContent = `Se nessuno interviene entro ${secondiRimasti}s, si procede da soli`;
+      elBottoni.insertBefore(elConto, elBottoni.firstChild);
+
+      timer = setInterval(() => {
+        secondiRimasti--;
+        elConto.textContent = `Se nessuno interviene entro ${secondiRimasti}s, si procede da soli`;
+        if (secondiRimasti <= 0) concludi(opzioni[0].valore);
+      }, 1000);
+    }
 
     elCarta.classList.remove('girata');
     overlay.classList.remove('nascosta');
