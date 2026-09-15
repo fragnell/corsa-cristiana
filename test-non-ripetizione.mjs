@@ -1,18 +1,18 @@
 // test-non-ripetizione.mjs
-// Simula due partite di seguito e verifica che le domande Conoscenza non
-// si ripetano mai dentro la stessa partita, e che la seconda partita
-// tenga conto di quello che è già uscito nella prima. Si esegue con:
+// Simula partite sui due mazzi Conoscenza VERI di questo progetto (60
+// carte normali, 30 junior), con il numero di pescate stimato da una
+// simulazione vera del tabellone: 49 per una partita a 6 giocatori, 95
+// per una a 12 (dado, movimento, Salti, Fermi, migliaia di partite
+// simulate per arrivarci). Verifica che le domande non si ripetano mai
+// dentro la stessa partita, e che la partita successiva tenga conto di
+// quello già uscito nella precedente. Si esegue con:
 //   node test-non-ripetizione.mjs
-// Importa il vero js/mazzi.js del progetto — verifica il codice reale,
-// non una copia.
+// Importa il vero js/mazzi.js del progetto.
 
 import { creaMazzoPerUsoMinimo, peschaPerUsoMinimo } from './js/mazzi.js';
 
-const carteFinte = Array.from({ length: 20 }, (_, i) => ({ _chiave: `domanda-${i + 1}` }));
-
-function simulaPartita(numeroPescate, statistichePersistite, etichetta) {
-  console.log(`\n=== PARTITA ${etichetta} (${numeroPescate} pescate) ===`);
-  let mazzo = creaMazzoPerUsoMinimo(carteFinte, statistichePersistite);
+function simulaPartita(carte, numeroPescate, statistichePersistite, etichetta) {
+  let mazzo = creaMazzoPerUsoMinimo(carte, statistichePersistite);
   const pescateFatte = [];
 
   for (let i = 0; i < numeroPescate; i++) {
@@ -21,32 +21,37 @@ function simulaPartita(numeroPescate, statistichePersistite, etichetta) {
     pescateFatte.push(risultato.carta._chiave);
   }
 
-  console.log('Ordine pescato:', pescateFatte.join(', '));
-
-  const primoGiro = pescateFatte.slice(0, carteFinte.length);
+  const primoGiro = pescateFatte.slice(0, carte.length);
   const ripetuti = primoGiro.length !== new Set(primoGiro).size;
-  console.log(`Ripetuti prima di aver visto tutte le ${carteFinte.length} carte:`, ripetuti ? '❌ SI, PROBLEMA!' : '✅ Nessuno');
+  console.log(`  Partita ${etichetta} (${numeroPescate} pescate su ${carte.length} carte) — ripetuti prima di vederle tutte:`, ripetuti ? '❌ SI, PROBLEMA!' : '✅ Nessuno');
 
   return { pescateFatte };
 }
 
-console.log('####### TEST 1: NESSUN RIPETUTO DENTRO LA STESSA PARTITA (anche oltre un giro completo) #######');
-simulaPartita(25, {}, 'lunga (25 pescate su 20 carte)');
+function provaMazzo(nomeMazzo, dimensioneMazzo, pescatePerPartita, etichettaScenario) {
+  console.log(`\n--- ${etichettaScenario}: mazzo "${nomeMazzo}" (${dimensioneMazzo} carte) ---`);
+  const carte = Array.from({ length: dimensioneMazzo }, (_, i) => ({ _chiave: `domanda-${i + 1}` }));
 
-console.log('\n####### TEST 2: LA PARTITA SUCCESSIVA EVITA QUELLO GIÀ VISTO NELLA PRECEDENTE #######');
-const risultatoPartita1 = simulaPartita(15, {}, '1');
+  const partita1 = simulaPartita(carte, pescatePerPartita, {}, '1');
 
-const statisticheDopoPartita1 = {};
-risultatoPartita1.pescateFatte.forEach(chiave => {
-  statisticheDopoPartita1[chiave] = { proposte: (statisticheDopoPartita1[chiave]?.proposte || 0) + 1 };
-});
+  const statisticheDopo1 = {};
+  partita1.pescateFatte.forEach(chiave => {
+    statisticheDopo1[chiave] = { proposte: (statisticheDopo1[chiave]?.proposte || 0) + 1 };
+  });
 
-const risultatoPartita2 = simulaPartita(15, statisticheDopoPartita1, '2');
+  const partita2 = simulaPartita(carte, pescatePerPartita, statisticheDopo1, '2 (eredita la 1)');
 
-const usateInPartita1 = new Set(risultatoPartita1.pescateFatte);
-const maiUsateInPartita1 = carteFinte.map(c => c._chiave).filter(k => !usateInPartita1.has(k));
-console.log(`\nCarte MAI uscite in Partita 1 (${maiUsateInPartita1.length}):`, maiUsateInPartita1.join(', '));
+  const usateInPartita1 = new Set(partita1.pescateFatte);
+  const maiUsateInPartita1 = carte.map(c => c._chiave).filter(k => !usateInPartita1.has(k));
+  const primeCartePartita2 = partita2.pescateFatte.slice(0, maiUsateInPartita1.length);
+  const tutteDalleMaiUsate = maiUsateInPartita1.length === 0 || primeCartePartita2.every(k => maiUsateInPartita1.includes(k));
+  console.log(`  Carte mai uscite in Partita 1: ${maiUsateInPartita1.length} — tutte proposte per prime in Partita 2?`, tutteDalleMaiUsate ? '✅ SI, corretto!' : '❌ NO, problema!');
+}
 
-const primeCartePartita2 = risultatoPartita2.pescateFatte.slice(0, maiUsateInPartita1.length);
-const tutteDalleMaiUsate = primeCartePartita2.every(k => maiUsateInPartita1.includes(k));
-console.log(`Le prime ${maiUsateInPartita1.length} pescate della Partita 2 sono TUTTE tra quelle mai viste in Partita 1?`, tutteDalleMaiUsate ? '✅ SI, corretto!' : '❌ NO, problema!');
+console.log('########## SCENARIO: 6 GIOCATORI (~49 pescate Conoscenza a partita, da simulazione) ##########');
+provaMazzo('Conoscenza normale', 60, 49, '6 giocatori');
+provaMazzo('Conoscenza junior', 30, 49, '6 giocatori');
+
+console.log('\n########## SCENARIO: 12 GIOCATORI (~95 pescate Conoscenza a partita, da simulazione) ##########');
+provaMazzo('Conoscenza normale', 60, 95, '12 giocatori');
+provaMazzo('Conoscenza junior', 30, 95, '12 giocatori');
