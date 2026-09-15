@@ -322,7 +322,7 @@ async function giocaTurno() {
       const carta = pescata.carta;
 
       if (carta.vincolo) {
-        await mostraCartaEAspettaScelta('PROVA', carta, [{ etichetta: 'Continua', valore: null }]);
+        await mostraCartaEAspettaScelta('PROVA', carta, [{ etichetta: 'Continua', valore: null }], true);
         stato = impostaProvaInSospeso(stato, giocatore.id, carta);
         aggiornaProveInSospeso();
         r = { stato, evento: { tipo: 'PROVA_VINCOLO' } };
