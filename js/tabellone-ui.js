@@ -29,8 +29,9 @@ import {
   aggiungiRispostaACarta,
   rifiutaJuniorInLobby,
   ascoltaPresenza,
-  ascoltaAbbandoni,
-  registraEsitoConoscenza
+    ascoltaAbbandoni,
+  registraEsitoConoscenza,
+  leggiStatisticheDaFirebase
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;

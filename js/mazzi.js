@@ -60,29 +60,46 @@ export function pesca(mazzo) {
 // partita sia tra una partita e la successiva, con lo stesso identico
 // meccanismo, senza bisogno di trattarle come due casi diversi.
 
+// Due segnali separati, non uno solo — è quello che serviva per essere
+// certi al 100% di non ripetere mai dentro la stessa partita: "l'ho già
+// vista in QUESTA partita?" vince sempre; solo tra le carte non ancora
+// viste in questa partita si guarda quale ha meno utilizzo storico
+// (quello salvato su Firebase, che è così che il non-ripetersi vale
+// anche da una partita alla successiva).
 export function creaMazzoPerUsoMinimo(carte, statistiche) {
-  const usiIniziali = {};
+  const usiStorici = {};
   carte.forEach(c => {
-    usiIniziali[c._chiave] = (statistiche[c._chiave] && statistiche[c._chiave].proposte) || 0;
+    usiStorici[c._chiave] = (statistiche[c._chiave] && statistiche[c._chiave].proposte) || 0;
   });
-  // mescolato una volta in partenza: a parità di utilizzo, chi viene
-  // prima nell'array (randomizzato) vince — è così che le parità
-  // restano casuali, senza dover rimescolare a ogni pescata.
-  return { carte: mescola(carte), usi: usiIniziali };
+  return { carte: mescola(carte), usiStorici, visteInQuestaPartita: new Set() };
 }
 
 export function peschaPerUsoMinimo(mazzo) {
-  let migliore = mazzo.carte[0];
-  let usiMigliore = mazzo.usi[migliore._chiave] || 0;
+  let nonAncoraViste = mazzo.carte.filter(c => !mazzo.visteInQuestaPartita.has(c._chiave));
+  let baseViste = mazzo.visteInQuestaPartita;
 
-  for (const carta of mazzo.carte) {
-    const usi = mazzo.usi[carta._chiave] || 0;
+  if (nonAncoraViste.length === 0) {
+    // Tutto il mazzo è già uscito in questa partita: si ricomincia un
+    // giro pulito, come rimescolare un mazzo fisico quando finisce.
+    baseViste = new Set();
+    nonAncoraViste = mazzo.carte;
+  }
+
+  let migliore = nonAncoraViste[0];
+  let usiMigliore = mazzo.usiStorici[migliore._chiave] || 0;
+  for (const carta of nonAncoraViste) {
+    const usi = mazzo.usiStorici[carta._chiave] || 0;
     if (usi < usiMigliore) {
       migliore = carta;
       usiMigliore = usi;
     }
   }
 
-  const nuoviUsi = { ...mazzo.usi, [migliore._chiave]: usiMigliore + 1 };
-  return { mazzo: { carte: mazzo.carte, usi: nuoviUsi }, carta: migliore };
+  const nuoveViste = new Set(baseViste);
+  nuoveViste.add(migliore._chiave);
+
+  return {
+    mazzo: { carte: mazzo.carte, usiStorici: mazzo.usiStorici, visteInQuestaPartita: nuoveViste },
+    carta: migliore
+  };
 }
