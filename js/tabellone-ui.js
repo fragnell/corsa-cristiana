@@ -313,6 +313,8 @@ async function giocaTurno() {
       giocatoreAttuale.conoscenzaTotali = (giocatoreAttuale.conoscenzaTotali || 0) + 1;
       if (corretta) giocatoreAttuale.conoscenzaCorrette = (giocatoreAttuale.conoscenzaCorrette || 0) + 1;
 
+      if (!giocatoreAttuale.rispostoStorico) giocatoreAttuale.rispostoStorico = [];
+      giocatoreAttuale.rispostoStorico.push({ domanda: carta.domanda, corretta });
       r = applicaRispostaConoscenza(stato, percorso, corretta, configPartita);
     } else {
       const pescata = pesca(mazzoProva);

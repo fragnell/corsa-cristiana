@@ -793,3 +793,48 @@ body {
   color: #555;
   cursor: pointer;
 }
+
+
+.classifica-cliccabile {
+  cursor: pointer;
+  user-select: none;
+}
+
+.classifica-freccia {
+  color: #999;
+  transition: transform 0.2s;
+}
+
+.classifica-aperta .classifica-freccia {
+  transform: rotate(180deg);
+}
+
+.classifica-dettaglio {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin: -0.2rem 0 0.6rem;
+  text-align: left;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dettaglio-domanda-riga {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  font-size: 0.88rem;
+  border-bottom: 1px solid #eee;
+}
+
+.dettaglio-domanda-riga:last-child { border-bottom: none; }
+
+.dettaglio-errata { color: #c0392b; }
+.dettaglio-corretta { color: #333; }
+
+.dettaglio-vuoto {
+  color: #888;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0.3rem 0;
+}
