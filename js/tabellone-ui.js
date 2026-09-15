@@ -11,7 +11,7 @@
 import { CONFIG, unisciConfig } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
-import { creaMazzo, pesca } from './mazzi.js';
+import { creaMazzo, pesca, creaMazzoPerUsoMinimo, peschaPerUsoMinimo } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior } from './carta-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { animaDado } from './dado-ui.js';
@@ -244,17 +244,27 @@ async function giocaTurno() {
 
     if (r.evento.casella === 'CONOSCENZA') {
       const usaMazzoJunior = !!giocatore.junior && mazzoConoscenzaJunior !== null;
-      const pescata = usaMazzoJunior ? pesca(mazzoConoscenzaJunior) : pesca(mazzoConoscenza);
-      if (usaMazzoJunior) mazzoConoscenzaJunior = pescata.mazzo;
-      else mazzoConoscenza = pescata.mazzo;
 
-      const carta = pescata.carta;
+      let carta;
+      const pescaProssimaCarta = () => {
+        const pescata = usaMazzoJunior ? peschaPerUsoMinimo(mazzoConoscenzaJunior) : peschaPerUsoMinimo(mazzoConoscenza);
+        if (usaMazzoJunior) mazzoConoscenzaJunior = pescata.mazzo;
+        else mazzoConoscenza = pescata.mazzo;
+        carta = pescata.carta;
+      };
+      pescaProssimaCarta();
 
       let corretta;
       let correzioneManuale = false;
       let ultimeRisposteDate = [];
       while (true) {
-        await mostraCarta('CONOSCENZA', carta);
+        let cambiaRichiesta = false;
+        await mostraCarta('CONOSCENZA', carta, () => { cambiaRichiesta = true; });
+
+        if (cambiaRichiesta) {
+          pescaProssimaCarta();
+          continue;
+        }
 
         const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo, scadenza: Date.now() + configPartita.timeout.rispostaMs };
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
@@ -470,12 +480,13 @@ async function avvia() {
   const tutteLeCarteConoscenza = await leggiMazzoDaFirebase('conoscenza');
   const carteConoscenzaNormali = tutteLeCarteConoscenza.filter(c => !c.junior);
   const carteConoscenzaJunior = tutteLeCarteConoscenza.filter(c => c.junior);
+  const statisticheConoscenza = await leggiStatisticheDaFirebase();
 
   const carteImprevisto = await leggiMazzoDaFirebase('imprevisto');
   const carteProva = await leggiMazzoDaFirebase('prova');
 
-  mazzoConoscenza = creaMazzo(carteConoscenzaNormali);
-  mazzoConoscenzaJunior = carteConoscenzaJunior.length > 0 ? creaMazzo(carteConoscenzaJunior) : null;
+  mazzoConoscenza = creaMazzoPerUsoMinimo(carteConoscenzaNormali, statisticheConoscenza);
+  mazzoConoscenzaJunior = carteConoscenzaJunior.length > 0 ? creaMazzoPerUsoMinimo(carteConoscenzaJunior, statisticheConoscenza) : null;
   mazzoImprevisto = creaMazzo(carteImprevisto);
   mazzoProva = creaMazzo(carteProva);
 

@@ -32,16 +32,34 @@ function popolaContenuto(tipoCarta, carta) {
   }
 
   // testo lungo: dimensione più contenuta, per essere sicuri che entri nella carta
-  elTesto.classList.toggle('carta-testo-lungo', elTesto.textContent.length > 70);
+  elTesto.classList.toggle('carta-testo-lungo', elTesto.textContent.length > 210);
 }
 
-export function mostraCarta(tipoCarta, carta) {
+// Il terzo parametro è facoltativo: se lo passi, sotto la carta compare
+// un pulsante "Cambia domanda" — il paracadute per il raro caso in cui
+// esca comunque una domanda già fatta di recente. Disponibile solo
+// mentre la carta si rivela, non dopo: se nessuno lo preme in tempo, la
+// promessa si risolve normalmente come sempre.
+export function mostraCarta(tipoCarta, carta, onCambiaDomanda) {
   return new Promise(risolvi => {
     const overlay = document.getElementById('carta-overlay');
     const elCarta = document.getElementById('carta');
-    document.getElementById('carta-bottoni').innerHTML = '';
+    const elBottoni = document.getElementById('carta-bottoni');
+    elBottoni.innerHTML = '';
 
     popolaContenuto(tipoCarta, carta);
+
+    if (onCambiaDomanda) {
+      const bottoneCambia = document.createElement('button');
+      bottoneCambia.type = 'button';
+      bottoneCambia.className = 'carta-btn-cambia';
+      bottoneCambia.textContent = '🔄 Cambia domanda';
+      bottoneCambia.addEventListener('click', () => {
+        elBottoni.innerHTML = '';
+        onCambiaDomanda();
+      });
+      elBottoni.appendChild(bottoneCambia);
+    }
 
     elCarta.classList.remove('girata');
     overlay.classList.remove('nascosta');

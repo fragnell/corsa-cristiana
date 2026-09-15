@@ -50,3 +50,39 @@ export function pesca(mazzo) {
 
   return { mazzo: nuovoMazzo, carta };
 }
+
+
+// --- Pescata "a uso minimo", pensata per Conoscenza ---
+// A differenza di mescola/creaMazzo/pesca (che restano invariate per
+// Imprevisto e Prova), qui non si mescola e basta: si pesca sempre la
+// carta usata meno finora. L'utilizzo di partenza arriva dalle
+// statistiche vere salvate su Firebase — così vale sia dentro la stessa
+// partita sia tra una partita e la successiva, con lo stesso identico
+// meccanismo, senza bisogno di trattarle come due casi diversi.
+
+export function creaMazzoPerUsoMinimo(carte, statistiche) {
+  const usiIniziali = {};
+  carte.forEach(c => {
+    usiIniziali[c._chiave] = (statistiche[c._chiave] && statistiche[c._chiave].proposte) || 0;
+  });
+  // mescolato una volta in partenza: a parità di utilizzo, chi viene
+  // prima nell'array (randomizzato) vince — è così che le parità
+  // restano casuali, senza dover rimescolare a ogni pescata.
+  return { carte: mescola(carte), usi: usiIniziali };
+}
+
+export function peschaPerUsoMinimo(mazzo) {
+  let migliore = mazzo.carte[0];
+  let usiMigliore = mazzo.usi[migliore._chiave] || 0;
+
+  for (const carta of mazzo.carte) {
+    const usi = mazzo.usi[carta._chiave] || 0;
+    if (usi < usiMigliore) {
+      migliore = carta;
+      usiMigliore = usi;
+    }
+  }
+
+  const nuoviUsi = { ...mazzo.usi, [migliore._chiave]: usiMigliore + 1 };
+  return { mazzo: { carte: mazzo.carte, usi: nuoviUsi }, carta: migliore };
+}
