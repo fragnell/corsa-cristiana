@@ -15,7 +15,8 @@ const EFFETTO_PER_TIPO = {
   CONOSCENZA: 'conoscenza',
   IMPREVISTO: 'imprevisto',
   SALTO: 'salto',
-  FERMO: 'fermo'
+  FERMO: 'fermo',
+  PROVA: 'conoscenza'
 };
 
 function popolaContenuto(tipoCarta, carta) {
