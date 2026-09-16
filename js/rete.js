@@ -5,6 +5,7 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js';
 import { getDatabase, ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js';
+import { getAuth, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
 const firebaseConfig = {
   apiKey: "AIzaSyAg_QRYERrb_HRWryiecFFRQ_nn9OC1PSo",
   authDomain: "corsa-cristiana.firebaseapp.com",
@@ -17,4 +18,5 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
-export { ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update };
+export const auth = getAuth(app);
+export { ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update, signInWithEmailAndPassword, signOut };

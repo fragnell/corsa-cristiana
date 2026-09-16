@@ -651,7 +651,8 @@ body {
 
 .password-box p { margin: 0 0 1rem; }
 
-.password-box input[type="password"] {
+.password-box input[type="password"],
+.password-box input[type="email"] {
   font-size: 1.1rem;
   padding: 0.5rem;
   width: 100%;
@@ -659,6 +660,13 @@ body {
   border: 1px solid #999;
   border-radius: 6px;
   margin-bottom: 1rem;
+}
+
+.password-errore {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin: -0.5rem 0 0.8rem;
+  min-height: 1.2em;
 }
 
 .password-bottoni {

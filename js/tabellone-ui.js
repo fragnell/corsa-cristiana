@@ -13,6 +13,7 @@ import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
 import { creaMazzo, pesca, creaMazzoPerUsoMinimo, peschaPerUsoMinimo } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior } from './carta-ui.js';
+import { esci } from './accesso.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { animaDado } from './dado-ui.js';
 import { PALETTE } from './colori.js';
@@ -290,6 +291,7 @@ async function giocaTurno() {
         if (esito.nuovaRispostaDaAggiungere) {
           correzioneManuale = true;
           await aggiungiRispostaACarta(carta, esito.nuovaRispostaDaAggiungere);
+          await esci();
         }
         corretta = esito.corretta;
 
