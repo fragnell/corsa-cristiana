@@ -6,6 +6,7 @@
 // La rotazione che porta ogni faccia verso l'osservatore è stata
 // verificata una per una: questi sei assi corrispondono esattamente
 // ai valori 1-6, nell'ordine.
+import { riproduciEffetto } from './audio-ui.js';
 const ROTAZIONE_PER_VALORE = [
   [-0.1, 0.3, -1],
   [-0.1, 0.6, -0.4],
@@ -28,6 +29,7 @@ export function animaDado(valoreFinale) {
     void cubo.offsetWidth; // forza il browser a "dimenticare" l'animazione precedente
     cubo.classList.add('tumbling');
     overlay.classList.remove('nascosta');
+    riproduciEffetto('dado');
 
     setTimeout(() => {
       cubo.classList.remove('tumbling');

@@ -14,6 +14,7 @@ import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva,
 import { creaMazzo, pesca, creaMazzoPerUsoMinimo, peschaPerUsoMinimo } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior } from './carta-ui.js';
 import { esci } from './accesso.js';
+import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica } from './audio-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { animaDado } from './dado-ui.js';
 import { PALETTE } from './colori.js';
@@ -367,7 +368,8 @@ function mostraVittoria() {
   document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
   document.getElementById('vittoria-overlay').classList.remove('nascosta');
 
-  registraPartitaConclusa(stato.giocatori.length);
+  fermaMusica();
+  riproduciEffetto('vittoria');
 
   const video = document.getElementById('vittoria-video');
   video.currentTime = 0;
@@ -462,6 +464,7 @@ function avviaVistaLobby() {
   });
 
   bottoneInizia.addEventListener('click', async () => {
+    avviaMusica(); // secondo tentativo, garantito: questo è un clic vero sulla pagina
     bottoneInizia.disabled = true;
     const lobbyFinale = await leggiLobbyUnaVolta(codicePartita);
     iniziaPartitaVera(lobbyFinale);
@@ -527,3 +530,11 @@ async function avvia() {
 }
 
 avvia();
+avviaMusica(); // primo tentativo, appena si apre la pagina — funziona solo per chi ha già familiarità col sito
+
+const bottoneAudio = document.getElementById('btn-audio-toggle');
+bottoneAudio.textContent = audioAttivo() ? '🔊' : '🔇';
+bottoneAudio.addEventListener('click', () => {
+  const attivo = alternaAudio();
+  bottoneAudio.textContent = attivo ? '🔊' : '🔇';
+});

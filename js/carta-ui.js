@@ -9,6 +9,15 @@
 //   non viene nascosta esplicitamente da chi la usa — così tutti possono
 //   continuare a leggere la domanda mentre il giocatore scrive la risposta.
 
+import { riproduciEffetto } from './audio-ui.js';
+
+const EFFETTO_PER_TIPO = {
+  CONOSCENZA: 'conoscenza',
+  IMPREVISTO: 'imprevisto',
+  SALTO: 'salto',
+  FERMO: 'fermo'
+};
+
 function popolaContenuto(tipoCarta, carta) {
   const elTipo = document.getElementById('carta-tipo');
   const elTesto = document.getElementById('carta-testo');
@@ -16,6 +25,8 @@ function popolaContenuto(tipoCarta, carta) {
 
   elTipo.textContent = tipoCarta;
   elRiferimento.textContent = '';
+
+  if (EFFETTO_PER_TIPO[tipoCarta]) riproduciEffetto(EFFETTO_PER_TIPO[tipoCarta]);
 
   if (tipoCarta === 'CONOSCENZA') {
     elTesto.textContent = carta.domanda;
