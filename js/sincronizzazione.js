@@ -348,8 +348,30 @@ export function annunciaTabellonePresente(codicePartita) {
   onValue(ref(db, '.info/connected'), (istantanea) => {
     if (istantanea.val() === true) {
       onDisconnect(percorsoPresenza).remove();
-      set(percorsoPresenza, true);
+      set(percorsoPresenza, { giocatori: 0 });
     }
+  });
+}
+
+// Aggiorna quanti giocatori ha in questo momento un tabellone attivo —
+// richiamata ogni volta che la lobby cambia, così il conteggio globale
+// resta sempre aggiornato senza bisogno di ricalcolarlo altrove.
+export function aggiornaGiocatoriTabellone(codicePartita, numeroGiocatori) {
+  update(ref(db, `tabelloni-attivi/${codicePartita}`), { giocatori: numeroGiocatori });
+}
+
+// Riepilogo live di tutte le partite attive in questo momento — quante
+// sono, e quanti giocatori in tutto. Si aggiorna da solo se qualcosa
+// cambia altrove (un'altra partita che parte o finisce), non serve
+// ricaricare la pagina per vederlo cambiare.
+export function ascoltaRiepilogoTabelloniAttivi(callback) {
+  onValue(ref(db, 'tabelloni-attivi'), (istantanea) => {
+    const tutti = istantanea.val() || {};
+    const partite = Object.values(tutti);
+    callback({
+      numeroPartite: partite.length,
+      numeroGiocatori: partite.reduce((somma, p) => somma + (p.giocatori || 0), 0)
+    });
   });
 }
 
@@ -359,5 +381,5 @@ export function annunciaTabellonePresente(codicePartita) {
 // c'è qualcuno che la sta davvero seguendo adesso.
 export async function tabellonePresente(codicePartita) {
   const istantanea = await get(ref(db, `tabelloni-attivi/${codicePartita}`));
-  return istantanea.val() === true;
+  return istantanea.exists();
 }

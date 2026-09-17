@@ -35,7 +35,9 @@ import {
   registraEsitoConoscenza,
   leggiStatisticheDaFirebase,
   registraPartitaConclusa,
-  annunciaTabellonePresente
+  annunciaTabellonePresente,
+  aggiornaGiocatoriTabellone,
+  ascoltaRiepilogoTabelloniAttivi
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
@@ -455,6 +457,7 @@ function avviaVistaLobby() {
     ).join('');
     conteggioEl.textContent = `${lobby.length} (minimo ${configPartita.giocatori.minimo}, massimo ${configPartita.giocatori.massimo})`;
     bottoneInizia.disabled = lobby.length < configPartita.giocatori.minimo || lobby.length > configPartita.giocatori.massimo;
+    aggiornaGiocatoriTabellone(codicePartita, lobby.length);
 
     lobby.forEach(g => {
       if (g.junior && !richiesteJuniorGestite.has(g.nome)) {
@@ -462,6 +465,11 @@ function avviaVistaLobby() {
         gestisciRichiestaJunior(g.nome);
       }
     });
+  });
+
+  ascoltaRiepilogoTabelloniAttivi(({ numeroPartite, numeroGiocatori }) => {
+    document.getElementById('riepilogo-tabelloni').textContent =
+      `🌍 ${numeroPartite} partit${numeroPartite === 1 ? 'a' : 'e'} in corso, ${numeroGiocatori} giocator${numeroGiocatori === 1 ? 'e' : 'i'} online`;
   });
 
   bottoneInizia.addEventListener('click', async () => {
