@@ -865,19 +865,23 @@ body {
 
 
 .codice-area-titolo {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
 }
 
 .badge-riepilogo {
-  font-size: 0.75rem;
-  color: #a5281c;
-  background: #ffe0b3;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
+  position: absolute;
+  top: 0.5em;
+  right: 3.5em;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: #000000;
+  background: #cf6b0ec2;
+  padding: 0.3rem 0.3rem;
+  border-radius: 0.6em;
   font-weight: 600;
-  white-space: nowrap;
+  text-align: center;
+  white-space: pre-line;
 }
