@@ -19,7 +19,8 @@ import {
   inviaIntenzioneDado,
   inviaIntenzioneRisposta,
   impostaPresenza,
-  richiediAbbandono
+  richiediAbbandono,
+  tabellonePresente
 } from './sincronizzazione.js';
 
 let codicePartita = null;
@@ -47,6 +48,12 @@ async function cercaPartita() {
 
   if (!esiste) {
     messaggio.textContent = '❌ Nessuna partita trovata con questo codice.';
+    return;
+  }
+
+  const presente = await tabellonePresente(codice);
+  if (!presente) {
+    messaggio.textContent = '❌ Questa partita non è più attiva. Chiedi all\'organizzatore il codice aggiornato.';
     return;
   }
 

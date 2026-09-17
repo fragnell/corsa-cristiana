@@ -352,3 +352,12 @@ export function annunciaTabellonePresente(codicePartita) {
     }
   });
 }
+
+
+// Controlla se un codice partita ha ancora un tabellone davvero presente
+// in questo momento — non solo se la lobby esiste su Firebase, ma se
+// c'è qualcuno che la sta davvero seguendo adesso.
+export async function tabellonePresente(codicePartita) {
+  const istantanea = await get(ref(db, `tabelloni-attivi/${codicePartita}`));
+  return istantanea.val() === true;
+}
