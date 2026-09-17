@@ -11,6 +11,7 @@
 // delle opzioni proposte, poi si conferma).
 
 import { chiediPassword } from './accesso.js';
+import { riproduciEffetto } from './audio-ui.js';
 
 function normalizza(testo) {
   return testo
@@ -156,6 +157,7 @@ export function mostraVerdetto(carta, corretta, risposteDate) {
 
     function mostraVistaPrincipale() {
       area.classList.remove('nascosta');
+      riproduciEffetto(corretta ? 'corretto' : 'sbagliato');
       let secondiRimasti = DURATA_COUNTDOWN_S;
 
       let rigaRispostaGiusta = '';

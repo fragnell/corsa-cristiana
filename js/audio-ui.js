@@ -19,7 +19,9 @@ const EFFETTI = {
   salto: 'audio/effetto-salto.mp3',
   fermo: 'audio/effetto-fermo.mp3',
   conoscenza: 'audio/effetto-conoscenza.mp3',
-  vittoria: 'audio/effetto-vittoria.mp3'
+  vittoria: 'audio/effetto-vittoria.mp3',
+  corretto: 'audio/effetto-corretto.mp3',
+  sbagliato: 'audio/effetto-sbagliato.mp3'
 };
 
 const elementiEffetti = {};
