@@ -335,3 +335,20 @@ export async function leggiStatisticheGlobali() {
   const istantanea = await get(ref(db, 'statistiche/globali'));
   return istantanea.val() || { partiteConcluse: 0, giocatoriTotali: 0 };
 }
+
+
+// --- Presenza del TABELLONE stesso (non del giocatore) ---
+// Stesso principio già usato per i giocatori (onDisconnect + .info/connected),
+// applicato questa volta al tabellone: appena presente, si annuncia; se
+// sparisce (chiuso, ricaricato, connessione persa), il server Firebase
+// stesso rimuove la sua presenza, anche se il nostro codice non sta più
+// girando in quel momento per farlo lui stesso.
+export function annunciaTabellonePresente(codicePartita) {
+  const percorsoPresenza = ref(db, `tabelloni-attivi/${codicePartita}`);
+  onValue(ref(db, '.info/connected'), (istantanea) => {
+    if (istantanea.val() === true) {
+      onDisconnect(percorsoPresenza).remove();
+      set(percorsoPresenza, true);
+    }
+  });
+}

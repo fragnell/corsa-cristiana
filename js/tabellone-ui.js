@@ -34,7 +34,8 @@ import {
   ascoltaAbbandoni,
   registraEsitoConoscenza,
   leggiStatisticheDaFirebase,
-  registraPartitaConclusa
+  registraPartitaConclusa,
+  annunciaTabellonePresente
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
@@ -525,6 +526,8 @@ async function avvia() {
   codicePartita = generaCodicePartita();
   document.getElementById('codice-partita').textContent = codicePartita;
   await iniziaLobby(codicePartita);
+
+  annunciaTabellonePresente(codicePartita);
 
   avviaVistaLobby();
 }
