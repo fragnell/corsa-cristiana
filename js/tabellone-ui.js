@@ -37,10 +37,14 @@ import {
   registraPartitaConclusa,
   annunciaTabellonePresente,
   aggiornaGiocatoriTabellone,
-  ascoltaRiepilogoTabelloniAttivi
+  ascoltaRiepilogoTabelloniAttivi,
+  leggiStatoUnaVolta,
+  tabellonePresente
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
+const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-partita-attiva';
+const DURATA_COUNTDOWN_RIPRESA_S = 15;
 
 const TIPI_LEGENDA = [
   { tipo: 'CONOSCENZA', etichetta: 'Conoscenza' },
@@ -365,6 +369,8 @@ async function cicloDiGioco() {
 }
 
 function mostraVittoria() {
+  localStorage.removeItem(CHIAVE_PARTITA_ATTIVA);
+
   const vincitore = stato.giocatori[stato.vincitore];
   document.getElementById('vittoria-titolo').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
   document.getElementById('vittoria-bottoni').classList.remove('nascosta');
@@ -480,20 +486,8 @@ function avviaVistaLobby() {
   });
 }
 
-async function iniziaPartitaVera(giocatoriInfo) {
-  document.getElementById('vista-lobby').classList.add('nascosta');
-  document.getElementById('vista-gioco').classList.remove('nascosta');
-
-  const coordinate = generaSpirale(6, 11);
-  disegnaTabellone(coordinate);
-  disegnaLegenda();
-
-  document.getElementById('codice-partita-gioco').textContent = codicePartita;
-
-  stato = creaStatoIniziale(giocatoriInfo);
-  creaPedine();
-
-    ascoltaPresenza(codicePartita, (presenza) => { presenzaGiocatori = presenza; });
+function configuraAscoltatoriDiPartita() {
+  ascoltaPresenza(codicePartita, (presenza) => { presenzaGiocatori = presenza; });
 
   ascoltaAbbandoni(codicePartita, (abbandoni) => {
     let cambiato = false;
@@ -507,9 +501,100 @@ async function iniziaPartitaVera(giocatoriInfo) {
     });
     if (cambiato) pubblicaStato(codicePartita, stato);
   });
+}
+
+async function iniziaPartitaVera(giocatoriInfo) {
+  document.getElementById('vista-lobby').classList.add('nascosta');
+  document.getElementById('vista-gioco').classList.remove('nascosta');
+
+  const coordinate = generaSpirale(6, 11);
+  disegnaTabellone(coordinate);
+  disegnaLegenda();
+
+  document.getElementById('codice-partita-gioco').textContent = codicePartita;
+
+  stato = creaStatoIniziale(giocatoriInfo);
+  creaPedine();
+
+  localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
+  configuraAscoltatoriDiPartita();
 
   await pubblicaStato(codicePartita, stato);
   cicloDiGioco();
+}
+
+// Ricostruisce la scena da uno stato vero già esistente su Firebase,
+// invece di crearne uno nuovo — usata quando il tabellone riprende una
+// partita dopo un riavvio. Il turno in corso e un'eventuale richiesta
+// Conoscenza a metà vengono azzerati apposta: quel turno specifico
+// riparte pulito da capo, non si tenta di indovinare a che punto esatto
+// si era fermato. Tutto il resto (posizioni, punteggi, prove in sospeso)
+// resta esattamente com'era.
+async function riprendiPartitaEsistente(statoEsistente) {
+  stato = statoEsistente;
+  stato.turnoInCorso = false;
+  stato.richiestaConoscenza = null;
+  if (stato.vincitore === undefined) stato.vincitore = null;
+
+  document.getElementById('vista-lobby').classList.add('nascosta');
+  document.getElementById('vista-gioco').classList.remove('nascosta');
+
+  const coordinate = generaSpirale(6, 11);
+  disegnaTabellone(coordinate);
+  disegnaLegenda();
+
+  document.getElementById('codice-partita-gioco').textContent = codicePartita;
+
+  creaPedine();
+  aggiornaProveInSospeso();
+
+  configuraAscoltatoriDiPartita();
+  annunciaTabellonePresente(codicePartita);
+
+  await pubblicaStato(codicePartita, stato);
+  cicloDiGioco();
+}
+
+// Chiede se riprendere una partita trovata già in corso, con un
+// countdown — se nessuno risponde in tempo, si riprende da soli
+// (coerente con tutto il resto del gioco: mai una domanda che resta
+// appesa senza risposta).
+function chiediRipresaPartita(codice) {
+  return new Promise(risolvi => {
+    const overlay = document.getElementById('ripresa-overlay');
+    const elCodice = document.getElementById('ripresa-codice');
+    const elConto = document.getElementById('ripresa-countdown');
+    const bottoneRiprendi = document.getElementById('ripresa-btn-riprendi');
+    const bottoneNuova = document.getElementById('ripresa-btn-nuova');
+
+    elCodice.textContent = codice;
+    overlay.classList.remove('nascosta');
+
+    let secondiRimasti = DURATA_COUNTDOWN_RIPRESA_S;
+    elConto.textContent = `Riprendo automaticamente tra ${secondiRimasti}s`;
+
+    let concluso = false;
+    const concludi = risultato => {
+      if (concluso) return;
+      concluso = true;
+      clearInterval(timer);
+      overlay.classList.add('nascosta');
+      bottoneRiprendi.removeEventListener('click', alRiprendi);
+      bottoneNuova.removeEventListener('click', allaNuova);
+      risolvi(risultato);
+    };
+
+    const timer = setInterval(() => {
+      secondiRimasti--;
+      elConto.textContent = `Riprendo automaticamente tra ${secondiRimasti}s`;
+      if (secondiRimasti <= 0) concludi(true);
+    }, 1000);
+
+    const alRiprendi = () => concludi(true);
+    const allaNuova = () => concludi(false);
+    bottoneRiprendi.addEventListener('click', alRiprendi);
+    bottoneNuova.addEventListener('click', allaNuova);
+  });
 }
 
 async function avvia() {
@@ -530,6 +615,23 @@ async function avvia() {
   mazzoConoscenzaJunior = carteConoscenzaJunior.length > 0 ? creaMazzoPerUsoMinimo(carteConoscenzaJunior, statisticheConoscenza) : null;
   mazzoImprevisto = creaMazzo(carteImprevisto);
   mazzoProva = creaMazzo(carteProva);
+
+  const codiceSalvato = localStorage.getItem(CHIAVE_PARTITA_ATTIVA);
+  if (codiceSalvato) {
+    const statoSalvato = await leggiStatoUnaVolta(codiceSalvato);
+    if (statoSalvato && statoSalvato.vincitore == null) {
+      const giaAttivaAltrove = await tabellonePresente(codiceSalvato);
+      if (!giaAttivaAltrove) {
+        const vuoleRiprendere = await chiediRipresaPartita(codiceSalvato);
+        if (vuoleRiprendere) {
+          codicePartita = codiceSalvato;
+          await riprendiPartitaEsistente(statoSalvato);
+          return;
+        }
+      }
+    }
+    localStorage.removeItem(CHIAVE_PARTITA_ATTIVA);
+  }
 
   codicePartita = generaCodicePartita();
   document.getElementById('codice-partita').textContent = codicePartita;

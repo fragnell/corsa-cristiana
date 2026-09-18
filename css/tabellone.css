@@ -65,8 +65,8 @@ body {
 .casella-CONOSCENZA {
   background-color: #f0e2cc;
   background-image: url('../img/icona-conoscenza.png');
-  background-size: 70%;
-  background-position:bottom;
+  background-size: 77%;
+  background-position:center;
   background-repeat: no-repeat;
 }
 
@@ -81,15 +81,36 @@ body {
 .casella-PROVA {
   background-color: #ffb3c6;
   background-image: url('../img/icona-prova.png');
-  background-size: 55%;
+  background-size: 70%;
   background-position:bottom;
   background-repeat: no-repeat;
 }
 
-.casella-SALTO       { background: #a8dab5; }
-.casella-FERMO       { background: #f2a0a0; }
+.casella-SALTO {
+  background-color: #a8dab5;
+  background-image: url('../img/icona-salto.png');
+  background-size: 80%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-FERMO {
+  background-color: #f2a0a0;
+  background-image: url('../img/icona-fermo.png');
+  background-size: 75%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-ARRIVO {
+  background-color: #ffd54f;
+  background-image: url('../img/icona-arrivo.png');
+  background-size: 75%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
 .casella-PARTENZA    { background: #8bd17c; }
-.casella-ARRIVO      { background: #ffd54f; }
 
 .casella-PARTENZA .numero::after { content: ' 🚩'; }
 
@@ -884,4 +905,59 @@ body {
   font-weight: 600;
   text-align: center;
   white-space: pre-line;
+}
+
+
+.ripresa-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+}
+
+.ripresa-overlay.nascosta { display: none; }
+
+.ripresa-box {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+}
+
+.ripresa-box h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.4rem;
+}
+
+.ripresa-countdown {
+  color: #888;
+  font-size: 0.9rem;
+  margin: 0.8rem 0;
+}
+
+.ripresa-bottoni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.ripresa-bottoni button {
+  font-size: 1.05rem;
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+#ripresa-btn-riprendi {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
 }

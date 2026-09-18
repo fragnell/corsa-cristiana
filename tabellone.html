@@ -81,7 +81,18 @@
       </div>
     </div>
 
-      <div id="password-overlay" class="password-overlay nascosta">
+      <div id="ripresa-overlay" class="ripresa-overlay nascosta">
+    <div class="ripresa-box">
+      <h2>Partita in corso trovata</h2>
+      <p>Risulta che questo dispositivo stesse gestendo la partita <strong id="ripresa-codice"></strong>, ancora senza un vincitore.</p>
+      <p id="ripresa-countdown" class="ripresa-countdown"></p>
+      <div class="ripresa-bottoni">
+        <button id="ripresa-btn-riprendi" type="button">▶ Riprendi questa partita</button>
+        <button id="ripresa-btn-nuova" type="button">🆕 Inizia una partita nuova</button>
+      </div>
+    </div>
+  </div>
+    <div id="password-overlay" class="password-overlay nascosta">
     <div class="password-box">
       <p id="password-messaggio"></p>
       <input type="email" id="password-email" placeholder="Email">
