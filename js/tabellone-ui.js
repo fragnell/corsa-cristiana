@@ -14,7 +14,7 @@ import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva,
 import { creaMazzo, pesca, creaMazzoPerUsoMinimo, peschaPerUsoMinimo } from './mazzi.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior } from './carta-ui.js';
 import { esci } from './accesso.js';
-import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica } from './audio-ui.js';
+import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica, fermaEffetti } from './audio-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { animaDado } from './dado-ui.js';
 import { PALETTE } from './colori.js';
@@ -382,6 +382,7 @@ function mostraVittoria() {
   document.getElementById('vittoria-overlay').classList.remove('nascosta');
 
   fermaMusica();
+  fermaEffetti();
   riproduciEffetto('vittoria');
 
   const video = document.getElementById('vittoria-video');

@@ -47,7 +47,18 @@ export function riproduciEffetto(nome) {
   const el = elementiEffetti[nome];
   if (!el) return;
   el.currentTime = 0;
-  el.play().catch(() => {}); // se il browser blocca anche questo, non è un errore grave da segnalare
+  el.play().catch(() => {});
+}
+
+// Ferma e azzera tutti gli effetti in corso — usato prima di un suono
+// "importante" (la vittoria) per essere sicuri che non stia ancora
+// suonando l'effetto della carta precedente, che su alcuni dispositivi
+// può occupare il canale audio e bloccare il nuovo suono.
+export function fermaEffetti() {
+  Object.values(elementiEffetti).forEach(el => {
+    el.pause();
+    el.currentTime = 0;
+  });
 }
 
 // Da richiamare a ogni gesto vero dell'utente (apertura pagina, poi di
