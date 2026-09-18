@@ -281,6 +281,10 @@ async function giocaTurno() {
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
         if (carta.opzioni) richiesta.opzioni = carta.opzioni;
         stato.richiestaConoscenza = richiesta;
+        // Ricordiamo anche dentro lo stato (quindi su Firebase) quali
+        // domande Conoscenza sono già uscite in questa partita: così,
+        // se il tabellone si riavvia, questa memoria non si perde.
+        stato.conoscenzaChieste = [...new Set([...(stato.conoscenzaChieste || []), carta._chiave])];
         await pubblicaStato(codicePartita, stato);
 
         const risposteDate = await aspettaIntenzioneRisposta(codicePartita, giocatore.id, configPartita.timeout.rispostaMs);
@@ -535,6 +539,15 @@ async function riprendiPartitaEsistente(statoEsistente) {
   stato.turnoInCorso = false;
   stato.richiestaConoscenza = null;
   if (stato.vincitore === undefined) stato.vincitore = null;
+
+  // Ripristina anche la memoria di quali domande Conoscenza sono già
+  // state chieste in questa partita, altrimenti dopo la ripresa si
+  // rischia di riproporne una già fatta poco prima del riavvio.
+  const conoscenzaGiaChieste = new Set(stato.conoscenzaChieste || []);
+  mazzoConoscenza = { ...mazzoConoscenza, visteInQuestaPartita: new Set([...mazzoConoscenza.visteInQuestaPartita, ...conoscenzaGiaChieste]) };
+  if (mazzoConoscenzaJunior) {
+    mazzoConoscenzaJunior = { ...mazzoConoscenzaJunior, visteInQuestaPartita: new Set([...mazzoConoscenzaJunior.visteInQuestaPartita, ...conoscenzaGiaChieste]) };
+  }
 
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');

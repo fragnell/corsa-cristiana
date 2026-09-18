@@ -37,7 +37,15 @@ export function pesca(mazzo) {
     if (scarti.length === 0) {
       throw new Error('Il mazzo è completamente vuoto: nessuna carta da pescare.');
     }
+    const ultimaScartata = scarti[scarti.length - 1];
     pescabili = mescola(scarti);
+    // Evita che il nuovo giro riproponga subito, come prima carta,
+    // quella appena uscita: se càpita per caso, la scambiamo con
+    // un'altra posizione pescata a caso nel mazzo.
+    if (pescabili.length > 1 && pescabili[0] === ultimaScartata) {
+      const scambio = 1 + Math.floor(Math.random() * (pescabili.length - 1));
+      [pescabili[0], pescabili[scambio]] = [pescabili[scambio], pescabili[0]];
+    }
     scarti = [];
   }
 
