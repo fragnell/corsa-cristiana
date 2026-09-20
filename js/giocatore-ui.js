@@ -31,6 +31,8 @@ let ultimoVerdettoVisto = null;
 let richiestaIdGestita = null;
 let richiestaIdCorrente = null;
 let annullaRispostaCorrente = null;
+let inArrivoScadenzaGestita = null;
+let timerInArrivo = null;
 
 document.getElementById('btn-cerca').addEventListener('click', cercaPartita);
 
@@ -212,6 +214,9 @@ function aggiornaSchermo(stato) {
     annullaRispostaCorrente();
   }
 
+  const inArrivo = stato.conoscenzaInArrivo;
+  gestisciConoscenzaInArrivo(inArrivo && inArrivo.giocatoreId === mioId ? inArrivo : null);
+
   if (staRispondendoIo) {
     bottoneDado.classList.add('nascosta');
     statoTurno.textContent = '';
@@ -275,6 +280,36 @@ function mostraVerdettoOverlay(corretta) {
 
   bottoneOk.onclick = chiudi;
   overlay.classList.remove('nascosta');
+}
+
+function gestisciConoscenzaInArrivo(inArrivo) {
+  const chiave = inArrivo ? inArrivo.scadenza : null;
+  if (chiave === inArrivoScadenzaGestita) return;
+  inArrivoScadenzaGestita = chiave;
+
+  if (timerInArrivo) {
+    clearInterval(timerInArrivo);
+    timerInArrivo = null;
+  }
+
+  const area = document.getElementById('area-conoscenza-in-arrivo');
+  if (!inArrivo) {
+    area.classList.add('nascosta');
+    return;
+  }
+
+  const elConto = document.getElementById('conoscenza-in-arrivo-countdown');
+  const aggiorna = () => {
+    const restanti = Math.max(0, Math.round((inArrivo.scadenza - Date.now()) / 1000));
+    elConto.textContent = `👀 Preparati a rispondere tra: ${restanti}s`;
+    if (restanti <= 0 && timerInArrivo) {
+      clearInterval(timerInArrivo);
+      timerInArrivo = null;
+    }
+  };
+  aggiorna();
+  timerInArrivo = setInterval(aggiorna, 1000);
+  area.classList.remove('nascosta');
 }
 
 function gestisciRichiestaConoscenza(richiesta) {

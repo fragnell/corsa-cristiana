@@ -299,6 +299,28 @@ body {
   color: #555;
 }
 
+.carta-opzioni {
+  width: 100%;
+}
+
+.carta-opzioni-lista {
+  list-style-type: upper-alpha;
+  text-align: left;
+  display: inline-block;
+  margin: 0;
+  padding-left: 1.6em;
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+.carta-opzioni-lista li {
+  margin-bottom: 0.3rem;
+}
+
+.carta-opzioni-lista li:last-child {
+  margin-bottom: 0;
+}
+
 .carta-bottoni {
   display: flex;
   flex-direction: column;
@@ -823,6 +845,17 @@ body {
   cursor: pointer;
 }
 
+.carta-cambia-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.carta-cambia-countdown {
+  font-size: 0.85rem;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
 
 .classifica-cliccabile {
   cursor: pointer;

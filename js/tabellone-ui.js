@@ -12,7 +12,7 @@ import { CONFIG, unisciConfig } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
 import { creaMazzo, pesca, creaMazzoPerUsoMinimo, peschaPerUsoMinimo } from './mazzi.js';
-import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior } from './carta-ui.js';
+import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
 import { esci } from './accesso.js';
 import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica, fermaEffetti } from './audio-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
@@ -270,13 +270,23 @@ async function giocaTurno() {
       let ultimeRisposteDate = [];
       while (true) {
         let cambiaRichiesta = false;
-        await mostraCarta('CONOSCENZA', carta, () => { cambiaRichiesta = true; });
+
+        // Avvisa il telefono che una domanda sta per arrivare, con lo
+        // stesso tempo della finestra "Cambia domanda" — così chi deve
+        // rispondere vede un countdown vero invece di pensare che il
+        // gioco si sia bloccato.
+        const scadenzaCambio = Date.now() + DURATA_FINESTRA_CAMBIA_S * 1000;
+        stato.conoscenzaInArrivo = { giocatoreId: giocatore.id, scadenza: scadenzaCambio };
+        await pubblicaStato(codicePartita, stato);
+
+        await mostraCarta('CONOSCENZA', carta, () => { cambiaRichiesta = true; }, scadenzaCambio);
 
         if (cambiaRichiesta) {
           pescaProssimaCarta();
           continue;
         }
 
+        stato.conoscenzaInArrivo = null;
         const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo, scadenza: Date.now() + configPartita.timeout.rispostaMs };
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
         if (carta.opzioni) richiesta.opzioni = carta.opzioni;

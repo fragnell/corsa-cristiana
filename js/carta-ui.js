@@ -23,9 +23,11 @@ function popolaContenuto(tipoCarta, carta) {
   const elTipo = document.getElementById('carta-tipo');
   const elTesto = document.getElementById('carta-testo');
   const elRiferimento = document.getElementById('carta-riferimento');
+  const elOpzioni = document.getElementById('carta-opzioni');
 
   elTipo.textContent = tipoCarta;
   elRiferimento.textContent = '';
+  elOpzioni.innerHTML = '';
 
   if (EFFETTO_PER_TIPO[tipoCarta]) riproduciEffetto(EFFETTO_PER_TIPO[tipoCarta]);
 
@@ -34,7 +36,15 @@ function popolaContenuto(tipoCarta, carta) {
     if (carta.tipo === 'elenco') {
       elRiferimento.textContent = `(cita almeno ${carta.minimoRichiesto})`;
     } else if (carta.tipo === 'scelta') {
-      elRiferimento.textContent = '(scelta multipla — guarda le opzioni sul telefono)';
+      elRiferimento.textContent = '(scelta multipla)';
+      const elenco = document.createElement('ol');
+      elenco.className = 'carta-opzioni-lista';
+      carta.opzioni.forEach(opzione => {
+        const voce = document.createElement('li');
+        voce.textContent = opzione;
+        elenco.appendChild(voce);
+      });
+      elOpzioni.appendChild(elenco);
     }
   } else {
     elTesto.textContent = carta.testo;
@@ -48,11 +58,13 @@ function popolaContenuto(tipoCarta, carta) {
 }
 
 // Il terzo parametro è facoltativo: se lo passi, sotto la carta compare
-// un pulsante "Cambia domanda" — il paracadute per il raro caso in cui
-// esca comunque una domanda già fatta di recente. Disponibile solo
-// mentre la carta si rivela, non dopo: se nessuno lo preme in tempo, la
-// promessa si risolve normalmente come sempre.
-export function mostraCarta(tipoCarta, carta, onCambiaDomanda) {
+// un pulsante "Cambia domanda" — per il caso in cui esca comunque una
+// domanda già fatta di recente o non adatta al momento. Resta attivo per
+// DURATA_FINESTRA_CAMBIA_S secondi dopo che la carta si è rivelata: se
+// nessuno lo preme in tempo, la promessa si risolve da sola come sempre.
+export const DURATA_FINESTRA_CAMBIA_S = 10;
+
+export function mostraCarta(tipoCarta, carta, onCambiaDomanda, scadenzaCambio) {
   return new Promise(risolvi => {
     const overlay = document.getElementById('carta-overlay');
     const elCarta = document.getElementById('carta');
@@ -61,23 +73,62 @@ export function mostraCarta(tipoCarta, carta, onCambiaDomanda) {
 
     popolaContenuto(tipoCarta, carta);
 
+    let timerCambia = null;
+    let timerGirata = null;
+    let timerChiusura = null;
+
+    function pulisciTimer() {
+      if (timerCambia) clearInterval(timerCambia);
+      if (timerGirata) clearTimeout(timerGirata);
+      if (timerChiusura) clearTimeout(timerChiusura);
+      timerCambia = null;
+      timerGirata = null;
+      timerChiusura = null;
+    }
+
     if (onCambiaDomanda) {
       const bottoneCambia = document.createElement('button');
       bottoneCambia.type = 'button';
       bottoneCambia.className = 'carta-btn-cambia';
       bottoneCambia.textContent = '🔄 Cambia domanda';
+
+      const elCountdown = document.createElement('span');
+      elCountdown.className = 'carta-cambia-countdown';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'carta-cambia-wrapper';
+      wrapper.appendChild(bottoneCambia);
+      wrapper.appendChild(elCountdown);
+
       bottoneCambia.addEventListener('click', () => {
+        pulisciTimer();
         elBottoni.innerHTML = '';
         onCambiaDomanda();
+        risolvi();
       });
-      elBottoni.appendChild(bottoneCambia);
+
+      elBottoni.appendChild(wrapper);
+
+      if (scadenzaCambio) {
+        const aggiornaCountdown = () => {
+          const restanti = Math.max(0, Math.round((scadenzaCambio - Date.now()) / 1000));
+          elCountdown.textContent = `(${restanti}s)`;
+        };
+        aggiornaCountdown();
+        timerCambia = setInterval(aggiornaCountdown, 1000);
+      }
     }
 
     elCarta.classList.remove('girata');
     overlay.classList.remove('nascosta');
-    setTimeout(() => {
+    timerGirata = setTimeout(() => {
       elCarta.classList.add('girata');
-      setTimeout(risolvi, 600);
+      const attesa = scadenzaCambio ? Math.max(0, scadenzaCambio - Date.now()) : 600;
+      timerChiusura = setTimeout(() => {
+        pulisciTimer();
+        elBottoni.innerHTML = '';
+        risolvi();
+      }, attesa);
     }, 400);
   });
 }
