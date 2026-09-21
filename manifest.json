@@ -1,0 +1,20 @@
+{
+  "name": "Corsa Cristiana",
+  "short_name": "Corsa Cristiana",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0e2cc",
+  "theme_color": "#f0e2cc",
+  "icons": [
+    {
+      "src": "img/icona-app-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icona-app-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
