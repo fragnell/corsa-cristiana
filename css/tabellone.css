@@ -140,8 +140,10 @@ body {
 
 .pannello-laterale {
   position: absolute;
-  left: 82%;
-  width: 14%;
+  /* prima left:82%/width:14%: spostato tutto il gruppo (sospeso, legenda,
+     turno) un po' piu' a sinistra, margine destro invariato (77+19 = 96) */
+  left: 77%;
+  width: 19%;
   overflow: hidden;
   font-size: 0.9em;
   color: #4a3b2a;
@@ -161,7 +163,7 @@ body {
 
 #pannello-legenda {
   top: 53%;
-  height: 16%;
+  height: 40%;
   padding: 0.2em 0.6em;
 }
 
@@ -172,10 +174,15 @@ body {
 }
 
 #legenda-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15em;
-  font-size: 0.7em;
+  /* due colonne invece di una lista lunga 5 righe: cosi' servono solo 3
+     righe di altezza invece di 5, a parita' di dimensione delle icone */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2em 0.5em;
+  /* prima 0.7em: moltiplicato per lo 0.9em di .pannello-laterale diventava
+     0.63em effettivo, il doppio rimpicciolimento che rendeva tutto minuscolo.
+     Poi 0.95em, ridotto ~10% su richiesta di Francesco */
+  font-size: 0.85em;
 }
 
 .legenda-riga {
@@ -185,9 +192,10 @@ body {
 }
 
 .legenda-pallino {
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: 0.25em;
+  /* prima 0.9em (e per giunta dentro il font-size gia' raddoppiato sopra) */
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 0.35em;
   flex-shrink: 0;
 }
 

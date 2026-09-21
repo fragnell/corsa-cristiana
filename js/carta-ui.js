@@ -27,7 +27,7 @@ const SOGLIA_TESTO_LUNGO = 170;
 // Stessa idea, ma soglia piu' bassa: la schermata "hai superato la
 // prova?" ha sotto il testo anche il titolo, il countdown e due
 // pulsanti, quindi parte con meno spazio libero della carta normale.
-const SOGLIA_TESTO_LUNGO_VINCOLO = 170;
+const SOGLIA_TESTO_LUNGO_VINCOLO = 160;
 
 // Quanto resta visibile il retro della carta (sfondo + icona) prima di
 // girarsi e mostrare il fronte. Unico punto da cambiare: vale ovunque
