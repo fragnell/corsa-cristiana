@@ -390,6 +390,9 @@ async function cicloDiGioco() {
 
 function mostraVittoria() {
   localStorage.removeItem(CHIAVE_PARTITA_ATTIVA);
+  // Le statistiche globali (scheda Statistiche in admin) si aggiornano solo
+  // da qui: e' l'unico punto in cui una partita risulta davvero conclusa.
+  registraPartitaConclusa(stato.giocatori.length);
 
   const vincitore = stato.giocatori[stato.vincitore];
   document.getElementById('vittoria-titolo').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
