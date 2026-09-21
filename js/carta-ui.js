@@ -10,6 +10,7 @@
 //   continuare a leggere la domanda mentre il giocatore scrive la risposta.
 
 import { riproduciEffetto } from './audio-ui.js';
+import { oraServer } from './sincronizzazione.js';
 
 const EFFETTO_PER_TIPO = {
   CONOSCENZA: 'conoscenza',
@@ -111,7 +112,7 @@ export function mostraCarta(tipoCarta, carta, onCambiaDomanda, scadenzaCambio) {
 
       if (scadenzaCambio) {
         const aggiornaCountdown = () => {
-          const restanti = Math.max(0, Math.round((scadenzaCambio - Date.now()) / 1000));
+          const restanti = Math.max(0, Math.round((scadenzaCambio - oraServer()) / 1000));
           elCountdown.textContent = `(${restanti}s)`;
         };
         aggiornaCountdown();
@@ -123,7 +124,7 @@ export function mostraCarta(tipoCarta, carta, onCambiaDomanda, scadenzaCambio) {
     overlay.classList.remove('nascosta');
     timerGirata = setTimeout(() => {
       elCarta.classList.add('girata');
-      const attesa = scadenzaCambio ? Math.max(0, scadenzaCambio - Date.now()) : 600;
+      const attesa = scadenzaCambio ? Math.max(0, scadenzaCambio - oraServer()) : 600;
       timerChiusura = setTimeout(() => {
         pulisciTimer();
         elBottoni.innerHTML = '';

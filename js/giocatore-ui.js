@@ -20,7 +20,8 @@ import {
   inviaIntenzioneRisposta,
   impostaPresenza,
   richiediAbbandono,
-  tabellonePresente
+  tabellonePresente,
+  oraServer
 } from './sincronizzazione.js';
 
 let codicePartita = null;
@@ -300,7 +301,7 @@ function gestisciConoscenzaInArrivo(inArrivo) {
 
   const elConto = document.getElementById('conoscenza-in-arrivo-countdown');
   const aggiorna = () => {
-    const restanti = Math.max(0, Math.round((inArrivo.scadenza - Date.now()) / 1000));
+    const restanti = Math.max(0, Math.round((inArrivo.scadenza - oraServer()) / 1000));
     elConto.textContent = `👀 Preparati a rispondere tra: ${restanti}s`;
     if (restanti <= 0 && timerInArrivo) {
       clearInterval(timerInArrivo);
@@ -329,7 +330,7 @@ async function rispondiAConoscenza(richiesta) {
 
   if (richiesta.scadenza) {
     const aggiornaConto = () => {
-      const restanti = Math.max(0, Math.round((richiesta.scadenza - Date.now()) / 1000));
+      const restanti = Math.max(0, Math.round((richiesta.scadenza - oraServer()) / 1000));
       elConto.textContent = `⏱️ ${restanti}s per rispondere`;
       elConto.classList.toggle('conoscenza-countdown-urgente', restanti <= 15);
     };

@@ -6,6 +6,21 @@
 
 import { db, ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update } from './rete.js';
 
+// Orologio "vero", allineato al server Firebase — non a quello di ogni
+// singolo dispositivo (tabellone e telefoni possono essere sfasati anche
+// di diversi secondi tra loro). Da usare al posto di Date.now() ogni volta
+// che si scrive o si legge una scadenza condivisa tra dispositivi diversi,
+// cosi' tutti concordano sullo stesso conto alla rovescia invece di
+// vederne ciascuno uno diverso.
+let scartoOrologio = 0;
+onValue(ref(db, '.info/serverTimeOffset'), istantanea => {
+  scartoOrologio = istantanea.val() || 0;
+});
+
+export function oraServer() {
+  return Date.now() + scartoOrologio;
+}
+
 // Un codice a 4 lettere, facile da leggere e da dettare a voce.
 // Niente I/O: si confondono troppo facilmente con 1/0.
 export function generaCodicePartita() {

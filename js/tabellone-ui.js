@@ -39,7 +39,8 @@ import {
   aggiornaGiocatoriTabellone,
   ascoltaRiepilogoTabelloniAttivi,
   leggiStatoUnaVolta,
-  tabellonePresente
+  tabellonePresente,
+  oraServer
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
@@ -280,7 +281,7 @@ async function giocaTurno() {
         // stesso tempo della finestra "Cambia domanda" — così chi deve
         // rispondere vede un countdown vero invece di pensare che il
         // gioco si sia bloccato.
-        const scadenzaCambio = Date.now() + DURATA_FINESTRA_CAMBIA_S * 1000;
+        const scadenzaCambio = oraServer() + DURATA_FINESTRA_CAMBIA_S * 1000;
         stato.conoscenzaInArrivo = { giocatoreId: giocatore.id, scadenza: scadenzaCambio };
         await pubblicaStato(codicePartita, stato);
 
@@ -292,7 +293,7 @@ async function giocaTurno() {
         }
 
         stato.conoscenzaInArrivo = null;
-        const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo, scadenza: Date.now() + configPartita.timeout.rispostaMs };
+        const richiesta = { id: Date.now(), giocatoreId: giocatore.id, domanda: carta.domanda, tipo: carta.tipo, scadenza: oraServer() + configPartita.timeout.rispostaMs };
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
         if (carta.opzioni) richiesta.opzioni = carta.opzioni;
         stato.richiestaConoscenza = richiesta;
