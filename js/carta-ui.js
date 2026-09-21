@@ -20,6 +20,11 @@ const EFFETTO_PER_TIPO = {
   PROVA: 'conoscenza'
 };
 
+// Quanto resta visibile il retro della carta (sfondo + icona) prima di
+// girarsi e mostrare il fronte. Unico punto da cambiare: vale ovunque
+// compaia l'animazione della carta.
+const RITARDO_GIRATA_MS = 1200;
+
 function popolaContenuto(tipoCarta, carta) {
   const elRetro = document.getElementById('carta-retro');
   elRetro.className = `carta-retro carta-retro-${tipoCarta}`;
@@ -133,7 +138,7 @@ export function mostraCarta(tipoCarta, carta, onCambiaDomanda, scadenzaCambio) {
         elBottoni.innerHTML = '';
         risolvi();
       }, attesa);
-    }, 400);
+    }, RITARDO_GIRATA_MS);
   });
 }
 
@@ -190,7 +195,7 @@ export function mostraCartaEAspettaScelta(tipoCarta, carta, opzioni, conCountdow
 
     elCarta.classList.remove('girata');
     overlay.classList.remove('nascosta');
-    setTimeout(() => elCarta.classList.add('girata'), 400);
+    setTimeout(() => elCarta.classList.add('girata'), RITARDO_GIRATA_MS);
   });
 }
 
@@ -243,7 +248,7 @@ export function chiediEsitoProvaVincolo(nomeGiocatore, prova) {
 
     elCarta.classList.remove('girata');
     overlay.classList.remove('nascosta');
-    setTimeout(() => elCarta.classList.add('girata'), 400);
+    setTimeout(() => elCarta.classList.add('girata'), RITARDO_GIRATA_MS);
   });
 }
 
@@ -295,6 +300,6 @@ export function chiediConfermaJunior(nomeGiocatore) {
 
     elCarta.classList.remove('girata');
     overlay.classList.remove('nascosta');
-    setTimeout(() => elCarta.classList.add('girata'), 400);
+    setTimeout(() => elCarta.classList.add('girata'), RITARDO_GIRATA_MS);
   });
 }

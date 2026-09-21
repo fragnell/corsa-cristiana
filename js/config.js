@@ -46,7 +46,7 @@ export const CONFIG = {
   // risponde (disconnesso, distratto, telefono in stand-by...)
   timeout: {
     dadoMs: 60000,       // un minuto per tirare il dado
-    rispostaMs: 60000    // un minuto e mezzo per rispondere a Conoscenza
+    rispostaMs: 60000    // un minuto per rispondere a Conoscenza
   }
 
 };
