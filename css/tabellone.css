@@ -262,11 +262,17 @@ body {
 }
 
 .carta-retro {
-  background: #2c3e50;
-  color: white;
-  font-size: 3.5rem;
-  font-weight: bold;
+  background-color: #2c3e50;
+  background-size: 55%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
+
+.carta-retro-CONOSCENZA { background-image: url('../img/icona-conoscenza.png'); }
+.carta-retro-IMPREVISTO { background-image: url('../img/icona-imprevisto.png'); }
+.carta-retro-PROVA { background-image: url('../img/icona-prova.png'); }
+.carta-retro-SALTO { background-image: url('../img/icona-salto.png'); }
+.carta-retro-FERMO { background-image: url('../img/icona-fermo.png'); }
 
 .carta-fronte {
   background: white;

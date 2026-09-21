@@ -21,6 +21,9 @@ const EFFETTO_PER_TIPO = {
 };
 
 function popolaContenuto(tipoCarta, carta) {
+  const elRetro = document.getElementById('carta-retro');
+  elRetro.className = `carta-retro carta-retro-${tipoCarta}`;
+
   const elTipo = document.getElementById('carta-tipo');
   const elTesto = document.getElementById('carta-testo');
   const elRiferimento = document.getElementById('carta-riferimento');
