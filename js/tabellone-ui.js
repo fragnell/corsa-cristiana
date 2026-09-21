@@ -45,6 +45,11 @@ import {
 const DURATA_SALTO_MS = 300;
 const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-partita-attiva';
 const DURATA_COUNTDOWN_RIPRESA_S = 15;
+// Oltre questa eta' dall'ultima mossa pubblicata, una partita interrotta si
+// considera troppo vecchia per riproporla: non ha senso chiedere di
+// riprendere una partita di ieri sera. Punto unico da cambiare per
+// aggiustare la soglia.
+const LIMITE_RIPRESA_MS = 20 * 60 * 1000; // 20 minuti
 
 const TIPI_LEGENDA = [
   { tipo: 'CONOSCENZA', etichetta: 'Conoscenza' },
@@ -643,7 +648,11 @@ async function avvia() {
   const codiceSalvato = localStorage.getItem(CHIAVE_PARTITA_ATTIVA);
   if (codiceSalvato) {
     const statoSalvato = await leggiStatoUnaVolta(codiceSalvato);
-    if (statoSalvato && statoSalvato.vincitore == null) {
+    // Senza timestamp (partite salvate prima di questa modifica) la si tratta
+    // come vecchia per prudenza, invece di riproporla alla cieca.
+    const eta = statoSalvato ? Date.now() - (statoSalvato.ultimoAggiornamento || 0) : Infinity;
+    const troppoVecchia = eta > LIMITE_RIPRESA_MS;
+    if (statoSalvato && statoSalvato.vincitore == null && !troppoVecchia) {
       const giaAttivaAltrove = await tabellonePresente(codiceSalvato);
       if (!giaAttivaAltrove) {
         const vuoleRiprendere = await chiediRipresaPartita(codiceSalvato);

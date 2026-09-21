@@ -18,7 +18,13 @@ export function generaCodicePartita() {
 }
 
 export function pubblicaStato(codicePartita, stato) {
-  return set(ref(db, `partite/${codicePartita}/stato`), stato);
+  // Timestamp aggiunto qui, in un unico punto: ogni pubblicazione di stato
+  // passa da questa funzione, quindi "ultimoAggiornamento" riflette sempre
+  // l'ultima mossa vera della partita (non l'inizio). Serve al tabellone,
+  // alla ripresa, per distinguere un'interruzione recente da una partita
+  // ormai vecchia.
+  const statoConTimestamp = { ...stato, ultimoAggiornamento: Date.now() };
+  return set(ref(db, `partite/${codicePartita}/stato`), statoConTimestamp);
 }
 
 export function leggiStatoUnaVolta(codicePartita) {
