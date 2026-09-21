@@ -20,10 +20,19 @@ const EFFETTO_PER_TIPO = {
   PROVA: 'conoscenza'
 };
 
+// Oltre questa lunghezza il testo della carta si rimpicciolisce, per
+// essere sicuri che entri senza dover scorrere.
+const SOGLIA_TESTO_LUNGO = 170;
+
+// Stessa idea, ma soglia piu' bassa: la schermata "hai superato la
+// prova?" ha sotto il testo anche il titolo, il countdown e due
+// pulsanti, quindi parte con meno spazio libero della carta normale.
+const SOGLIA_TESTO_LUNGO_VINCOLO = 170;
+
 // Quanto resta visibile il retro della carta (sfondo + icona) prima di
 // girarsi e mostrare il fronte. Unico punto da cambiare: vale ovunque
 // compaia l'animazione della carta.
-const RITARDO_GIRATA_MS = 1200;
+const RITARDO_GIRATA_MS = 1350;
 
 function popolaContenuto(tipoCarta, carta) {
   const elRetro = document.getElementById('carta-retro');
@@ -63,7 +72,7 @@ function popolaContenuto(tipoCarta, carta) {
   }
 
   // testo lungo: dimensione più contenuta, per essere sicuri che entri nella carta
-  elTesto.classList.toggle('carta-testo-lungo', elTesto.textContent.length > 170);
+  elTesto.classList.toggle('carta-testo-lungo', elTesto.textContent.length > SOGLIA_TESTO_LUNGO);
 }
 
 // Il terzo parametro è facoltativo: se lo passi, sotto la carta compare
@@ -216,6 +225,7 @@ export function chiediEsitoProvaVincolo(nomeGiocatore, prova) {
 
     elTipo.textContent = 'PROVA';
     elTesto.textContent = prova.testo;
+    elTesto.classList.toggle('carta-testo-lungo', prova.testo.length > SOGLIA_TESTO_LUNGO_VINCOLO);
     elRiferimento.textContent = prova.riferimento || '';
 
     let secondiRimasti = DURATA_COUNTDOWN_PROVA_S;
