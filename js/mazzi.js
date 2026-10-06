@@ -60,29 +60,39 @@ export function pesca(mazzo) {
 }
 
 
-// --- Pescata "a uso minimo", pensata per Conoscenza ---
+// --- Pescata "a rotazione", pensata per Conoscenza ---
 // A differenza di mescola/creaMazzo/pesca (che restano invariate per
-// Imprevisto e Prova), qui non si mescola e basta: si pesca sempre la
-// carta usata meno finora. L'utilizzo di partenza arriva dalle
-// statistiche vere salvate su Firebase — così vale sia dentro la stessa
-// partita sia tra una partita e la successiva, con lo stesso identico
-// meccanismo, senza bisogno di trattarle come due casi diversi.
+// Imprevisto e Prova), qui non si mescola e basta: ogni domanda ricorda
+// in quale partita e' uscita l'ultima volta (numero progressivo, salvato
+// nel browser del tabellone: vedi rotazione-domande.js) e
+// si pesca sempre quella che manca da piu' tempo. E' una vera rotazione:
+// una domanda non torna finche' non sono uscite tutte le altre, e vale
+// sia dentro la stessa partita sia tra una partita e la successiva, con
+// lo stesso identico meccanismo.
+//
+// Prima si contava quante volte era uscita ciascuna ("meno usata per
+// prima"), ma quel numero misura l'equita' totale, non la freschezza: con
+// un mazzo sbilanciato (domande appena aggiunte, statistiche azzerate,
+// domande cambiate con "Cambia domanda" che non venivano contate) le
+// domande appena uscite restavano le meno usate, e la partita dopo
+// ricominciava proprio da quelle.
 
-// Due segnali separati, non uno solo — è quello che serviva per essere
-// certi al 100% di non ripetere mai dentro la stessa partita: "l'ho già
-// vista in QUESTA partita?" vince sempre; solo tra le carte non ancora
-// viste in questa partita si guarda quale ha meno utilizzo storico
-// (quello salvato su Firebase, che è così che il non-ripetersi vale
-// anche da una partita alla successiva).
-export function creaMazzoPerUsoMinimo(carte, statistiche) {
-  const usiStorici = {};
+// Due segnali, in quest'ordine: "l'ho gia' vista in QUESTA partita?"
+// vince sempre (mai una ripetizione dentro la stessa partita); poi, tra
+// le non ancora viste, si prende quella la cui ultima partita e' piu'
+// vecchia (0 = mai uscita, quindi le domande nuove escono per prime).
+// A parita' decide l'ordine del mescolamento, cioe' il caso.
+//
+// ultimaPartitaPerChiave: { chiaveDomanda: numeroDellaUltimaPartita }
+export function creaMazzoARotazione(carte, ultimaPartitaPerChiave) {
+  const ultimaPartita = {};
   carte.forEach(c => {
-    usiStorici[c._chiave] = (statistiche[c._chiave] && statistiche[c._chiave].proposte) || 0;
+    ultimaPartita[c._chiave] = ultimaPartitaPerChiave[c._chiave] || 0;
   });
-  return { carte: mescola(carte), usiStorici, visteInQuestaPartita: new Set() };
+  return { carte: mescola(carte), ultimaPartita, visteInQuestaPartita: new Set() };
 }
 
-export function peschaPerUsoMinimo(mazzo) {
+export function peschaARotazione(mazzo) {
   let nonAncoraViste = mazzo.carte.filter(c => !mazzo.visteInQuestaPartita.has(c._chiave));
   let baseViste = mazzo.visteInQuestaPartita;
 
@@ -94,12 +104,12 @@ export function peschaPerUsoMinimo(mazzo) {
   }
 
   let migliore = nonAncoraViste[0];
-  let usiMigliore = mazzo.usiStorici[migliore._chiave] || 0;
+  let ultimaMigliore = mazzo.ultimaPartita[migliore._chiave] || 0;
   for (const carta of nonAncoraViste) {
-    const usi = mazzo.usiStorici[carta._chiave] || 0;
-    if (usi < usiMigliore) {
+    const ultima = mazzo.ultimaPartita[carta._chiave] || 0;
+    if (ultima < ultimaMigliore) {
       migliore = carta;
-      usiMigliore = usi;
+      ultimaMigliore = ultima;
     }
   }
 
@@ -107,7 +117,7 @@ export function peschaPerUsoMinimo(mazzo) {
   nuoveViste.add(migliore._chiave);
 
   return {
-    mazzo: { carte: mazzo.carte, usiStorici: mazzo.usiStorici, visteInQuestaPartita: nuoveViste },
+    mazzo: { carte: mazzo.carte, ultimaPartita: mazzo.ultimaPartita, visteInQuestaPartita: nuoveViste },
     carta: migliore
   };
 }

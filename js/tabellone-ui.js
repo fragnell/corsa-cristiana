@@ -11,7 +11,8 @@
 import { CONFIG, unisciConfig } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
-import { creaMazzo, pesca, creaMazzoPerUsoMinimo, peschaPerUsoMinimo } from './mazzi.js';
+import { creaMazzo, pesca, creaMazzoARotazione, peschaARotazione } from './mazzi.js';
+import { leggiMemoriaRotazione, numeroNuovaPartita, segnaDomandaUscita } from './rotazione-domande.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
 import { esci } from './accesso.js';
 import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica, fermaEffetti } from './audio-ui.js';
@@ -33,7 +34,6 @@ import {
   ascoltaPresenza,
   ascoltaAbbandoni,
   registraEsitoConoscenza,
-  leggiStatisticheDaFirebase,
   registraPartitaConclusa,
   annunciaTabellonePresente,
   aggiornaGiocatoriTabellone,
@@ -73,6 +73,11 @@ let stato = null;
 let mazzoConoscenza, mazzoImprevisto, mazzoProva;
 let mazzoConoscenzaJunior = null;
 let codicePartita = '';
+// Il numero di QUESTA partita su questo tabellone, per la rotazione delle
+// domande: ogni domanda che esce viene segnata con questo numero. Il
+// tabellone si ricarica a ogni nuova partita, quindi ce n'e' uno per
+// partita. Si imposta in avvia().
+let numeroPartita = 0;
 const pedineDom = new Map();
 const richiesteJuniorGestite = new Set();
 let presenzaGiocatori = {};
@@ -264,10 +269,14 @@ async function giocaTurno() {
 
       let carta;
       const pescaProssimaCarta = () => {
-        const pescata = usaMazzoJunior ? peschaPerUsoMinimo(mazzoConoscenzaJunior) : peschaPerUsoMinimo(mazzoConoscenza);
+        const pescata = usaMazzoJunior ? peschaARotazione(mazzoConoscenzaJunior) : peschaARotazione(mazzoConoscenza);
         if (usaMazzoJunior) mazzoConoscenzaJunior = pescata.mazzo;
         else mazzoConoscenza = pescata.mazzo;
         carta = pescata.carta;
+        // Segna subito che la domanda e' uscita in questa partita, anche se
+        // poi viene cambiata con "Cambia domanda": i giocatori l'hanno vista
+        // comunque, e nella partita dopo non deve riapparire per prima.
+        if (carta._chiave) segnaDomandaUscita(carta._chiave, numeroPartita);
       };
       pescaProssimaCarta();
 
@@ -639,13 +648,14 @@ async function avvia() {
   const tutteLeCarteConoscenza = await leggiMazzoDaFirebase('conoscenza');
   const carteConoscenzaNormali = tutteLeCarteConoscenza.filter(c => !c.junior);
   const carteConoscenzaJunior = tutteLeCarteConoscenza.filter(c => c.junior);
-  const statisticheConoscenza = await leggiStatisticheDaFirebase();
+  const memoriaRotazione = leggiMemoriaRotazione();
 
   const carteImprevisto = await leggiMazzoDaFirebase('imprevisto');
   const carteProva = await leggiMazzoDaFirebase('prova');
 
-  mazzoConoscenza = creaMazzoPerUsoMinimo(carteConoscenzaNormali, statisticheConoscenza);
-  mazzoConoscenzaJunior = carteConoscenzaJunior.length > 0 ? creaMazzoPerUsoMinimo(carteConoscenzaJunior, statisticheConoscenza) : null;
+  numeroPartita = numeroNuovaPartita(memoriaRotazione);
+  mazzoConoscenza = creaMazzoARotazione(carteConoscenzaNormali, memoriaRotazione);
+  mazzoConoscenzaJunior = carteConoscenzaJunior.length > 0 ? creaMazzoARotazione(carteConoscenzaJunior, memoriaRotazione) : null;
   mazzoImprevisto = creaMazzo(carteImprevisto);
   mazzoProva = creaMazzo(carteProva);
 
