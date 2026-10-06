@@ -5,8 +5,12 @@
 // risposte possibili, con un minimo richiesto) o "scelta" (si sceglie tra
 // alcune opzioni proposte, una delle quali è quella giusta). Solo per il
 // tipo "scelta" esiste anche la spunta "junior".
+// Ogni domanda può avere in più un link "Approfondisci" (facoltativo) che
+// porta a una pagina di JW.org: se c'è, sul telefono compare il pulsante.
+// Il controllo del link è in link-approfondimento.js.
 
 import { ascoltaMazzo, salvaCarta, eliminaCarta, nuovaChiaveMazzo } from './sincronizzazione.js';
+import { controllaLink, linkDaUsare } from './link-approfondimento.js';
 
 const NOME_MAZZO = 'conoscenza';
 let listaRispostePossibili = [];
@@ -35,6 +39,27 @@ export function avviaSezioneConoscenza() {
   document.getElementById('conoscenza-input-nuova-risposta-diretta').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); aggiungiRispostaDiretta(); }
   });
+
+  document.getElementById('conoscenza-btn-prova-link').addEventListener('click', provaLink);
+}
+
+// Segnalino nell'elenco: 🔗 se la domanda ha un link Approfondisci che il
+// gioco userà, ⚠️ se c'è scritto qualcosa ma non è un link buono (in quel
+// caso il pulsante non comparirà), niente se non c'è.
+function segnalinoLink(carta) {
+  if (!carta.linkApprofondimento) return '';
+  return linkDaUsare(carta.linkApprofondimento)
+    ? ' <span title="Ha il link Approfondisci">🔗</span>'
+    : ' <span title="Il link Approfondisci non è valido: il pulsante non comparirà">⚠️</span>';
+}
+
+// Apre in una nuova scheda il link scritto nel campo, per controllare che
+// porti dove deve (senza salvare nulla).
+function provaLink() {
+  const esito = controllaLink(document.getElementById('conoscenza-input-link').value);
+  if (!esito.valido) { alert(esito.motivo); return; }
+  if (esito.link === '') { alert('Incolla prima il link da provare.'); return; }
+  window.open(esito.link, '_blank', 'noopener,noreferrer');
 }
 
 function disegnaLista(carte) {
@@ -48,7 +73,7 @@ function disegnaLista(carte) {
     const etichettaTipo = etichetteTipo[carta.tipo] || '💬';
     const etichettaJunior = carta.junior ? ' 🟢<small>junior</small>' : '';
     riga.innerHTML = `
-      <span class="admin-riga-testo">${etichettaTipo} ${carta.domanda}${etichettaJunior}</span>
+      <span class="admin-riga-testo">${etichettaTipo} ${carta.domanda}${etichettaJunior}${segnalinoLink(carta)}</span>
       <button type="button" class="admin-btn-modifica">✏️</button>
       <button type="button" class="admin-btn-elimina">🗑️</button>
     `;
@@ -67,6 +92,7 @@ function mostraForm(carta) {
   document.getElementById('conoscenza-input-domanda').value = carta ? carta.domanda : '';
   document.getElementById('conoscenza-tipo').value = carta ? carta.tipo : 'diretta';
   document.getElementById('conoscenza-input-junior').checked = !!(carta && carta.junior);
+  document.getElementById('conoscenza-input-link').value = (carta && carta.linkApprofondimento) ? carta.linkApprofondimento : '';
 
   listaRisposteDirette = (carta && carta.tipo === 'diretta')
     ? (Array.isArray(carta.risposta) ? [...carta.risposta] : [carta.risposta])
@@ -108,8 +134,24 @@ function mostraForm(carta) {
       if (document.getElementById('conoscenza-input-junior').checked) nuovaCarta.junior = true;
     }
 
+    // Il link Approfondisci è facoltativo: se è vuoto la carta resta senza
+    // (niente campo, non un campo vuoto); se c'è deve essere un link buono.
+    const esitoLink = controllaLink(document.getElementById('conoscenza-input-link').value);
+    if (!esitoLink.valido) { alert(esitoLink.motivo); return; }
+    if (esitoLink.link) nuovaCarta.linkApprofondimento = esitoLink.link;
+
     const chiave = carta ? carta._chiave : nuovaChiaveMazzo(NOME_MAZZO);
-    await salvaCarta(NOME_MAZZO, chiave, nuovaCarta);
+    try {
+      await salvaCarta(NOME_MAZZO, chiave, nuovaCarta);
+    } catch (errore) {
+      // Se Firebase rifiuta il salvataggio (per esempio le sue regole non
+      // conoscono ancora il campo del link) lo si deve vedere, non restare
+      // con il modulo aperto e nessuna spiegazione.
+      console.error(errore);
+      alert('Non sono riuscito a salvare la domanda: ' + errore.message
+        + '\nSe hai aggiunto un link Approfondisci, controlla che le regole di Firebase accettino il campo "linkApprofondimento".');
+      return;
+    }
     nascondiForm();
   };
 }

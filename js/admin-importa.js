@@ -7,8 +7,15 @@
 // cestino nel pannello. Usa la libreria SheetJS (caricata in admin.html
 // con un tag <script> a parte) per leggere e scrivere file Excel
 // direttamente nel browser.
+// Le domande Conoscenza hanno anche la colonna "approfondisci": il link
+// (facoltativo) del pulsante Approfondisci, controllato da
+// link-approfondimento.js. L'importazione sostituisce la carta con quella
+// del file, quindi per non perdere i link già salvati: se il file non ha
+// la colonna "approfondisci" il link della carta resta com'è; se la colonna
+// c'è, vale quella (una cella vuota toglie il link).
 
 import { nuovaChiaveMazzo, salvaCarta, leggiMazzoDaFirebase } from './sincronizzazione.js';
+import { controllaLink } from './link-approfondimento.js';
 
 const NOMI_FOGLIO = { conoscenza: 'Conoscenza', imprevisto: 'Imprevisto', prova: 'Prova' };
 const CAMPO_TESTO = { conoscenza: 'domanda', imprevisto: 'testo', prova: 'testo' };
@@ -45,6 +52,10 @@ function rigaACarta(nomeMazzo, riga) {
       const juniorTesto = pulisci(riga.junior).toLowerCase();
       if (juniorTesto === 'si' || juniorTesto === 'sì') carta.junior = true;
     }
+    // Cella vuota = nessun link (il campo non c'è proprio, non resta vuoto).
+    // Se il testo non è un link buono lo segnala validaCarta.
+    const link = pulisci(riga.approfondisci);
+    if (link) carta.linkApprofondimento = link;
     return carta;
   }
   const carta = { testo: pulisci(riga.testo) };
@@ -71,7 +82,8 @@ function cartaARiga(nomeMazzo, carta) {
       rispostePossibili: carta.tipo === 'elenco' ? (carta.rispostePossibili || []).join('; ') : '',
       opzioni: carta.tipo === 'scelta' ? (carta.opzioni || []).join('; ') : '',
       rispostaCorretta: carta.tipo === 'scelta' ? (carta.rispostaCorretta || '') : '',
-      junior: carta.tipo === 'scelta' && carta.junior ? 'sì' : ''
+      junior: carta.tipo === 'scelta' && carta.junior ? 'sì' : '',
+      approfondisci: carta.linkApprofondimento || ''
     };
   }
   if (nomeMazzo === 'imprevisto') {
@@ -100,6 +112,10 @@ function validaCarta(nomeMazzo, carta, indice) {
     }
     if (carta.tipo === 'scelta' && Array.isArray(carta.opzioni) && carta.rispostaCorretta && !carta.opzioni.includes(carta.rispostaCorretta)) {
       return `${n} (scelta): "rispostaCorretta" deve essere identica a una delle "opzioni"`;
+    }
+    if (carta.linkApprofondimento) {
+      const esitoLink = controllaLink(carta.linkApprofondimento);
+      if (!esitoLink.valido) return `${n}: il link in "approfondisci" non va bene. ${esitoLink.motivo}`;
     }
   } else {
     if (!carta.testo) return `${n}: manca "testo"`;
@@ -163,6 +179,17 @@ async function eseguiImportazione() {
       const righe = XLSX.utils.sheet_to_json(foglio, { defval: '' });
       if (righe.length === 0) continue;
 
+      // Una colonna scritta "Approfondisci" o "approfondisci " non verrebbe
+      // riconosciuta e i suoi link verrebbero ignorati senza dire nulla: meglio
+      // fermarsi e dirlo.
+      if (nomeMazzo === 'conoscenza') {
+        const colonnaSimile = Object.keys(righe[0]).find(nome => nome !== 'approfondisci' && nome.trim().toLowerCase() === 'approfondisci');
+        if (colonnaSimile) {
+          erroriTotali.push(`[${nomeFoglio}] La colonna "${colonnaSimile}" deve chiamarsi esattamente "approfondisci" (tutto minuscolo, senza spazi).`);
+          continue;
+        }
+      }
+
       const carte = righe.map(riga => rigaACarta(nomeMazzo, riga));
       const errori = carte
         .map((carta, indice) => validaCarta(nomeMazzo, carta, indice))
@@ -176,14 +203,34 @@ async function eseguiImportazione() {
 
       const campoTesto = CAMPO_TESTO[nomeMazzo];
       const esistenti = await leggiMazzoDaFirebase(nomeMazzo);
+      // Con defval '' ogni riga ha tutte le colonne del foglio, anche vuote:
+      // basta guardare se "approfondisci" è tra le chiavi.
+      const foglioHaColonnaLink = righe.some(riga => Object.prototype.hasOwnProperty.call(riga, 'approfondisci'));
 
+      // Se in Firebase ci sono due domande con lo stesso testo, due righe del
+      // file con quel testo prendono una domanda ciascuna, in ordine (invece di
+      // finire tutte e due sulla prima). Se le righe sono più delle domande,
+      // le righe in più aggiornano ancora la prima, come è sempre stato.
+      const giaUsate = new Set();
       let aggiornate = 0;
       let aggiunte = 0;
+      let linkCambiati = 0;
       for (const carta of carte) {
         const testoCarta = (carta[campoTesto] || '').trim();
-        const trovata = esistenti.find(e => (e[campoTesto] || '').trim() === testoCarta);
+        const stesse = esistenti.filter(e => (e[campoTesto] || '').trim() === testoCarta);
+        const trovata = stesse.find(e => !giaUsate.has(e._chiave)) || stesse[0];
 
         if (trovata) {
+          giaUsate.add(trovata._chiave);
+          // Il file non parla di link: quello già salvato non si tocca.
+          if (nomeMazzo === 'conoscenza' && !foglioHaColonnaLink && trovata.linkApprofondimento) {
+            carta.linkApprofondimento = trovata.linkApprofondimento;
+          }
+          // Si conta ogni link che c'era e ora è sparito o diverso, per dirlo nel
+          // riepilogo (un file vecchio con la colonna può togliere link nuovi).
+          if (nomeMazzo === 'conoscenza' && trovata.linkApprofondimento && trovata.linkApprofondimento !== carta.linkApprofondimento) {
+            linkCambiati++;
+          }
           await salvaCarta(nomeMazzo, trovata._chiave, carta);
           aggiornate++;
         } else {
@@ -192,7 +239,8 @@ async function eseguiImportazione() {
           aggiunte++;
         }
       }
-      righeDiRiepilogo.push(`${nomeFoglio}: ${aggiornate} aggiornate, ${aggiunte} nuove`);
+      const notaLink = linkCambiati > 0 ? ` (link tolti o cambiati: ${linkCambiati})` : '';
+      righeDiRiepilogo.push(`${nomeFoglio}: ${aggiornate} aggiornate, ${aggiunte} nuove${notaLink}`);
     }
 
     if (erroriTotali.length > 0) {

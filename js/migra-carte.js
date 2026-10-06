@@ -7,6 +7,7 @@
 // è incompleta.
 
 import { nuovaChiaveMazzo, salvaCarta } from './sincronizzazione.js';
+import { controllaLink } from './link-approfondimento.js';
 
 function validaCarta(nomeMazzo, carta, indice) {
   const n = `Carta #${indice + 1}`;
@@ -29,10 +30,23 @@ function validaCarta(nomeMazzo, carta, indice) {
     if (carta.tipo === 'scelta' && Array.isArray(carta.opzioni) && !carta.opzioni.includes(carta.rispostaCorretta)) {
       return `${n} (scelta): "rispostaCorretta" deve essere uguale a una delle "opzioni"`;
     }
+    // Il link del pulsante Approfondisci è facoltativo, ma se c'è deve essere buono.
+    if (carta.linkApprofondimento !== undefined && carta.linkApprofondimento !== null && carta.linkApprofondimento !== '') {
+      const esitoLink = controllaLink(carta.linkApprofondimento);
+      if (!esitoLink.valido) return `${n}: "linkApprofondimento" non va bene. ${esitoLink.motivo}`;
+    }
   } else {
     if (!carta.testo) return `${n}: manca "testo"`;
   }
   return null;
+}
+
+// Il link Approfondisci si salva senza spazi ai bordi, e un link vuoto non si
+// salva affatto: così in Firebase il campo o c'è con un link vero, o non c'è.
+function pulisciLink(carta) {
+  const link = typeof carta.linkApprofondimento === 'string' ? carta.linkApprofondimento.trim() : '';
+  if (link) carta.linkApprofondimento = link;
+  else delete carta.linkApprofondimento;
 }
 
 document.getElementById('btn-importa').addEventListener('click', async () => {
@@ -69,6 +83,7 @@ document.getElementById('btn-importa').addEventListener('click', async () => {
     risultato.textContent = `Tutto in ordine, importo ${carte.length} carte...`;
 
     for (const carta of carte) {
+      if (nomeMazzo === 'conoscenza') pulisciLink(carta);
       const chiave = nuovaChiaveMazzo(nomeMazzo);
       await salvaCarta(nomeMazzo, chiave, carta);
     }

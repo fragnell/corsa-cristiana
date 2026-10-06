@@ -23,6 +23,8 @@
     <h2>📥📤 Importa / Esporta carte</h2>
     <p>Esporta tutte le carte in un file Excel, modificale con calma, poi reimportale: le domande già esistenti (stesso testo esatto) vengono aggiornate, quelle nuove aggiunte. Nessuna carta viene mai cancellata da qui — per cancellare si usa il cestino qui sotto.</p>
 
+    <p class="admin-nota">Per le domande Conoscenza c'è anche la colonna «approfondisci» (tutto minuscolo): il link per il pulsante Approfondisci. Se il file che importi non ha quella colonna, i link già salvati restano dove sono. Se la colonna c'è e una cella è vuota, il link di quella domanda viene tolto (alla fine, il riepilogo dice quanti link sono stati tolti o cambiati).</p>
+
     <button type="button" id="importa-btn-esporta">📤 Esporta tutto in Excel</button>
 
     <label>File Excel da importare (.xlsx):</label>
@@ -85,6 +87,12 @@
       Domanda adatta alla modalità junior (chi la attiva pesca solo da queste)
     </label>
   </div>
+
+      <label>Approfondisci — link a JW.org (facoltativo):<br>
+        <input type="text" id="conoscenza-input-link" placeholder="https://www.jw.org/finder?...">
+      </label>
+      <button type="button" id="conoscenza-btn-prova-link" style="margin-top:0.5rem">🔗 Prova il link</button>
+      <p class="admin-nota">Incolla il link copiato con il pulsante Condividi della Biblioteca online. Se lo lasci vuoto, per questa domanda in gioco il pulsante Approfondisci non compare.</p>
 
       <div class="admin-form-bottoni">
         <button type="button" id="conoscenza-btn-salva">💾 Salva</button>
