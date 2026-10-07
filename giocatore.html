@@ -80,10 +80,27 @@
     </div>
 
   <div id="verdetto-overlay" class="nascosta">
-    <div id="verdetto-overlay-contenuto">
-      <p id="verdetto-overlay-testo"></p>
-      <p id="verdetto-overlay-countdown"></p>
-      <button id="verdetto-overlay-ok">OK</button>
+    <div id="verdetto-overlay-contenuto" role="dialog" aria-modal="true">
+
+      <div id="verdetto-vista-esito">
+        <p id="verdetto-overlay-testo"></p>
+        <p id="verdetto-overlay-countdown"></p>
+        <div class="verdetto-bottoni">
+          <button type="button" id="verdetto-overlay-approfondisci" class="verdetto-bottone-secondario nascosta">📖 Approfondisci</button>
+          <button type="button" id="verdetto-overlay-ok">OK</button>
+        </div>
+      </div>
+
+      <div id="verdetto-vista-avviso" class="nascosta">
+        <p id="avviso-titolo">Stai per aprire una pagina di JW.org</p>
+        <p class="avviso-testo">Questo pulsante condivide un link a un contenuto di JW.org e lo apre in una nuova scheda. Il gioco non copia né include nulla del suo contenuto, che appartiene ai rispettivi titolari e si usa secondo le <a href="https://www.jw.org/it/condizioni-uso/" target="_blank" rel="noopener noreferrer">Condizioni d'uso di JW.org</a>.</p>
+        <p class="avviso-testo">Corsa Cristiana è un progetto personale e indipendente, senza legami ufficiali con JW.org.</p>
+        <div class="verdetto-bottoni">
+          <a id="avviso-apri" class="verdetto-bottone-principale" target="_blank" rel="noopener noreferrer">Apri la pagina</a>
+          <button type="button" id="avviso-annulla" class="verdetto-bottone-secondario">Annulla</button>
+        </div>
+      </div>
+
     </div>
   </div>
 

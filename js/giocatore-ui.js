@@ -8,6 +8,7 @@
 
 import { raccogliRisposta } from './risposta-ui.js';
 import { PALETTE, NOMI_COLORI } from './colori.js';
+import { mostraVerdettoSulTelefono, chiudiAvvisoSeAperto } from './verdetto-telefono-ui.js';
 
 import {
   verificaPartitaEsiste,
@@ -231,6 +232,7 @@ function aggiornaSchermo(stato) {
   } else if (stato.turnoDi === mioId) {
     statoTurno.textContent = '🎲 Tocca a te!';
     bottoneDado.classList.remove('nascosta');
+    chiudiAvvisoSeAperto();
   } else {
     statoTurno.textContent = `In attesa di ${giocatoreDiTurno.nome}...`;
     bottoneDado.classList.add('nascosta');
@@ -248,39 +250,10 @@ function aggiornaSchermo(stato) {
   const verdetto = stato.ultimoVerdetto;
   if (verdetto && verdetto.giocatoreId === mioId && verdetto.id !== ultimoVerdettoVisto) {
     ultimoVerdettoVisto = verdetto.id;
-    mostraVerdettoOverlay(verdetto.corretta);
+    // Il pannello del verdetto (con l'eventuale pulsante Approfondisci) vive
+    // in verdetto-telefono-ui.js.
+    mostraVerdettoSulTelefono(verdetto.corretta, verdetto.linkApprofondimento);
   }
-}
-
-function mostraVerdettoOverlay(corretta) {
-  const overlay = document.getElementById('verdetto-overlay');
-  const testo = document.getElementById('verdetto-overlay-testo');
-  const conto = document.getElementById('verdetto-overlay-countdown');
-  const bottoneOk = document.getElementById('verdetto-overlay-ok');
-
-  testo.textContent = corretta ? '✅ Risposta corretta!' : '❌ Risposta errata';
-  testo.style.color = corretta ? '#2e7d32' : '#c62828';
-
-  let secondiRimasti = 10;
-  conto.textContent = `Si chiude tra ${secondiRimasti}s`;
-
-  let chiuso = false;
-  const timer = setInterval(() => {
-    secondiRimasti--;
-    conto.textContent = `Si chiude tra ${secondiRimasti}s`;
-    if (secondiRimasti <= 0) chiudi();
-  }, 1000);
-
-  function chiudi() {
-    if (chiuso) return;
-    chiuso = true;
-    clearInterval(timer);
-    overlay.classList.add('nascosta');
-    bottoneOk.onclick = null;
-  }
-
-  bottoneOk.onclick = chiudi;
-  overlay.classList.remove('nascosta');
 }
 
 function gestisciConoscenzaInArrivo(inArrivo) {
@@ -316,6 +289,7 @@ function gestisciConoscenzaInArrivo(inArrivo) {
 function gestisciRichiestaConoscenza(richiesta) {
   if (richiesta.id === richiestaIdGestita) return;
   richiestaIdGestita = richiesta.id;
+  chiudiAvvisoSeAperto();
   rispondiAConoscenza(richiesta);
 }
 

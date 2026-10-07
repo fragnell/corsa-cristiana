@@ -17,6 +17,7 @@ import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProva
 import { esci } from './accesso.js';
 import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica, fermaEffetti } from './audio-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
+import { linkDaUsare } from './link-approfondimento.js';
 import { animaDado } from './dado-ui.js';
 import { PALETTE } from './colori.js';
 import {
@@ -321,6 +322,13 @@ async function giocaTurno() {
         corretta = valutaRisposta(carta, risposteDate);
 
         stato.ultimoVerdetto = { giocatoreId: giocatore.id, corretta, id: Date.now() };
+        // Il link "Approfondisci" della domanda, se c'è ed è buono, viaggia
+        // solo qui, nel verdetto: cioè dopo che il giocatore ha risposto. Mai
+        // nella richiesta della domanda (sopra), così nessuno lo trova prima.
+        // Se non c'è un link buono il campo non esiste proprio: a Firebase non
+        // si manda mai un valore "undefined".
+        const linkApprofondimento = linkDaUsare(carta.linkApprofondimento);
+        if (linkApprofondimento) stato.ultimoVerdetto.linkApprofondimento = linkApprofondimento;
         await pubblicaStato(codicePartita, stato);
 
         const esito = await mostraVerdetto(carta, corretta, risposteDate);

@@ -346,3 +346,70 @@ button {
   box-shadow: none;
   padding: 0.5rem;
 }
+
+
+/* --- pulsante Approfondisci e avviso, dentro il pannello del verdetto --- */
+
+#verdetto-overlay-contenuto {
+  box-sizing: border-box;
+  max-width: min(85vw, 24rem);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.verdetto-bottoni {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+/* Pulsante secondario: contorno marrone su fondo bianco (OK resta verde). */
+.verdetto-bottone-secondario {
+  box-sizing: border-box;
+  font-size: 1.1rem;
+  padding: 0.6rem 1.4rem;
+  border: 2px solid #8a5a2b;
+  border-radius: 8px;
+  background: white;
+  color: #5a3a16;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* "Apri la pagina" e' un vero collegamento, disegnato come il pulsante verde OK. */
+.verdetto-bottone-principale {
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.6rem 2rem;
+  border-radius: 8px;
+  background: #4caf50;
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  cursor: pointer;
+}
+
+#avviso-titolo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #3a2410;
+  margin: 0 0 0.8rem;
+}
+
+.avviso-testo {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #3a2410;
+  text-align: left;
+  margin: 0 0 0.8rem;
+}
+
+.avviso-testo a {
+  color: #1a3a5c;
+  text-decoration: underline;
+}
