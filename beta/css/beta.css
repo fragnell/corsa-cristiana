@@ -1,0 +1,18 @@
+/* beta.css */
+/* La targhetta "BETA": serve solo a distinguere a colpo d'occhio la copia di prova
+   dal gioco vero. Non cambia nient'altro e non intercetta i tocchi. */
+
+.etichetta-beta {
+  position: fixed;
+  top: 6px;
+  left: 6px;
+  z-index: 5000;
+  padding: 2px 9px;
+  background: #c0392b;
+  color: #ffffff;
+  font: 700 12px/1.4 sans-serif;
+  letter-spacing: 0.12em;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}

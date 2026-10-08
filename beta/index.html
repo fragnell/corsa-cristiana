@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corsa Cristiana</title>
+  <link rel="apple-touch-icon" href="img/icona-app-180.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f0e2cc">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/beta.css">
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="etichetta-beta">BETA</div>
+
+  <header class="barra-alto">
+    <a href="admin.html" class="pillola">⚙️ Amministratore</a>
+  </header>
+  <div id="vista-iniziale">
+    <div class="pannello">
+      <h1><span class="titolo-blu">Corsa</span> <span class="titolo-verde">Cristiana</span></h1>
+      <p class="sottotitolo">Gioca, impara e metti alla prova la tua conoscenza biblica</p>
+
+      <button type="button" id="btn-gioca" class="bottone-gioca">🎮 Gioca <span class="freccia">›</span></button>
+
+            <div class="caratteristiche">
+      <div class="caratteristica">
+          <span class="icona icona-arancione">👥</span>
+          <span>Divertiamoci<br>insieme</span>
+        </div>
+        <div class="caratteristica">
+          <span class="icona icona-azzurra">📖</span>
+          <span>Impariamo<br>dalla Bibbia</span>
+        </div>
+        <div class="caratteristica">
+          <span class="icona icona-rosa">❤️</span>
+          <span>Edifichiamo<br>la fede</span>
+        </div>
+      </div>
+
+      <div class="azioni-secondarie">
+        <a href="regolamento.html" class="bottone-secondario">📖 Come si gioca</a>
+        <a href="contatti.html" class="bottone-secondario">✉️ Contatta lo sviluppatore</a>
+      </div>
+
+      <p class="citazione">"...corriamo con perseveranza la corsa che ci sta davanti"<br><span class="fonte-citazione">EBREI 12:1</span></p>
+    </div>
+  </div>
+
+  <div id="vista-scelta" class="nascosta">
+    <div class="pannello">
+      <h1><span class="titolo-blu">Corsa</span> <span class="titolo-verde">Cristiana</span></h1>
+      <p class="sottotitolo">Da quale dispositivo stai giocando?</p>
+
+      <a href="tabellone.html" class="scelta-bottone">📺 Sono il tabellone</a>
+      <a href="giocatore.html" class="scelta-bottone">📱 Sono un giocatore</a>
+
+      <br>
+      <button type="button" id="btn-indietro" class="link-indietro">← Indietro</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/index-ui.js"></script>
+</body>
+</html>

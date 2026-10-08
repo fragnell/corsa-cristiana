@@ -1,0 +1,423 @@
+/* giocatore.css */
+/* Stile per il telefono: bottoni grandi, facili da toccare, testo leggibile
+   anche con lo schermo piccolo. */
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background: #1a1a1a;
+}
+
+#scena {
+  position: relative;
+  width: min(100vw, calc(100vh * 941 / 1772));
+  aspect-ratio: 941 / 1772;
+  margin: 0 auto;
+  background-image: url('../img/sfondo-telefono.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+#pannello-contenuto {
+  position: absolute;
+  left: 5%;
+  top: 17%;
+  width: 89%;
+  height: 77%;
+  box-sizing: border-box;
+  padding: 0.8rem 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  color: #3a2410;
+}
+#mio-nome {
+  margin: 0 0 0.3rem;
+}
+
+#mia-posizione {
+  margin: 0 0 1rem;
+}
+
+input[type="text"] {
+  font-size: 1.4rem;
+  padding: 0.5rem;
+  text-transform: uppercase;
+  width: 130px;
+  text-align: center;
+  letter-spacing: 0.15em;
+}
+
+#input-nome {
+  width: 80%;
+  max-width: 260px;
+  box-sizing: border-box;
+  letter-spacing: normal;
+}
+
+button {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.3rem 1rem;
+  background: #054b07;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+#btn-tira-dado {
+  font-size: 1.7rem;
+  padding: 1.3rem 2rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 320px;
+}
+
+.nascosta {
+  display: none;
+}
+
+#stato-turno {
+  font-size: 1.3rem;
+  margin: 1.5rem 0;
+}
+
+#mia-prova-sospesa {
+  background: #fff3cd;
+  border: 1px solid #e0c36a;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin: 1rem 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+#messaggio-ingresso {
+  color: #c0392b;
+  font-weight: bold;
+}
+
+#notifica-evento {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #b8860b;
+}
+
+
+#area-domanda-conoscenza {
+  background: #fff3cd;
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+#area-conoscenza-in-arrivo {
+  background: #fff3cd;
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+#risposta-area {
+  margin: 0.5rem 0 1rem;
+}
+
+#risposta-area .risposta-riga {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.3rem 0;
+}
+
+#risposta-area input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  max-width: 220px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+#risposta-aggiungi {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #4caf50;
+  color: white;
+}
+
+#risposta-elenco-lista {
+  text-align: left;
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 0.5rem 0;
+  background: white;
+  padding: 0.1rem;
+  border-radius: 6px;
+}
+
+
+/* --- registrazione e sala d'attesa --- */
+
+#scelta-colore {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin: 0.8rem 0;
+}
+
+.pallino-colore {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pallino-colore.selezionato {
+  border-color: #333;
+  transform: scale(1.15);
+}
+
+.pallino-colore.colore-preso {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+#lista-attesa {
+  list-style: none;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+
+/* --- domande a scelta multipla --- */
+
+#risposta-scelta-opzioni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.3rem 0;
+}
+
+.risposta-opzione {
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 2px solid #999;
+  background: white;
+  color: #333;
+  text-align: left;
+}
+
+.risposta-opzione.selezionata {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+  font-weight: bold;
+}
+
+#risposta-conferma-scelta {
+  width: 100%;
+  font-size: 1.15rem;
+  padding: 0.8rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
+
+#risposta-conferma-scelta:disabled {
+  background: #a5d6a7;
+  cursor: default;
+}
+
+
+/* --- notifica del verdetto Conoscenza, simultanea al tabellone --- */
+
+#verdetto-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+#verdetto-overlay.nascosta {
+  display: none;
+}
+
+#verdetto-overlay-contenuto {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  max-width: 85vw;
+}
+
+#verdetto-overlay-testo {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem;
+}
+
+#verdetto-overlay-countdown {
+  color: #888;
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+#verdetto-overlay-ok {
+  font-size: 1.1rem;
+  padding: 0.6rem 2rem;
+  border: none;
+  border-radius: 8px;
+  background: #4caf50;
+  color: white;
+  cursor: pointer;
+}
+
+#conoscenza-countdown {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #888;
+  margin: 0 0 0.4rem;
+}
+
+#conoscenza-countdown.conoscenza-countdown-urgente {
+  color: #c62828;
+}
+
+
+#lista-rientro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.bottone-rientro {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.2rem;
+  padding: 0.8rem 1.2rem;
+  background: white;
+  color: #333;
+  border: 2px solid #999;
+  border-radius: 12px;
+}
+
+
+.bottone-abbandona {
+  margin-top: 0.3rem;
+  background: none;
+  border: none;
+  color: #ec0909;
+  text-decoration:underline;
+  font-size: 0.95rem;
+  font-weight:bold;
+  box-shadow: none;
+  padding: 0.5rem;
+}
+
+
+/* --- pulsante Approfondisci e avviso, dentro il pannello del verdetto --- */
+
+#verdetto-overlay-contenuto {
+  box-sizing: border-box;
+  max-width: min(85vw, 24rem);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.verdetto-bottoni {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+/* Pulsante secondario: contorno marrone su fondo bianco (OK resta verde). */
+.verdetto-bottone-secondario {
+  box-sizing: border-box;
+  font-size: 1.1rem;
+  padding: 0.6rem 1.4rem;
+  border: 2px solid #8a5a2b;
+  border-radius: 8px;
+  background: white;
+  color: #5a3a16;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* Seconda riga del pulsante Approfondisci ("sul sito JW.org"): piu' piccola, sotto al nome. */
+.verdetto-bottone-sotto {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: normal;
+  margin-top: 0.1rem;
+}
+
+/* "Apri la pagina" e' un vero collegamento, disegnato come il pulsante verde OK. */
+.verdetto-bottone-principale {
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.6rem 2rem;
+  border-radius: 8px;
+  background: #4caf50;
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  cursor: pointer;
+}
+
+#avviso-titolo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #3a2410;
+  margin: 0 0 0.8rem;
+}
+
+.avviso-testo {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #3a2410;
+  text-align: left;
+  margin: 0 0 0.8rem;
+}
+
+.avviso-testo a {
+  color: #1a3a5c;
+  text-decoration: underline;
+}

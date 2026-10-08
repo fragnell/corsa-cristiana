@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Corsa Cristiana — Impostazioni</title>
+  <link rel="apple-touch-icon" href="img/icona-app-180.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f0e2cc">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/beta.css">
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="etichetta-beta">BETA</div>
+    <h1>⚙️ Impostazioni</h1>
+
+  <div id="admin-tabs">
+    <button type="button" id="tab-btn-carte" class="admin-tab-btn admin-tab-attiva">📇 Carte</button>
+    <button type="button" id="tab-btn-regole" class="admin-tab-btn">🔧 Regole</button>
+    <button type="button" id="tab-btn-statistiche" class="admin-tab-btn">📊 Statistiche</button>
+  </div>
+
+  <div id="tab-carte">
+
+  <section id="sezione-importa">
+    <h2>📥📤 Importa / Esporta carte</h2>
+    <p>Esporta tutte le carte in un file Excel, modificale con calma, poi reimportale: le domande già esistenti (stesso testo esatto) vengono aggiornate, quelle nuove aggiunte. Nessuna carta viene mai cancellata da qui — per cancellare si usa il cestino qui sotto.</p>
+
+    <p class="admin-nota">Per le domande Conoscenza c'è anche la colonna «approfondisci» (tutto minuscolo): il link per il pulsante Approfondisci. Se il file che importi non ha quella colonna, i link già salvati restano dove sono. Se la colonna c'è e una cella è vuota, il link di quella domanda viene tolto (alla fine, il riepilogo dice quanti link sono stati tolti o cambiati).</p>
+
+    <button type="button" id="importa-btn-esporta">📤 Esporta tutto in Excel</button>
+
+    <label>File Excel da importare (.xlsx):</label>
+    <input type="file" id="importa-input-file" accept=".xlsx">
+
+    <br>
+    <button type="button" id="importa-btn-importa">📥 Importa</button>
+    <p id="importa-risultato"></p>
+  </section>
+
+  <section id="sezione-conoscenza">
+    <h2>Conoscenza (<span id="conoscenza-conteggio">0</span>)</h2>
+    <button type="button" id="conoscenza-btn-nuova">➕ Nuova domanda</button>
+    <div id="conoscenza-lista"></div>
+
+    <div id="conoscenza-form" class="admin-form nascosta">
+      <h3 id="conoscenza-form-titolo"></h3>
+
+      <label>Domanda:<br>
+        <textarea id="conoscenza-input-domanda" rows="2"></textarea>
+      </label>
+
+      <label>Tipo:
+        <select id="conoscenza-tipo">
+          <option value="diretta">Diretta (una risposta)</option>
+          <option value="elenco">Elenco (più risposte)</option>
+          <option value="scelta">Scelta multipla</option>
+        </select>
+      </label>
+
+      <div id="conoscenza-campi-diretta">
+        <label>Risposte accettate (una o più):</label>
+        <div id="conoscenza-lista-risposte-diretta"></div>
+        <div class="admin-riga-aggiungi">
+          <input type="text" id="conoscenza-input-nuova-risposta-diretta" placeholder="Aggiungi una risposta accettata">
+          <button type="button" id="conoscenza-btn-aggiungi-risposta-diretta">➕</button>
+        </div>
+      </div>
+
+      <div id="conoscenza-campi-elenco">
+        <label>Minimo richiesto:
+          <input type="number" id="conoscenza-input-minimo" min="1" value="3" style="width:60px">
+        </label>
+        <div id="conoscenza-lista-risposte"></div>
+        <div class="admin-riga-aggiungi">
+          <input type="text" id="conoscenza-input-nuova-risposta" placeholder="Aggiungi risposta possibile">
+          <button type="button" id="conoscenza-btn-aggiungi-risposta">➕</button>
+        </div>
+      </div>
+
+      <div id="conoscenza-campi-scelta">
+        <div id="conoscenza-lista-opzioni"></div>
+        <div class="admin-riga-aggiungi">
+          <input type="text" id="conoscenza-input-nuova-opzione" placeholder="Aggiungi opzione">
+          <button type="button" id="conoscenza-btn-aggiungi-opzione">➕</button>
+        </div>
+        <p class="admin-nota">Seleziona il pallino accanto all'opzione corretta.</p>
+    <label class="admin-label-checkbox">
+      <input type="checkbox" id="conoscenza-input-junior">
+      Domanda adatta alla modalità junior (chi la attiva pesca solo da queste)
+    </label>
+  </div>
+
+      <label>Approfondisci — link a JW.org (facoltativo):<br>
+        <input type="text" id="conoscenza-input-link" placeholder="https://www.jw.org/finder?...">
+      </label>
+      <button type="button" id="conoscenza-btn-prova-link" style="margin-top:0.5rem">🔗 Prova il link</button>
+      <p class="admin-nota">Incolla il link copiato con il pulsante Condividi della Biblioteca online. Se lo lasci vuoto, per questa domanda in gioco il pulsante Approfondisci non compare.</p>
+
+      <div class="admin-form-bottoni">
+        <button type="button" id="conoscenza-btn-salva">💾 Salva</button>
+        <button type="button" id="conoscenza-btn-annulla">Annulla</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="sezione-imprevisto">
+    <h2>Imprevisti (<span id="imprevisto-conteggio">0</span>)</h2>
+    <button type="button" id="imprevisto-btn-nuova">➕ Nuovo imprevisto</button>
+    <div id="imprevisto-lista"></div>
+
+    <div id="imprevisto-form" class="admin-form nascosta">
+      <h3 id="imprevisto-form-titolo"></h3>
+      <label>Testo:<br>
+        <textarea id="imprevisto-input-testo" rows="3"></textarea>
+      </label>
+      <label>Riferimento (facoltativo):<br>
+        <input type="text" id="imprevisto-input-riferimento" placeholder="es. Proverbi 3:5">
+      </label>
+      <div class="admin-form-bottoni">
+        <button type="button" id="imprevisto-btn-salva">💾 Salva</button>
+        <button type="button" id="imprevisto-btn-annulla">Annulla</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="sezione-prova">
+    <h2>Prove (<span id="prova-conteggio">0</span>)</h2>
+    <button type="button" id="prova-btn-nuova">➕ Nuova prova</button>
+    <div id="prova-lista"></div>
+
+    <div id="prova-form" class="admin-form nascosta">
+      <h3 id="prova-form-titolo"></h3>
+      <label>Testo della prova:<br>
+        <textarea id="prova-input-testo" rows="3"></textarea>
+      </label>
+      <label class="admin-label-checkbox">
+        <input type="checkbox" id="prova-input-vincolo">
+        È una prova "vincolo" (si svolge nel tempo — es. "resta con gli occhi chiusi fino al tuo prossimo turno" — invece di giudicarsi subito)
+      </label>
+      <div class="admin-form-bottoni">
+        <button type="button" id="prova-btn-salva">💾 Salva</button>
+        <button type="button" id="prova-btn-annulla">Annulla</button>
+      </div>
+    </div>
+  </section>
+
+  </div>
+
+  <div id="tab-regole" class="nascosta">
+    <section id="sezione-regole">
+      <h2>🔧 Regole del gioco</h2>
+      <p>Questi valori sostituiscono quelli di base scritti nel codice. Se non salvi mai nulla qui, resta valido il comportamento di sempre.</p>
+
+      <h3>Conoscenza</h3>
+      <label>Bonus risposta corretta:
+        <input type="number" id="regole-conoscenza-bonus">
+      </label>
+      <label>Malus risposta errata:
+        <input type="number" id="regole-conoscenza-malus">
+      </label>
+      <label>Sfida — bonus vincitore:
+        <input type="number" id="regole-conoscenza-sfida-bonus">
+      </label>
+      <label>Sfida — malus perdente:
+        <input type="number" id="regole-conoscenza-sfida-malus">
+      </label>
+      <p class="admin-nota">I due valori della Sfida sono pronti per quando costruiremo quella meccanica — per ora non hanno alcun effetto in partita.</p>
+
+      <h3>Imprevisto</h3>
+      <label>Malus (sempre negativo):
+        <input type="number" id="regole-imprevisto-malus">
+      </label>
+
+      <h3>Prova</h3>
+      <label>Bonus superata:
+        <input type="number" id="regole-prova-bonus">
+      </label>
+      <label>Malus fallita:
+        <input type="number" id="regole-prova-malus">
+      </label>
+
+      <h3>Comportamenti generali</h3>
+      <label class="admin-label-checkbox">
+        <input type="checkbox" id="regole-bonus-attiva-casella">
+        Un movimento-bonus (es. Conoscenza) attiva la casella su cui atterra
+      </label>
+      <label class="admin-label-checkbox">
+        <input type="checkbox" id="regole-salto-attiva-casella">
+        Un Salto attiva la casella di arrivo
+      </label>
+      <label class="admin-label-checkbox">
+        <input type="checkbox" id="regole-arrivo-libero">
+        Superare la casella finale basta per vincere (nessun rimbalzo indietro)
+      </label>
+      <p class="admin-nota">Questi tre interruttori vengono salvati, ma il motore oggi si comporta sempre come se fossero Bonus=NO, Salto=NO, Arrivo libero=SÌ — cambiarli qui non modifica ancora la partita vera. È un prossimo passo.</p>
+
+      <h3>Giocatori</h3>
+      <label>Minimo:
+        <input type="number" id="regole-giocatori-minimo" min="1">
+      </label>
+      <label>Massimo:
+        <input type="number" id="regole-giocatori-massimo" min="1">
+      </label>
+
+      <div class="admin-form-bottoni">
+        <button type="button" id="regole-btn-salva">💾 Salva regole</button>
+        <button type="button" id="regole-btn-ripristina">↺ Ripristina i valori di base</button>
+      </div>
+      <p id="regole-risultato"></p>
+    </section>
+  </div>
+
+  <div id="tab-statistiche" class="nascosta">
+    <section id="sezione-statistiche">
+      <h2>📊 Statistiche Conoscenza</h2>
+      <div id="statistiche-globali" class="statistiche-riepilogo"></div>
+      <p>Domande ordinate dalla percentuale di corrette più bassa (le più sospette) alla più alta. Quelle mai uscite in nessuna partita sono in fondo.</p>
+      <div id="statistiche-lista"></div>
+      <div class="admin-form-bottoni">
+        <button type="button" id="statistiche-btn-azzera">🗑️ Azzera tutte le statistiche</button>
+      </div>
+    </section>
+  </div>
+
+    <div id="password-overlay" class="password-overlay nascosta">
+    <div class="password-box">
+      <p id="password-messaggio"></p>
+      <input type="email" id="password-email" placeholder="Email">
+      <input type="password" id="password-input" placeholder="Password">
+      <p id="password-errore" class="password-errore"></p>
+      <div class="password-bottoni">
+        <button id="password-conferma">OK</button>
+        <button id="password-annulla">Annulla</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script type="module" src="js/admin-ui.js"></script>
+</body>
+</html>

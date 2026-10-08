@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corsa Cristiana — Tabellone</title>
+  <link rel="apple-touch-icon" href="img/icona-app-180.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f0e2cc">
+  <link rel="stylesheet" href="css/tabellone.css">
+  <link rel="stylesheet" href="css/beta.css">
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="etichetta-beta">BETA</div>
+
+  <div id="vista-lobby">
+    <div id="scena-lobby">
+      <div id="lobby-codice-area">
+        <div class="codice-area-titolo">
+          <h2>Codice partita</h2>
+          <span id="riepilogo-tabelloni" class="badge-riepilogo"></span>
+        </div>
+        <div id="codice-partita-box"><span id="codice-partita"></span></div>
+        <p>Condividi questo codice con gli altri giocatori</p>
+      </div>
+
+      <div id="lobby-giocatori-area">
+        <h2>Giocatori entrati</h2>
+        <div id="conteggio-lobby-contenitore"><span id="conteggio-lobby">0</span></div>
+        <ul id="lista-lobby"></ul>
+      </div>
+
+      <button id="btn-inizia-partita" disabled>▶ Inizia partita</button>
+    </div>
+  </div>
+
+  <div id="vista-gioco" class="nascosta">
+    <div id="scena">
+      <div id="tabellone"></div>
+
+      <div id="pannello-sospeso" class="pannello-laterale">
+        <div class="pannello-titolo">In sospeso</div>
+        <div id="prove-in-sospeso"></div>
+      </div>
+
+      <div id="pannello-legenda" class="pannello-laterale">
+        <div class="pannello-titolo">Legenda</div>
+        <div id="legenda-lista"></div>
+      </div>
+
+      <div id="pannello-turno" class="pannello-laterale">
+        <div class="pannello-titolo">Turno</div>
+        <div id="turno-info"></div>
+      </div>
+
+      <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span></div>
+    </div>
+
+    
+    <div id="risposta-area" class="pannello-flottante nascosta"></div>
+    <div id="verdetto-area" class="pannello-flottante nascosta"></div>
+
+    <div id="dado-overlay" class="dado-overlay nascosta">
+      <div class="dado-wrap">
+        <div id="dado-cubo" class="cubo-dado">
+          <div class="lato-dado lato-front"></div>
+          <div class="lato-dado lato-up"></div>
+          <div class="lato-dado lato-left"></div>
+          <div class="lato-dado lato-right"></div>
+          <div class="lato-dado lato-bottom"></div>
+          <div class="lato-dado lato-back"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+   <div id="carta-overlay" class="carta-overlay nascosta">
+      <div id="carta" class="carta">
+        <div id="carta-retro" class="carta-retro"></div>
+        <div class="carta-fronte">
+          <div id="carta-tipo" class="carta-tipo"></div>
+          <div id="carta-testo" class="carta-testo"></div>
+          <div id="carta-riferimento" class="carta-riferimento"></div>
+          <div id="carta-opzioni" class="carta-opzioni"></div>
+          <div id="carta-bottoni" class="carta-bottoni"></div>
+        </div>
+      </div>
+    </div>
+
+      <div id="ripresa-overlay" class="ripresa-overlay nascosta">
+    <div class="ripresa-box">
+      <h2>Partita in corso trovata</h2>
+      <p>Risulta che questo dispositivo stesse gestendo la partita <strong id="ripresa-codice"></strong>, ancora senza un vincitore.</p>
+      <p id="ripresa-countdown" class="ripresa-countdown"></p>
+      <div class="ripresa-bottoni">
+        <button id="ripresa-btn-riprendi" type="button">▶ Riprendi questa partita</button>
+        <button id="ripresa-btn-nuova" type="button">🆕 Inizia una partita nuova</button>
+      </div>
+    </div>
+  </div>
+    <div id="password-overlay" class="password-overlay nascosta">
+    <div class="password-box">
+      <p id="password-messaggio"></p>
+      <input type="email" id="password-email" placeholder="Email">
+      <input type="password" id="password-input" placeholder="Password">
+      <p id="password-errore" class="password-errore"></p>
+      <div class="password-bottoni">
+        <button id="password-conferma">OK</button>
+        <button id="password-annulla">Annulla</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="vittoria-overlay" class="vittoria-overlay nascosta">
+    <div class="vittoria-box">
+      <video id="vittoria-video" src="img/vittoria.mp4" muted playsinline></video>
+      <h2 id="vittoria-titolo"></h2>
+
+      <div id="vittoria-bottoni">
+        <button id="vittoria-btn-nuova">🔄 Gioca un'altra partita</button>
+        <button id="vittoria-btn-statistiche">📊 Statistiche</button>
+        <button id="vittoria-btn-chiudi">🚪 Chiudi</button>
+      </div>
+
+      <div id="vittoria-statistiche-vista" class="nascosta">
+        <h3>Classifica Conoscenza</h3>
+        <div id="vittoria-statistiche-lista"></div>
+        <button id="vittoria-btn-indietro">← Indietro</button>
+      </div>
+    </div>
+  </div>
+  
+  <button id="btn-audio-toggle" class="audio-toggle" type="button">🔊</button>
+  <script type="module" src="js/tabellone-ui.js"></script>
+</body>
+</html>

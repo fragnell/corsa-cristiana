@@ -1,0 +1,1013 @@
+/* tabellone.css */
+/* Tabellone, animazioni delle pedine, carta pescata, pannello di risposta,
+   pannello "tocca a te" e animazione del dado. Tutto in un unico file. */
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 1.5rem;
+  background: #1a1a1a;
+}
+
+.nascosta {
+  display: none;
+}
+
+/* --- la scena: sfondo illustrato, sempre in proporzione 16:9 --- */
+/* La dimensione si adatta a qualunque schermo restando sempre orizzontale
+   e mantenendo esattamente le proporzioni dell'immagine, così i riquadri
+   posizionati in percentuale (sotto) restano sempre allineati al punto
+   giusto, che lo schermo sia un tablet o una TV. */
+
+#scena {
+  position: relative;
+  width: min(100vw, calc(100vh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  background-image: url('../img/sfondo-tabellone.jpg');
+  background-size: cover;
+  background-position: center;
+  font-size: 1.3vw;
+}
+
+/* --- il tabellone vero, posizionato dentro il pannello di legno --- */
+
+#tabellone {
+  position: absolute;
+  left: 10.5%;
+  top: 22%;
+  width: 60%;
+  height: 59%;
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 0.3em;
+}
+
+.casella {
+  border-radius: 0.5em;
+  box-shadow: 0 0.15em 0.3em rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.2em;
+  position: relative;
+  overflow: hidden;
+}
+
+.casella .numero {
+  font-weight: bold;
+  font-size: 0.65em;
+  color: #000000;
+}
+
+.casella-CONOSCENZA {
+  background-color: #f0e2cc;
+  background-image: url('../img/icona-conoscenza.png');
+  background-size: 77%;
+  background-position:center;
+  background-repeat: no-repeat;
+}
+
+.casella-IMPREVISTO {
+  background-color: #ffd28a;
+  background-image: url('../img/icona-imprevisto.png');
+  background-size: 70%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-PROVA {
+  background-color: #ffb3c6;
+  background-image: url('../img/icona-prova.png');
+  background-size: 70%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-SALTO {
+  background-color: #a8dab5;
+  background-image: url('../img/icona-salto.png');
+  background-size: 80%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-FERMO {
+  background-color: #f2a0a0;
+  background-image: url('../img/icona-fermo.png');
+  background-size: 75%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-ARRIVO {
+  background-color: #ffd54f;
+  background-image: url('../img/icona-arrivo.png');
+  background-size: 75%;
+  background-position:bottom;
+  background-repeat: no-repeat;
+}
+
+.casella-PARTENZA    { background: #8bd17c; }
+
+.casella-PARTENZA .numero::after { content: ' 🚩'; }
+
+.pedine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1em;
+  margin-top: auto;
+}
+
+.pedina {
+  width: 1.2em;
+  height: 1.2em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+  color: white;
+  font-weight: bold;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+}
+
+/* --- i tre riquadri laterali (già disegnati nell'immagine: qui va solo
+   il contenuto vero, posizionato nella parte chiara sotto/accanto
+   all'icona già presente nello sfondo) --- */
+
+.pannello-laterale {
+  position: absolute;
+  /* prima left:82%/width:14%: spostato tutto il gruppo (sospeso, legenda,
+     turno) un po' piu' a sinistra, margine destro invariato (77+19 = 96) */
+  left: 77%;
+  width: 19%;
+  overflow: hidden;
+  font-size: 0.9em;
+  color: #4a3b2a;
+}
+
+.pannello-titolo {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 0.3em;
+}
+
+#pannello-sospeso {
+  top: 23%;
+  height: 22%;
+  padding: 0.3em 0.6em;
+}
+
+#pannello-legenda {
+  top: 53%;
+  height: 40%;
+  padding: 0.2em 0.6em;
+}
+
+#pannello-turno {
+  top: 74%;
+  height: 18%;
+  padding: 0.2em 0.6em;
+}
+
+#legenda-lista {
+  /* due colonne invece di una lista lunga 5 righe: cosi' servono solo 3
+     righe di altezza invece di 5, a parita' di dimensione delle icone */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2em 0.5em;
+  /* prima 0.7em: moltiplicato per lo 0.9em di .pannello-laterale diventava
+     0.63em effettivo, il doppio rimpicciolimento che rendeva tutto minuscolo.
+     Poi 0.95em, ridotto ~10% su richiesta di Francesco */
+  font-size: 0.85em;
+}
+
+.legenda-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.legenda-pallino {
+  /* prima 0.9em (e per giunta dentro il font-size gia' raddoppiato sopra) */
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 0.35em;
+  flex-shrink: 0;
+}
+
+#turno-info {
+  font-size: 0.75em;
+  font-weight: bold;
+  line-height: 1.3;
+}
+
+.casella.evidenziata {
+  animation: evidenzia-casella 0.45s ease-in-out;
+}
+
+@keyframes salto-pedina {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.4); }
+}
+
+.pedina.salta {
+  animation: salto-pedina 0.15s ease-in-out;
+}
+
+@keyframes evidenzia-casella {
+  0%, 100% { transform: scale(1); z-index: 1; }
+  50%      { transform: scale(1.2); z-index: 10; box-shadow: 0 0 0.6em rgba(0,0,0,0.5); }
+}
+
+/* --- la carta pescata --- */
+
+.carta-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  perspective: 1200px;
+}
+
+.carta-overlay.nascosta {
+  display: none;
+}
+
+.carta {
+  width: 480px;
+  max-width: 90vw;
+  min-height: 500px;
+  max-height: 85vh;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.carta.girata {
+  transform: rotateY(180deg);
+}
+
+.carta-retro,
+.carta-fronte {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 14px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.carta-retro {
+  background-color: #f0e2cc; /* ripiego, se per qualche motivo il tipo non e' impostato */
+  background-size: 55%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Stessi colori e stesse icone delle caselle sul tabellone (vedi
+   .casella-CONOSCENZA ecc. piu' sotto), cosi' il retro della carta
+   anticipa visivamente la casella su cui si e' atterrati. */
+.carta-retro-CONOSCENZA { background-color: #f0e2cc; background-image: url('../img/icona-conoscenza.png'); }
+.carta-retro-IMPREVISTO { background-color: #ffd28a; background-image: url('../img/icona-imprevisto.png'); }
+.carta-retro-PROVA { background-color: #ffb3c6; background-image: url('../img/icona-prova.png'); }
+.carta-retro-SALTO { background-color: #a8dab5; background-image: url('../img/icona-salto.png'); }
+.carta-retro-FERMO { background-color: #f2a0a0; background-image: url('../img/icona-fermo.png'); }
+
+.carta-fronte {
+  background: white;
+  border: 3px solid #333;
+  transform: rotateY(180deg);
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.carta-tipo {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.carta-testo {
+  font-size: 1.95rem;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.carta-testo.carta-testo-lungo {
+  font-size: 1.1rem;
+}
+
+.carta-riferimento {
+  font-style: italic;
+  color: #555;
+}
+
+.carta-opzioni {
+  width: 100%;
+}
+
+.carta-opzioni-lista {
+  list-style-type: upper-alpha;
+  text-align: left;
+  display: inline-block;
+  margin: 0;
+  padding-left: 1.6em;
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+.carta-opzioni-lista li {
+  margin-bottom: 0.3rem;
+}
+
+.carta-opzioni-lista li:last-child {
+  margin-bottom: 0;
+}
+
+.carta-bottoni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: auto;
+}
+
+.carta-bottoni button {
+  font-size: 1rem;
+  padding: 0.6rem;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #999;
+}
+
+/* --- pannelli flottanti: risposta, verdetto, tocca-a-te --- */
+
+.pannello-flottante {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 210;
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.pannello-flottante.nascosta {
+  display: none;
+}
+
+.pannello-flottante input[type="text"] {
+  font-size: 1rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+}
+
+.pannello-flottante button {
+  font-size: 0.95rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #999;
+  margin: 0.3rem 0.2rem 0;
+}
+
+.risposta-riga {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.6rem 0;
+}
+
+#risposta-elenco-lista {
+  text-align: left;
+  max-height: 120px;
+  overflow-y: auto;
+  margin: 0.5rem 0;
+}
+
+.verdetto-esito {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.verdetto-dettaglio {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.verdetto-countdown {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.verdetto-risposta-giusta {
+  font-weight: bold;
+  color: #b8860b;
+  background: #fff8e1;
+  padding: 0.4rem;
+  border-radius: 6px;
+}
+
+/* --- "tocca a te" e il dado --- */
+
+.turno-giocatore-nome {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+#btn-tira-dado {
+  font-size: 1.1rem;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #2e7d32;
+  background: #4caf50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.dado-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+  perspective: 800px;
+}
+
+.dado-overlay.nascosta {
+  display: none;
+}
+
+.dado-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.cubo-dado {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  top: 50px;
+  left: 50px;
+  transform-style: preserve-3d;
+}
+
+/* Le sei facce, verificate una per una: front=1, up=2, left=3,
+   right=4, bottom=5, back=6 puntini. */
+
+.lato-dado {
+  box-sizing: border-box;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: white;
+  border: 3px solid #ccc;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.lato-dado::after {
+  position: absolute;
+  content: "";
+  width: 22px;
+  height: 22px;
+  top: 50%;
+  left: 50%;
+  margin: -11px 0 0 -11px;
+  background: #333;
+  border-radius: 100%;
+}
+
+.lato-front  { transform: translateZ(50px); }
+.lato-front::after { width: 40px; height: 40px; margin: -20px 0 0 -20px; }
+
+.lato-up     { transform: rotateX(90deg) translateZ(50px); }
+.lato-up::after { margin: -30px 0 0 -30px; box-shadow: 38px 38px #333; }
+
+.lato-left   { transform: rotateY(-90deg) translateZ(50px); }
+.lato-left::after { margin: -40px 0 0 -40px; box-shadow: 30px 30px #333, 60px 60px #333; }
+
+.lato-right  { transform: rotateY(90deg) translateZ(50px); }
+.lato-right::after { margin: -30px 0 0 -30px; box-shadow: 40px 0px #333, 0px 40px #333, 40px 40px #333; }
+
+.lato-bottom { transform: rotateX(-90deg) translateZ(50px); }
+.lato-bottom::after { margin: -36px 0 0 -36px; box-shadow: 26px 26px #333, 52px 52px #333, 52px 0px #333, 0px 52px #333; }
+
+.lato-back   { transform: rotateX(180deg) translateZ(50px); }
+.lato-back::after { margin: -40px 0 0 -30px; box-shadow: 40px 0px #333, 0px 30px #333, 40px 30px #333, 0px 60px #333, 40px 60px #333; }
+
+@keyframes cubo-tumbling {
+  16% { transform: rotate3d(-0.1, 0.6, -0.4, 180deg); }
+  32% { transform: rotate3d(-0.85, -0.42, 0.73, 180deg); }
+  48% { transform: rotate3d(-0.8, 0.3, -0.75, 180deg); }
+  64% { transform: rotate3d(0.3, 0.45, 0.9, 180deg); }
+  80% { transform: rotate3d(-0.16, 0.6, 0.18, 180deg); }
+  100% { transform: rotate3d(-0.1, 0.3, -1, 180deg); }
+}
+
+.cubo-dado.tumbling {
+  animation: cubo-tumbling 0.8s cubic-bezier(0.42, 1.57, 0.62, 0.86) 2;
+}
+
+/* --- lobby: sfondo illustrato, sempre in proporzione 3:2 come l'immagine --- */
+
+#scena-lobby {
+  position: relative;
+  width: min(100vw, calc(100vh * 3 / 2));
+  aspect-ratio: 3 / 2;
+  margin: 0 auto;
+  background-image: url('../img/sfondo-lobby.jpg');
+  background-size: cover;
+  background-position: center;
+  font-size: 1.6vw;
+  color: #5a4630;
+}
+
+#lobby-codice-area {
+  position: absolute;
+  left: 6%;
+  top: 20.5%;
+  width: 88%;
+  text-align: center;
+}
+
+#lobby-codice-area h2 {
+  margin: 0 0 0.3em;
+  font-size: 1.5em;
+  color: #4a3320;
+}
+
+#codice-partita-box {
+  display: inline-block;
+  background: rgba(252, 193, 0, 0.45);
+  border-radius: 0.7em;
+  padding: 0.2em 1em;
+}
+
+#codice-partita {
+  font-weight: bold;
+  font-size: 2.5em;
+  letter-spacing: 0.3em;
+  color: #7a4a10;
+}
+
+#lobby-codice-area p {
+  margin: 0.5em 0 0;
+  font-size: 1em;
+  color: #1f1203;
+}
+
+#lobby-giocatori-area {
+  position: absolute;
+  left: 10%;
+  top: 45%;
+  width: 82%;
+  height: 26%;
+  text-align: center;
+}
+
+#lobby-giocatori-area h2 {
+  margin: 0 0 0.1em;
+  font-size: 1.5em;
+  color: #2e6b3e;
+}
+
+#conteggio-lobby-contenitore {
+  font-size: 1em;
+  color: #000000;
+  margin-bottom: 0.5em;
+}
+
+#lista-lobby {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 3;
+  column-gap: 2em;
+  font-size: 1em;
+  text-align:left;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+#lista-lobby li {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em 1;
+  break-inside: avoid;
+}
+
+.pallino-lista {
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(8, 8, 8, 0.3);
+}
+
+#btn-inizia-partita {
+  position: absolute;
+  left: 50%;
+  top: 76%;
+  transform: translateX(-50%);
+  font-size: 1.3em;
+  padding: 0.5em 1.8em;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(#5cbf5c, #3fa53f);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0.2em 0.4em rgba(0, 0, 0, 0.3);
+}
+
+#btn-inizia-partita:disabled {
+  background: #b9c4b3;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* --- prove vincolo: in sospeso, e la richiesta di conferma --- */
+
+.prova-sospesa-riga {
+  font-size: 0.85em;
+  line-height: 1.3;
+  margin-bottom: 0.4em;
+}
+
+.prova-vincolo-titolo {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.prova-vincolo-countdown {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+
+#codice-partita-badge {
+  position: absolute;
+  bottom: 1%;
+  left: 6%;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.3em 0.7em;
+  border-radius: 0.5em;
+  font-size: 0.7em;
+  color: #4a3b2a;
+  font-weight: bold;
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.2);
+}
+
+
+/* --- richiesta password, per "Accetta risposta" --- */
+
+.password-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 600;
+}
+
+.password-overlay.nascosta { display: none; }
+
+.password-box {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 90vw;
+  width: 320px;
+  text-align: center;
+}
+
+.password-box p { margin: 0 0 1rem; }
+
+.password-box input[type="password"],
+.password-box input[type="email"] {
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #999;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.password-errore {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin: -0.5rem 0 0.8rem;
+  min-height: 1.2em;
+}
+
+.password-bottoni {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.password-bottoni button {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+#password-conferma {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}
+
+
+/* --- schermata di vittoria --- */
+
+.vittoria-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 700;
+}
+
+.vittoria-overlay.nascosta { display: none; }
+
+.vittoria-box {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: center;
+}
+
+#vittoria-video {
+  width: 100%;
+  max-height: 250px;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  background: #222;
+}
+
+#vittoria-titolo {
+  font-size: 1.6rem;
+  margin: 0 0 1.2rem;
+}
+
+#vittoria-bottoni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+#vittoria-bottoni button {
+  font-size: 1.1rem;
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+#vittoria-btn-nuova {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}
+
+#vittoria-btn-statistiche {
+  background: #1976d2;
+  color: white;
+  border-color: #0d47a1;
+  font-weight: bold;
+}
+
+.classifica-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  text-align: left;
+}
+
+.classifica-posizione {
+  font-weight: bold;
+  width: 2rem;
+}
+
+.classifica-nome {
+  flex: 1;
+  font-weight: bold;
+}
+
+.classifica-percentuale {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+#vittoria-btn-indietro {
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+
+.carta-btn-cambia {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #999;
+  background: #f5f5f5;
+  color: #555;
+  cursor: pointer;
+}
+
+.carta-cambia-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.carta-cambia-countdown {
+  font-size: 0.85rem;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
+
+.classifica-cliccabile {
+  cursor: pointer;
+  user-select: none;
+}
+
+.classifica-freccia {
+  color: #999;
+  transition: transform 0.2s;
+}
+
+.classifica-aperta .classifica-freccia {
+  transform: rotate(180deg);
+}
+
+.classifica-dettaglio {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin: -0.2rem 0 0.6rem;
+  text-align: left;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dettaglio-domanda-riga {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  font-size: 0.88rem;
+  border-bottom: 1px solid #eee;
+}
+
+.dettaglio-domanda-riga:last-child { border-bottom: none; }
+
+.dettaglio-errata { color: #c0392b; }
+.dettaglio-corretta { color: #333; }
+
+.dettaglio-vuoto {
+  color: #888;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0.3rem 0;
+}
+
+
+.audio-toggle {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 800;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+
+.codice-area-titolo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-riepilogo {
+  position: absolute;
+  top: 0.5em;
+  right: 3.5em;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: #000000;
+  background: #cf6b0ec2;
+  padding: 0.3rem 0.3rem;
+  border-radius: 0.6em;
+  font-weight: 600;
+  text-align: center;
+  white-space: pre-line;
+}
+
+
+.ripresa-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+}
+
+.ripresa-overlay.nascosta { display: none; }
+
+.ripresa-box {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+}
+
+.ripresa-box h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.4rem;
+}
+
+.ripresa-countdown {
+  color: #888;
+  font-size: 0.9rem;
+  margin: 0.8rem 0;
+}
+
+.ripresa-bottoni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.ripresa-bottoni button {
+  font-size: 1.05rem;
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+#ripresa-btn-riprendi {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}

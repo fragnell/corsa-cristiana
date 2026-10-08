@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corsa Cristiana — Il tuo telefono</title>
+  <link rel="apple-touch-icon" href="img/icona-app-180.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f0e2cc">
+  <link rel="stylesheet" href="css/giocatore.css">
+  <link rel="stylesheet" href="css/beta.css">
+  <meta name="robots" content="noindex">
+</head>
+<body>
+  <div class="etichetta-beta">BETA</div>
+
+  <div id="scena">
+    <div id="pannello-contenuto">
+
+      <div id="ingresso">
+        <div id="passo-codice">
+          <p>Codice della partita:</p>
+          <input type="text" id="input-codice" maxlength="4" placeholder="ABCD">
+          <br>
+          <button id="btn-cerca">Cerca partita</button>
+          <p id="messaggio-ingresso"></p>
+        </div>
+
+        <div id="passo-rientro" class="nascosta">
+          <p>Questa partita è già in corso. Chi sei?</p>
+          <div id="lista-rientro"></div>
+        </div>
+
+        <div id="passo-registrazione" class="nascosta">
+          <p>Il tuo nome:</p>
+          <input type="text" id="input-nome" placeholder="Il tuo nome" style="text-transform:none">
+          <p>Scegli un colore:</p>
+          <div id="scelta-colore"></div>
+          <br>
+          <label style="display:flex; align-items:center; gap:0.5rem; justify-content:center; margin:1rem 0;">
+           <input type="checkbox" id="input-junior">
+            Modalità junior (domande più semplici, a scelta multipla)
+          </label>
+          <button id="btn-conferma-registrazione">Entra in partita</button>
+          <p id="messaggio-registrazione"></p>
+        </div>
+      </div>
+
+      <div id="vista-attesa" class="nascosta">
+        <h1>Ciao, <span id="nome-in-attesa"></span>!</h1>
+        <p>Aspetta che l'organizzatore inizi la partita...</p>
+        <p>Giocatori collegati:</p>
+        <ul id="lista-attesa"></ul>
+      </div>
+
+      <div id="gioco" class="nascosta">
+        <h2 id="mio-nome"></h2>
+        <p id="mia-posizione"></p>
+        <div id="mia-prova-sospesa" class="nascosta"></div>
+        <div id="stato-turno"></div>
+        <button id="btn-tira-dado" class="nascosta">🎲 Tira il dado</button>
+
+      <div id="area-conoscenza-in-arrivo" class="nascosta">
+        <p id="conoscenza-in-arrivo-countdown"></p>
+      </div>
+      <div id="area-domanda-conoscenza" class="nascosta">
+        <p id="conoscenza-countdown"></p>
+        <p id="domanda-conoscenza"></p>
+      </div>
+        <div id="risposta-area" class="nascosta"></div>
+
+        <div id="notifica-evento"></div>
+
+        <button id="btn-abbandona" class="bottone-abbandona">Abbandona partita</button>
+      </div>
+
+      <div id="messaggio-abbandonato" class="nascosta">
+        <h2>Hai abbandonato la partita</h2>
+        <p>Puoi chiudere questa pagina.</p>
+      </div>
+
+    </div>
+    </div>
+
+  <div id="verdetto-overlay" class="nascosta">
+    <div id="verdetto-overlay-contenuto" role="dialog" aria-modal="true">
+
+      <div id="verdetto-vista-esito">
+        <p id="verdetto-overlay-testo"></p>
+        <p id="verdetto-overlay-countdown"></p>
+        <div class="verdetto-bottoni">
+          <button type="button" id="verdetto-overlay-approfondisci" class="verdetto-bottone-secondario nascosta">📖 Approfondisci<span class="verdetto-bottone-sotto">sul sito JW.org</span></button>
+          <button type="button" id="verdetto-overlay-ok">OK</button>
+        </div>
+      </div>
+
+      <div id="verdetto-vista-avviso" class="nascosta">
+        <p id="avviso-titolo">Stai per aprire una pagina di JW.org</p>
+        <p class="avviso-testo">Questo pulsante condivide un link a un contenuto di JW.org e lo apre in una nuova scheda. Il gioco non copia né include nulla del suo contenuto, che appartiene ai rispettivi titolari e si usa secondo le <a href="https://www.jw.org/it/condizioni-uso/" target="_blank" rel="noopener noreferrer">Condizioni d'uso di JW.org</a>.</p>
+        <p class="avviso-testo">Corsa Cristiana è un progetto personale e indipendente, senza legami ufficiali con JW.org.</p>
+        <div class="verdetto-bottoni">
+          <a id="avviso-apri" class="verdetto-bottone-principale" target="_blank" rel="noopener noreferrer">Apri la pagina</a>
+          <button type="button" id="avviso-annulla" class="verdetto-bottone-secondario">Annulla</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module" src="js/giocatore-ui.js"></script>
+</body>
+</html>

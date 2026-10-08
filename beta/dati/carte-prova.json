@@ -1,0 +1,13 @@
+{
+  "carte": [
+    { "id": 1, "tipo": "vincolo", "testo": "È scoppiata la grande tribolazione! Hai perso il lavoro e pagare le bollette è difficile, manca la corrente e sei al buio... Resta con gli occhi chiusi fino al tuo prossimo turno. (Qualsiasi cosa accada)", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 2, "tipo": "vincolo", "testo": "È scoppiata la grande tribolazione! Hai perso il lavoro e pagare le bollette è difficile, manca l'acqua e non puoi lavarti... Fino al tuo prossimo turno avrai il viso sporco di qualcosa, i concorrenti sapranno aiutarti in questo.", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 3, "tipo": "vincolo", "testo": "Vieni imprigionato! Le autorità vogliono sapere dettagli sull'organizzazione. Fino al tuo prossimo turno non puoi parlare.", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 4, "tipo": "vincolo", "testo": "Le autorità cercano tutti i testimoni! Non attirare l'attenzione... Fino al tuo prossimo turno non puoi muoverti.", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 5, "tipo": "vincolo", "testo": "La zona in cui vivi è colpita da un disastro ambientale! Nel tuo kit di emergenza manca una coperta... Fino al tuo prossimo turno comportati come se avessi tanto freddo. (Il gruppo deciderà se sei credibile)", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 6, "tipo": "vincolo", "testo": "La zona in cui vivi è colpita da un disastro ambientale! Nel tuo kit di emergenza hai solo abiti invernali, ma è piena estate! Fino al tuo prossimo turno comportati come se avessi tanto caldo. (Il gruppo deciderà se sei credibile)", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 7, "tipo": "immediata", "testo": "Vieni imprigionato! Cantare cantici ti dà fede e coraggio! Canticchia un cantico. (almeno 8 parole)", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 8, "tipo": "immediata", "testo": "Ti viene fatta una di queste domande: - Perché predicate? - Perché si muore? - Perché non usate la croce? N.B. Non puoi dire: \"sì\", \"no\", \"allora\", \"praticamente\", \"diciamo\", \"perché\".", "bonusSuperata": 1, "malusFallita": 0 },
+    { "id": 9, "tipo": "immediata", "testo": "È scoppiata la grande tribolazione! Hai perso il lavoro e mettere il piatto a tavola è difficile, bisogna arrangiarsi... I tuoi avversari ti preparano un bocconcino da mangiare... (un cucchiaio a sorpresa). Mangialo!", "bonusSuperata": 1, "malusFallita": 0 }
+  ]
+}

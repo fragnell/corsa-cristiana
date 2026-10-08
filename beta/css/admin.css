@@ -1,0 +1,347 @@
+/* admin.css */
+body {
+  font-family: sans-serif;
+  padding: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+  color: #222;
+}
+.nascosta {
+  display: none;
+}
+
+section {
+  margin-bottom: 3rem;
+  border-top: 2px solid #ddd;
+  padding-top: 1.5rem;
+}
+
+h1 { margin-bottom: 0.5rem; }
+h2 { margin-bottom: 0.8rem; }
+
+button {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #999;
+  font-size: 0.95rem;
+  background: white;
+}
+
+.admin-riga-carta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-riga-testo { flex: 1; }
+
+.admin-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #f5f5f5;
+  border: 2px solid #999;
+  border-radius: 10px;
+  padding: 1.2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: 500;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.admin-form.nascosta { display: none; }
+
+.admin-form label {
+  display: block;
+  margin: 0.8rem 0 0.3rem;
+  font-weight: bold;
+}
+
+.admin-form textarea,
+.admin-form input[type="text"],
+.admin-form input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+.admin-riga-aggiungi { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.admin-riga-aggiungi input { flex: 1; }
+
+#conoscenza-lista-risposte,
+#conoscenza-lista-risposte-diretta { margin-top: 0.5rem; }
+#conoscenza-lista-risposte div,
+#conoscenza-lista-risposte-diretta div {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.3rem 0.5rem; background: white; border-radius: 6px; margin-bottom: 0.3rem;
+}
+
+.admin-form-bottoni { margin-top: 1.2rem; display: flex; gap: 0.6rem; }
+
+#conoscenza-btn-salva, #imprevisto-btn-salva, #prova-btn-salva {
+  background: #4caf50; color: white; border-color: #2e7d32; font-weight: bold;
+}
+
+.admin-riga-opzione {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.5rem; background: white; border-radius: 6px; margin-bottom: 0.3rem;
+}
+.admin-riga-opzione span { flex: 1; }
+
+.admin-nota { color: #666; font-size: 0.85rem; font-style: italic; margin-top: 0.4rem; }
+
+
+#sezione-importa {
+  background: #eef6ff;
+  border: 2px solid #90caf9;
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+#sezione-importa label {
+  display: block;
+  margin: 0.8rem 0 0.3rem;
+  font-weight: bold;
+}
+
+#sezione-importa select,
+#sezione-importa input[type="file"] {
+  font-size: 1rem;
+  padding: 0.4rem;
+}
+
+#importa-btn-importa, #importa-btn-esporta {
+  margin-top: 1rem;
+  background: #1976d2;
+  color: white;
+  border-color: #0d47a1;
+  font-weight: bold;
+}
+
+#importa-btn-esporta {
+  background: #2e7d32;
+  border-color: #1b5e20;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+#importa-risultato {
+  margin-top: 0.8rem;
+  line-height: 1.6;
+}
+
+.admin-label-checkbox {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: normal !important;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.admin-label-checkbox input {
+  margin-top: 0.2rem;
+}
+
+
+/* --- schede Carte / Regole --- */
+
+#admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-tab-btn {
+  font-size: 1.05rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px 8px 0 0;
+  border: 2px solid #999;
+  border-bottom: none;
+  background: #eee;
+}
+
+.admin-tab-btn.admin-tab-attiva {
+  background: white;
+  border-color: #1976d2;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+#sezione-regole h3 {
+  margin-top: 1.5rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+}
+
+#sezione-regole label {
+  display: block;
+  margin: 0.6rem 0;
+}
+
+#sezione-regole input[type="number"] {
+  width: 80px;
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+  margin-left: 0.5rem;
+}
+
+#regole-btn-salva {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}
+
+
+/* --- richiesta password, all'ingresso del pannello --- */
+
+.password-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 600;
+}
+
+.password-overlay.nascosta { display: none; }
+
+.password-box {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 90vw;
+  width: 320px;
+  text-align: center;
+}
+
+.password-box p { margin: 0 0 1rem; }
+
+.password-box input[type="password"],
+.password-box input[type="email"] {
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #999;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.password-errore {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin: -0.5rem 0 0.8rem;
+  min-height: 1.2em;
+}
+
+.password-bottoni {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.password-bottoni button {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  border: 1px solid #999;
+  cursor: pointer;
+}
+
+#password-conferma {
+  background: #4caf50;
+  color: white;
+  border-color: #2e7d32;
+  font-weight: bold;
+}
+
+
+/* --- scheda Statistiche --- */
+
+.statistiche-riga {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.statistiche-domanda {
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+
+.statistiche-percentuale {
+  display: inline-block;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.statistiche-percentuale.statistiche-basse {
+  color: #c62828;
+}
+
+.statistiche-dettaglio {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.statistiche-opzioni {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.statistiche-riga.statistiche-mai-proposta {
+  opacity: 0.6;
+}
+
+#statistiche-btn-azzera {
+  background: #c62828;
+  color: white;
+  border-color: #8e1c1c;
+}
+
+
+.statistiche-riepilogo {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.riepilogo-numero {
+  flex: 1;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+.riepilogo-numero strong {
+  display: block;
+  font-size: 1.6rem;
+  color: #1976d2;
+}
+
+.riepilogo-numero span {
+  font-size: 0.8rem;
+  color: #666;
+}
