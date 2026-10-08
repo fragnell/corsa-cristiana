@@ -377,6 +377,14 @@ button {
   cursor: pointer;
 }
 
+/* Seconda riga del pulsante Approfondisci ("sul sito JW.org"): piu' piccola, sotto al nome. */
+.verdetto-bottone-sotto {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: normal;
+  margin-top: 0.1rem;
+}
+
 /* "Apri la pagina" e' un vero collegamento, disegnato come il pulsante verde OK. */
 .verdetto-bottone-principale {
   display: block;
