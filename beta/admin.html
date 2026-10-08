@@ -7,6 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#f0e2cc">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin-salmo.css">
   <link rel="stylesheet" href="css/beta.css">
   <meta name="robots" content="noindex">
 </head>
@@ -202,6 +203,108 @@
       <label>Massimo:
         <input type="number" id="regole-giocatori-massimo" min="1">
       </label>
+
+      <h3>COLLABORIAMO! (Salmo 133:1)</h3>
+      <div id="regole-salmo">
+        <p class="admin-nota">Quando chi sta per giocare è molto indietro, lui e il primo della classifica collaborano: il primo vede per qualche secondo un mosaico e lo descrive a voce, l'ultimo lo ricostruisce sul telefono. Se ci riesce, l'ultimo avanza; se non ci riesce, il primo arretra. I valori valgono da quando il tabellone viene aperto (o ricaricato).</p>
+        <p id="regole-salmo-avviso" class="admin-avviso nascosta"></p>
+
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-salmo-attivo">
+          COLLABORIAMO! attivo (togli la spunta per giocare come sempre, senza questa modalità)
+        </label>
+
+        <h4>Quando scatta</h4>
+        <label>Giocatori in partita, almeno:
+          <input type="number" id="regole-salmo-giocatori-minimi" min="2" max="12">
+        </label>
+        <p class="admin-nota">Distacco minimo tra il primo e l'ultimo, in caselle. Cresce con il numero di giocatori, perché con tanti giocatori il tavolo gira più lentamente.</p>
+        <label>Fino a 4 giocatori:
+          <input type="number" id="regole-salmo-distacco-4" min="1" max="99"> caselle
+        </label>
+        <label>5 o 6 giocatori:
+          <input type="number" id="regole-salmo-distacco-6" min="1" max="99"> caselle
+        </label>
+        <label>7 o 8 giocatori:
+          <input type="number" id="regole-salmo-distacco-8" min="1" max="99"> caselle
+        </label>
+        <label>9 o 10 giocatori:
+          <input type="number" id="regole-salmo-distacco-10" min="1" max="99"> caselle
+        </label>
+        <label>11 o 12 giocatori:
+          <input type="number" id="regole-salmo-distacco-12" min="1" max="99"> caselle
+        </label>
+        <label>Se il primo ha superato la casella
+          <input type="number" id="regole-salmo-primo-massimo" min="1" max="200">
+          non scatta più
+        </label>
+        <label>Giri completi del tavolo di pausa tra un COLLABORIAMO! e il successivo:
+          <input type="number" id="regole-salmo-giri-pausa" min="0" max="20">
+        </label>
+        <label>Al massimo quante volte in una partita (0 = mai):
+          <input type="number" id="regole-salmo-max-partita" min="0" max="20">
+        </label>
+
+        <h4>Premi e penalità</h4>
+        <label>Mosaico riuscito: l'ultimo avanza di
+          <input type="number" id="regole-salmo-bonus" min="0" max="50"> caselle
+        </label>
+        <label>Mosaico fallito: il primo arretra di
+          <input type="number" id="regole-salmo-malus" min="0" max="50"> caselle
+        </label>
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-salmo-salta-fallisce">
+          Mosaico fallito: l'ultimo salta il turno (non tira il dado)
+        </label>
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-salmo-tira-successo">
+          Mosaico riuscito: l'ultimo tira anche il dado (di solito NO: COLLABORIAMO! sostituisce il suo turno)
+        </label>
+        <p class="admin-nota">Dopo lo spostamento la casella di arrivo non ha effetto, e COLLABORIAMO! non può far vincere nessuno né mettere l'ultimo davanti al primo.</p>
+
+        <h4>Tentativi e tempi</h4>
+        <label>Tentativi dell'ultimo (quante volte può premere «Ho finito»):
+          <input type="number" id="regole-salmo-tentativi" min="1" max="5">
+        </label>
+        <label>Tempo per premere «Sono pronto»:
+          <input type="number" id="regole-salmo-pronto" min="10" max="300"> secondi
+        </label>
+        <label>Sbirciata del primo (una sola volta, mentre l'altro ricompone il mosaico):
+          <input type="number" id="regole-salmo-sbirciata" min="1" max="60"> secondi
+        </label>
+        <label>Tempo per leggere l'esito:
+          <input type="number" id="regole-salmo-esito" min="3" max="60"> secondi
+        </label>
+
+        <h4>Livello normale</h4>
+        <label>Riquadri del mosaico:
+          <select id="regole-salmo-normale-riquadri"></select>
+        </label>
+        <label>Tempo per ricomporlo:
+          <input type="number" id="regole-salmo-normale-prova" min="10" max="600"> secondi
+        </label>
+        <label>Anteprima del primo:
+          <input type="number" id="regole-salmo-normale-anteprima" min="1" max="120"> secondi
+        </label>
+
+        <h4>Livello bambini (se almeno uno dei due è in modalità junior)</h4>
+        <label>Riquadri del mosaico:
+          <select id="regole-salmo-bambini-riquadri"></select>
+        </label>
+        <label>Tempo per ricomporlo:
+          <input type="number" id="regole-salmo-bambini-prova" min="10" max="600"> secondi
+        </label>
+        <label>Anteprima del primo:
+          <input type="number" id="regole-salmo-bambini-anteprima" min="1" max="120"> secondi
+        </label>
+
+        <h4>Per provare</h4>
+        <div class="admin-form-bottoni">
+          <button type="button" id="regole-salmo-btn-prova">🧪 Valori per provare con 2 telefoni</button>
+          <button type="button" id="regole-salmo-btn-base">↺ Valori di base di COLLABORIAMO!</button>
+        </div>
+        <p class="admin-nota">«Valori per provare» fa scattare COLLABORIAMO! anche con due soli giocatori e con pochissime caselle di distacco. Dopo aver premuto uno dei due pulsanti ricordati di premere «Salva regole» in fondo. Finito di provare, rimetti i valori di base e salva di nuovo!</p>
+      </div>
 
       <div class="admin-form-bottoni">
         <button type="button" id="regole-btn-salva">💾 Salva regole</button>

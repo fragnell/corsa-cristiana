@@ -31,9 +31,20 @@ Object.entries(EFFETTI).forEach(([nome, percorso]) => {
   elementiEffetti[nome] = el;
 });
 
+const VOLUME_MUSICA = 0.4;
 const musica = new Audio('audio/musica-sottofondo.mp3');
 musica.loop = true;
-musica.volume = 0.4;
+musica.volume = VOLUME_MUSICA;
+
+// COLLABORIAMO! (Salmo 133:1): durante la prova la musica scende, cosi' si
+// sente bene la voce di chi descrive. Alla fine torna al volume di sempre.
+export function abbassaMusica() {
+  musica.volume = VOLUME_MUSICA * 0.25;
+}
+
+export function ripristinaMusica() {
+  musica.volume = VOLUME_MUSICA;
+}
 
 function preferenzaSalvata() {
   const valore = localStorage.getItem(CHIAVE_PREFERENZA);

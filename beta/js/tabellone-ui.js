@@ -45,7 +45,8 @@ import {
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
-const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-partita-attiva';
+// BETA: chiave diversa da quella del gioco vero, cosi' i due non si scambiano la partita da riprendere.
+const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-beta-partita-attiva';
 const DURATA_COUNTDOWN_RIPRESA_S = 15;
 // Oltre questa eta' dall'ultima mossa pubblicata, una partita interrotta si
 // considera troppo vecchia per riproporla: non ha senso chiedere di
@@ -83,6 +84,9 @@ const pedineDom = new Map();
 const richiesteJuniorGestite = new Set();
 let presenzaGiocatori = {};
 const abbandoniGestiti = new Set();
+// COLLABORIAMO! (Salmo 133:1): il modulo della prova si carica "a parte". Se non
+// si carica, o si rompe, il gioco va avanti normalmente senza la prova.
+let salmoModulo = null;
 
 function pausa(ms) {
   return new Promise(risolvi => setTimeout(risolvi, ms));
@@ -173,6 +177,42 @@ async function animaSpostamento(giocatoreId, posizioneIniziale, posizioneFinale)
     await pausa(DURATA_SALTO_MS);
   }
   evidenziaCasella(posizioneFinale);
+}
+
+// ---------- COLLABORIAMO! (Salmo 133:1) ----------
+
+async function avviaSalmo() {
+  salmoModulo = null;
+  try {
+    const modulo = await import('./salmo/tabellone-salmo.js');
+    modulo.inizializza({
+      codicePartita,
+      configSalmo: configPartita.salmo,
+      ultimaCasella: percorso.length,
+      getStato: () => stato,
+      setStato: nuovo => { stato = nuovo; },
+      pubblica: nuovo => pubblicaStato(codicePartita, nuovo),
+      presente: id => presenzaGiocatori[id] !== false,
+      animaSpostamento
+    });
+    salmoModulo = modulo;
+  } catch (errore) {
+    console.warn('COLLABORIAMO! non disponibile, si gioca normalmente', errore);
+  }
+}
+
+// Dopo ogni passaggio di turno: se e' il momento della prova, parte qui.
+async function salmoDopoPassaggioDiTurno() {
+  if (!salmoModulo) return;
+  try {
+    await salmoModulo.dopoPassaggioDiTurno();
+  } catch (errore) {
+    console.warn('COLLABORIAMO!: errore ignorato', errore);
+    if (stato && stato.salmoInCorso) {
+      stato = { ...stato };
+      delete stato.salmoInCorso;
+    }
+  }
 }
 
 function aggiornaProveInSospeso() {
@@ -392,6 +432,7 @@ async function giocaTurno() {
 
   if (!partitaFinita(stato)) {
     stato = passaTurno(stato);
+    await salmoDopoPassaggioDiTurno();   // COLLABORIAMO!, se e' il momento
   }
   stato.turnoInCorso = false;
 
@@ -559,6 +600,7 @@ async function iniziaPartitaVera(giocatoriInfo) {
 
   localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
   configuraAscoltatoriDiPartita();
+  await avviaSalmo();
 
   await pubblicaStato(codicePartita, stato);
   cicloDiGioco();
@@ -575,6 +617,7 @@ async function riprendiPartitaEsistente(statoEsistente) {
   stato = statoEsistente;
   stato.turnoInCorso = false;
   stato.richiestaConoscenza = null;
+  delete stato.salmoInCorso;   // una prova (COLLABORIAMO!) rimasta a meta' non esiste piu'
   if (stato.vincitore === undefined) stato.vincitore = null;
 
   // Ripristina anche la memoria di quali domande Conoscenza sono già
@@ -600,6 +643,8 @@ async function riprendiPartitaEsistente(statoEsistente) {
 
   configuraAscoltatoriDiPartita();
   annunciaTabellonePresente(codicePartita);
+  await avviaSalmo();
+  if (salmoModulo) salmoModulo.pulisciInRipresa(stato);   // toglie anche i resti da Firebase
 
   await pubblicaStato(codicePartita, stato);
   cicloDiGioco();
