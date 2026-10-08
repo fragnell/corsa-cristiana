@@ -1,0 +1,54 @@
+/* admin-salmo.css */
+/* Il blocco COLLABORIAMO! (Salmo 133:1) della scheda "Regole" del pannello Admin. */
+
+/* La pagina Admin e' pensata per il PC (non ha il "viewport"): su un telefono il
+   browser ingrandirebbe da solo i paragrafi lunghi. Qui no, restano come il resto. */
+#regole-salmo,
+#regole-salmo-avviso {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+#regole-salmo h4 {
+  margin: 1.2rem 0 0.2rem;
+  color: #8a4b0f;
+}
+
+#regole-salmo select {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+  background: white;
+}
+
+.admin-avviso {
+  margin: 0.8rem 0;
+  padding: 0.7rem 0.9rem;
+  border: 2px solid #e08a00;
+  border-radius: 8px;
+  background: #fff3d6;
+  color: #7a4300;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.admin-avviso.nascosta {
+  display: none;
+}
+
+#regole-salmo-btn-prova {
+  background: #fff3d6;
+  border-color: #e08a00;
+}
+
+#regole-salmo .admin-form-bottoni {
+  flex-wrap: wrap;
+}
+
+.admin-errori {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  color: #b3261e;
+}

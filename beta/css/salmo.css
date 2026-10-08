@@ -1,0 +1,560 @@
+/* salmo.css */
+/* COLLABORIAMO! (Salmo 133:1) — lo stile delle schermate della prova, sia sul
+   tabellone (la TV) sia sui telefoni. Tutte le classi iniziano con "salmo-",
+   cosi' non possono confondersi con quelle del resto del gioco.
+   Il foglio viene caricato dai moduli della prova (js/salmo/dom.js): le pagine
+   tabellone.html e giocatore.html non lo nominano. */
+
+/* ---------- la schermata che copre tutto ---------- */
+
+.salmo-overlay {
+  /* position, inset, z-index e display sono scritti anche dal codice (inline) */
+  display: none;
+  align-items: stretch;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: 'Fredoka', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #3a2410;
+  background: radial-gradient(ellipse at 50% 15%, #fff8e3 0%, #f4e4c4 55%, #e3c998 100%);
+  -webkit-text-size-adjust: 100%;
+}
+
+.salmo-overlay *,
+.salmo-overlay *::before,
+.salmo-overlay *::after {
+  box-sizing: border-box;
+}
+
+.salmo-scatola {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1500px;
+  height: 100vh;
+  height: 100dvh;
+  padding: 0.7rem 1rem 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.salmo-intestazione {
+  flex: 0 0 auto;
+  text-align: center;
+  padding-bottom: 0.4rem;
+}
+
+.salmo-titolo {
+  margin: 0;
+  font-size: clamp(1.7rem, 8vw, 2.4rem);
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  color: #8a4b0f;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.7);
+}
+
+.salmo-versetto {
+  margin: 0.3rem auto 0;
+  max-width: 34rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  font-style: italic;
+  color: #6b4a22;
+}
+
+.salmo-corpo {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+/* Il centraggio con i margini automatici (invece di align-items: center):
+   se il contenuto fosse piu' alto dello spazio, parte dall'alto invece di
+   salire sopra il titolo. */
+.salmo-corpo > .salmo-colonna {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.salmo-colonna {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  text-align: center;
+  padding: 0.4rem 0;
+}
+
+.salmo-colonna-prova {
+  gap: 0.5rem;
+}
+
+.salmo-fase-titolo {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.salmo-testo {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  max-width: 32rem;
+}
+
+.salmo-stato {
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 0.95rem;
+  color: #6b4a22;
+}
+
+.salmo-suggerimento {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #6b4a22;
+}
+
+.salmo-messaggio {
+  margin: 0;
+  min-height: 1.4em;
+  max-width: 24rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #b85c10;
+}
+
+/* ---------- bottoni ---------- */
+
+.salmo-bottone {
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  min-height: 3.1rem;
+  padding: 0.7rem 1.8rem;
+  border: none;
+  border-radius: 999px;
+  background: #2f7d32;
+  color: #ffffff;
+  box-shadow: 0 5px 14px rgba(47, 125, 50, 0.4);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.salmo-bottone:disabled {
+  background: #9aa79a;
+  box-shadow: none;
+  opacity: 0.85;
+  cursor: default;
+}
+
+.salmo-bottone-secondario {
+  background: #ffffff;
+  color: #6a4417;
+  border: 2px solid #b07a3a;
+  box-shadow: none;
+  font-size: 1.05rem;
+}
+
+.salmo-bottone-secondario:disabled {
+  background: #efe8da;
+  color: #8f7a58;
+  border-color: #c9b99c;
+}
+
+/* ---------- conti alla rovescia ---------- */
+
+.salmo-conto-piccolo {
+  margin: 0;
+  font-size: 1rem;
+  color: #6b4a22;
+}
+
+.salmo-conto-grande {
+  min-height: 1em;   /* il posto c'e' anche prima che compaia il numero */
+  font-size: clamp(3rem, 16vw, 5rem);
+  line-height: 1;
+  font-weight: 700;
+  color: #8a4b0f;
+}
+
+.salmo-conto-prova {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #8a4b0f;
+  min-height: 1.2em;
+}
+
+.salmo-urgente.salmo-conto-prova,
+.salmo-conto-prova.salmo-urgente {
+  color: #c0392b;
+  animation: salmo-pulsa 1s ease-in-out infinite;
+}
+
+.salmo-testata-prova {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.salmo-tentativo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b4a22;
+}
+
+/* ---------- il mosaico ---------- */
+
+.salmo-griglia {
+  width: min(100%, 28rem, calc(100vh - 17rem));
+  width: min(100%, 28rem, max(14rem, calc(100dvh - 17rem)));
+}
+
+.salmo-griglia-piccola {
+  width: min(65%, 14rem, 32vh);
+  width: min(65%, 14rem, 32dvh);
+}
+
+.salmo-mosaico {
+  display: grid;
+  grid-template-columns: repeat(var(--salmo-colonne, 4), 1fr);
+  gap: 6px;
+  /* niente "width": la larghezza la decide il contenitore (.salmo-griglia ecc.),
+     che altrimenti verrebbe sempre sovrascritta da qui */
+}
+
+.salmo-tessera {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(60, 35, 10, 0.3);
+  font-size: 1rem;
+  aspect-ratio: 1 / 1;
+  cursor: default;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button.salmo-tessera {
+  cursor: pointer;
+  /* annulla lo stile generale dei bottoni del telefono */
+  font-family: inherit;
+  color: inherit;
+}
+
+.salmo-tessera svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.salmo-tessera-scelta {
+  transform: scale(0.93);
+  z-index: 1;
+  border-color: #f2b705;
+  box-shadow: 0 0 0 4px rgba(242, 183, 5, 0.55), 0 4px 10px rgba(60, 35, 10, 0.35);
+}
+
+.salmo-tessera-scambiata {
+  animation: salmo-pop 0.35s ease-out;
+}
+
+.salmo-tessera-segnaposto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.4rem, 4vw, 4rem);
+  font-weight: 700;
+  color: rgba(58, 36, 16, 0.5);
+  box-shadow: 0 2px 6px rgba(60, 35, 10, 0.18);
+}
+
+/* ---------- esito ---------- */
+
+.salmo-esito .salmo-fase-titolo {
+  font-size: 1.9rem;
+}
+
+.salmo-esito-successo .salmo-fase-titolo { color: #1e7a2e; }
+.salmo-esito-fallimento .salmo-fase-titolo { color: #b85c10; }
+.salmo-esito-annullato .salmo-fase-titolo { color: #4a5a7a; }
+
+/* ---------- il tabellone (la TV): tutto piu' grande, da leggere da lontano ---------- */
+
+/* Tutte le misure della TV sono multipli di "u", circa l'1% della larghezza dello
+   schermo ma mai piu' di quanto ci stia in altezza su uno schermo 16:9 (cosi' la
+   schermata entra intera su una TV, su un portatile o in una finestra).
+   "--salmo-scala" la rimpicciolisce ancora un po' se i nomi sono lunghissimi: lo
+   decide il codice (tabellone-salmo-ui.js), un passetto alla volta, finche' ci sta. */
+.salmo-tv .salmo-scatola {
+  --salmo-scala: 1;
+  --u: calc(1vw * var(--salmo-scala));
+  max-width: none;
+  padding: calc(var(--u) * 1.2) calc(var(--u) * 4) calc(var(--u) * 0.5);
+  overflow: hidden;
+}
+
+@supports (width: min(1vw, 1vh)) {
+  .salmo-tv .salmo-scatola {
+    --u: calc(min(1vw, 1.7778vh) * var(--salmo-scala));
+  }
+}
+
+.salmo-tv .salmo-intestazione {
+  padding-bottom: calc(var(--u) * 0.4);
+}
+
+.salmo-tv .salmo-titolo {
+  font-size: calc(var(--u) * 5.4);
+}
+
+.salmo-tv .salmo-versetto {
+  max-width: calc(var(--u) * 84);
+  margin-top: calc(var(--u) * 0.3);
+  font-size: calc(var(--u) * 1.6);
+}
+
+.salmo-tv .salmo-colonna {
+  gap: calc(var(--u) * 1);
+  padding: 0;
+}
+
+.salmo-tv .salmo-fase-titolo,
+.salmo-tv .salmo-riga-grande,
+.salmo-tv .salmo-testo,
+.salmo-tv .salmo-pronto-voce {
+  overflow-wrap: anywhere;
+}
+
+.salmo-tv .salmo-fase-titolo {
+  max-width: calc(var(--u) * 92);
+  font-size: calc(var(--u) * 3.2);
+}
+
+.salmo-tv .salmo-riga-grande {
+  margin: 0;
+  max-width: calc(var(--u) * 84);
+  font-size: calc(var(--u) * 2.7);
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.salmo-tv .salmo-testo {
+  max-width: calc(var(--u) * 72);
+  font-size: calc(var(--u) * 1.95);
+  line-height: 1.35;
+}
+
+.salmo-tv .salmo-invito {
+  margin: 0;
+  font-size: calc(var(--u) * 2.35);
+  font-weight: 700;
+  color: #8a4b0f;
+}
+
+.salmo-tv .salmo-conto-piccolo {
+  font-size: calc(var(--u) * 1.65);
+}
+
+.salmo-tv .salmo-conto-grande {
+  font-size: calc(var(--u) * 9.5);
+}
+
+.salmo-tv .salmo-tentativo {
+  font-size: calc(var(--u) * 2.05);
+}
+
+.salmo-tv .salmo-pronti {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--u) * 1);
+}
+
+.salmo-tv .salmo-pronto-voce {
+  padding: 0.4em 1em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  border: calc(var(--u) * 0.15) solid #d2b684;
+  font-size: calc(var(--u) * 2.05);
+  font-weight: 600;
+  color: #6b4a22;
+}
+
+.salmo-tv .salmo-pronto-voce.salmo-pronto-si {
+  background: #dff3df;
+  border-color: #4caf50;
+  color: #1e5a22;
+}
+
+.salmo-tv .salmo-segnaposto {
+  width: calc(var(--u) * 16.5);
+}
+
+/* pochi riquadri (livello bambini): una griglia piccola, non enorme */
+.salmo-tv .salmo-segnaposto-pochi {
+  width: calc(var(--u) * 10);
+}
+
+.salmo-tv .salmo-segnaposto .salmo-mosaico {
+  gap: calc(var(--u) * 0.4);
+}
+
+.salmo-tv .salmo-segnaposto .salmo-tessera {
+  border-width: calc(var(--u) * 0.15);
+  border-radius: calc(var(--u) * 0.5);
+}
+
+.salmo-tv .salmo-tessera-segnaposto {
+  font-size: calc(var(--u) * 2);
+}
+
+.salmo-tv .salmo-esito .salmo-fase-titolo {
+  font-size: calc(var(--u) * 5);
+}
+
+.salmo-barra {
+  flex: 0 0 auto;
+  height: clamp(10px, 1.1vw, 22px);
+  margin: 0.6vw 8vw 1.6vw;
+  border-radius: 999px;
+  background: rgba(58, 36, 16, 0.15);
+  overflow: hidden;
+}
+
+.salmo-tv .salmo-barra {
+  height: calc(var(--u) * 1);
+  margin: calc(var(--u) * 0.5) calc(var(--u) * 8) calc(var(--u) * 0.8);
+}
+
+.salmo-barra-riempimento {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4caf50, #c8a414);
+  transition: width 0.25s linear;
+}
+
+.salmo-tv.salmo-overlay .salmo-urgente .salmo-barra-riempimento,
+.salmo-urgente .salmo-barra-riempimento {
+  background: #d9534f;
+}
+
+/* la targhetta "BETA" (in alto a sinistra) non deve coprire il titolo sul telefono */
+.salmo-con-beta:not(.salmo-tv) .salmo-intestazione {
+  padding-top: 1.5rem;
+}
+
+/* ---------- animazioni ---------- */
+
+@keyframes salmo-pop {
+  0%   { transform: scale(0.8); }
+  60%  { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+@keyframes salmo-pulsa {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salmo-tessera-scambiata,
+  .salmo-conto-prova.salmo-urgente {
+    animation: none;
+  }
+  .salmo-barra-riempimento {
+    transition: none;
+  }
+}
+
+/* telefono in orizzontale o molto basso: tutto un po' piu' compatto */
+@media (max-height: 520px) {
+  .salmo-titolo { font-size: 1.4rem; }
+  .salmo-versetto { display: none; }
+  .salmo-griglia {
+    width: min(100%, max(10rem, calc(100vh - 9.5rem)));
+    width: min(100%, max(10rem, calc(100dvh - 9.5rem)));
+  }
+  .salmo-con-beta:not(.salmo-tv) .salmo-intestazione { padding-top: 0; }
+}
+
+/* telefono in orizzontale, schermata dei riquadri da sistemare: la griglia a sinistra,
+   il resto (tentativo, tempo, bottone) a destra */
+@media (max-height: 520px) and (orientation: landscape) {
+  .salmo-tel .salmo-colonna-prova {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "griglia testata"
+      "griglia suggerimento"
+      "griglia messaggio"
+      "griglia bottone";
+    align-content: center;
+    align-items: center;
+    justify-items: center;
+    column-gap: 1.4rem;
+    row-gap: 0.4rem;
+  }
+  .salmo-tel .salmo-colonna-prova .salmo-testata-prova { grid-area: testata; }
+  .salmo-tel .salmo-colonna-prova .salmo-suggerimento { grid-area: suggerimento; }
+  .salmo-tel .salmo-colonna-prova .salmo-messaggio { grid-area: messaggio; }
+  .salmo-tel .salmo-colonna-prova .salmo-bottone { grid-area: bottone; }
+  .salmo-tel .salmo-colonna-prova .salmo-griglia {
+    grid-area: griglia;
+    width: max(10rem, calc(100vh - 5.5rem));
+    width: max(10rem, calc(100dvh - 5.5rem));
+  }
+
+  /* la schermata finale: l'immagine giusta a sinistra, il resto a destra */
+  .salmo-tel .salmo-esito {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "griglia titolo"
+      "griglia testo"
+      "griglia stato"
+      "griglia bottone";
+    align-content: center;
+    align-items: center;
+    justify-items: center;
+    column-gap: 1.4rem;
+    row-gap: 0.4rem;
+  }
+  .salmo-tel .salmo-esito .salmo-fase-titolo { grid-area: titolo; }
+  .salmo-tel .salmo-esito .salmo-testo { grid-area: testo; }
+  .salmo-tel .salmo-esito .salmo-stato { grid-area: stato; }
+  .salmo-tel .salmo-esito .salmo-bottone { grid-area: bottone; }
+  .salmo-tel .salmo-esito .salmo-griglia-piccola {
+    grid-area: griglia;
+    width: max(8rem, calc(100vh - 5.5rem));
+    width: max(8rem, calc(100dvh - 5.5rem));
+  }
+}
+
+/* targhetta "valori per provare" sul tabellone (in basso a sinistra) */
+.salmo-etichetta-prova {
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: #e08a00;
+  color: #ffffff;
+  font: 700 13px/1.4 sans-serif;
+  letter-spacing: 0.04em;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
