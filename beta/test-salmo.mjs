@@ -40,7 +40,8 @@ function stato(posizioni, turnoDi, salmo, extra = {}) {
 
 prova('config: la sezione salmo esiste e ha i valori decisi', () => {
   assert.equal(CONFIG.salmo.giocatoriMinimi, 3);
-  assert.deepEqual(CONFIG.salmo.distacchi, { finoA4: 20, finoA6: 22, finoA8: 24, finoA10: 26, finoA12: 28 });
+  // 3-4 giocatori: 16 caselle; 5-6: 18; da 7 a 12: 20
+  assert.deepEqual(CONFIG.salmo.distacchi, { finoA4: 16, finoA6: 18, finoA8: 20, finoA10: 20, finoA12: 20 });
   assert.equal(CONFIG.salmo.primoMassimo, 50);
   assert.equal(CONFIG.salmo.giriDiPausa, 2);
   assert.equal(CONFIG.salmo.maxPerPartita, 2);
@@ -61,7 +62,7 @@ prova('config: unisciConfig con una personalizzazione parziale unisce anche le s
   const m = unisciConfig(CONFIG, { salmo: { bonusUltimo: 7, distacchi: { finoA4: 12 }, livelli: { normale: { riquadri: 9 } } } });
   assert.equal(m.salmo.bonusUltimo, 7);
   assert.equal(m.salmo.distacchi.finoA4, 12);
-  assert.equal(m.salmo.distacchi.finoA6, 22);               // le altre righe restano
+  assert.equal(m.salmo.distacchi.finoA6, 18);               // le altre righe restano
   assert.equal(m.salmo.livelli.normale.riquadri, 9);
   assert.equal(m.salmo.livelli.normale.provaMs, 90000);     // il resto del livello resta
   assert.deepEqual(m.salmo.livelli.bambini, CONFIG.salmo.livelli.bambini);
@@ -89,10 +90,10 @@ prova('configSalmoSicura: valori strani tornano ai valori di base', () => {
   });
   assert.equal(s.attivo, CONFIG.salmo.attivo);
   assert.equal(s.giocatoriMinimi, 3);
-  assert.equal(s.distacchi.finoA4, 20);
-  assert.equal(s.distacchi.finoA6, 22);
+  assert.equal(s.distacchi.finoA4, 16);
+  assert.equal(s.distacchi.finoA6, 18);
   assert.equal(s.distacchi.finoA8, 30);            // "30" e' un numero valido
-  assert.equal(s.distacchi.finoA10, 26);
+  assert.equal(s.distacchi.finoA10, 20);
   assert.equal(s.primoMassimo, 50);
   assert.equal(s.giriDiPausa, 0);                  // meno di zero diventa zero
   assert.equal(s.maxPerPartita, 2);
@@ -137,7 +138,7 @@ prova('configSalmoSicura: senza niente restituisce la base', () => {
 
 // ================= la regola di attivazione =================
 
-// base: 6 giocatori, primo G0 a 40, ultimo G5 a 12 (distacco 28 >= 22), tocca a G5.
+// base: 6 giocatori, primo G0 a 40, ultimo G5 a 12 (distacco 28 >= 18), tocca a G5.
 const BASE_POS = [40, 30, 22, 18, 25, 12];
 const BASE = () => stato(BASE_POS, 5, { avviati: 0, turni: 50 });
 
@@ -152,8 +153,8 @@ prova('regola: la situazione di base scatta, con primo, ultimo e livello', () =>
 
 const casi = [
   ['non e\' il turno dell\'ultimo -> no', () => ({ ...BASE(), turnoDi: 3 }), 'non-ultimo'],
-  ['distacco 21 (serve 22) -> no', () => stato([33, 30, 22, 18, 25, 12], 5, { avviati: 0, turni: 50 }), 'poco-distacco'],
-  ['distacco esattamente 22 -> si', () => stato([34, 30, 22, 18, 25, 12], 5, { avviati: 0, turni: 50 }), null],
+  ['distacco 17 (serve 18) -> no', () => stato([29, 28, 22, 18, 25, 12], 5, { avviati: 0, turni: 50 }), 'poco-distacco'],
+  ['distacco esattamente 18 -> si', () => stato([30, 28, 22, 18, 25, 12], 5, { avviati: 0, turni: 50 }), null],
   ['gia\' due prove -> no', () => stato(BASE_POS, 5, { avviati: 2, turni: 90, ultimoAvvio: 10 }), 'massimo-raggiunto'],
   ['una prova fatta, pausa finita (12 passaggi su 12) -> si', () => stato(BASE_POS, 5, { avviati: 1, turni: 50, ultimoAvvio: 38 }), null],
   ['una prova fatta, pausa non finita (11 su 12) -> no', () => stato(BASE_POS, 5, { avviati: 1, turni: 50, ultimoAvvio: 39 }), 'pausa'],
@@ -197,11 +198,11 @@ prova('regola: i giocatori che hanno abbandonato non contano', () => {
   const s = stato([40, 30, 22, 12], 3, { avviati: 0, turni: 50 });
   s.giocatori[1].abbandonato = true; s.giocatori[2].abbandonato = true;
   assert.equal(valutaSalmo(s, CFG).motivo, 'pochi-giocatori');
-  // 5 giocatori, uno solo ha abbandonato: ne restano 4, distacco richiesto 20.
-  const t = stato([33, 30, 22, 18, 12], 4, { avviati: 0, turni: 50 });
+  // 5 giocatori, uno solo ha abbandonato: ne restano 4, distacco richiesto 16 (non i 18 di 5 giocatori).
+  const t = stato([29, 28, 22, 18, 12], 4, { avviati: 0, turni: 50 });
   t.giocatori[1].abbandonato = true;
-  assert.equal(distaccoRichiesto(giocatoriAttivi(t).length, CFG), 20);
-  assert.equal(valutaSalmo(t, CFG).scatta, true);               // 33 - 12 = 21 >= 20
+  assert.equal(distaccoRichiesto(giocatoriAttivi(t).length, CFG), 16);
+  assert.equal(valutaSalmo(t, CFG).scatta, true);               // 29 - 12 = 17 >= 16 (ma < 18)
   // l'ultimo "vero" e' tra gli attivi: un abbandonato piu' indietro non conta
   const u = stato([40, 30, 5, 18, 12], 4, { avviati: 0, turni: 50 });
   u.giocatori[2].abbandonato = true;
@@ -212,9 +213,9 @@ prova('regola: i giocatori che hanno abbandonato non contano', () => {
 });
 
 prova('regola: un primo che ha abbandonato non conta come primo', () => {
-  const s = stato([60, 30, 22, 18, 25, 12], 5, { avviati: 0, turni: 50 });
+  const s = stato([60, 28, 22, 18, 25, 12], 5, { avviati: 0, turni: 50 });
   s.giocatori[0].abbandonato = true;
-  // senza G0 il primo e' G1 a 30: distacco 18 < 22 -> no
+  // senza G0 il primo e' G1 a 28: distacco 16 < 18 (restano 5 giocatori) -> no
   assert.equal(valutaSalmo(s, CFG).motivo, 'poco-distacco');
 });
 
@@ -248,7 +249,7 @@ prova('regola: junior -> livello bambini se almeno uno dei due e\' junior', () =
 });
 
 prova('regola: la tabella dei distacchi, giocatore per giocatore, al limite esatto', () => {
-  const attesi = { 3: 20, 4: 20, 5: 22, 6: 22, 7: 24, 8: 24, 9: 26, 10: 26, 11: 28, 12: 28 };
+  const attesi = { 3: 16, 4: 16, 5: 18, 6: 18, 7: 20, 8: 20, 9: 20, 10: 20, 11: 20, 12: 20 };
   for (const [n, D] of Object.entries(attesi)) {
     const N = Number(n);
     assert.equal(distaccoRichiesto(N, CFG), D, `tabella per ${N} giocatori`);
@@ -261,6 +262,16 @@ prova('regola: la tabella dei distacchi, giocatore per giocatore, al limite esat
     const no = valutaSalmo(stato(pos, N - 1, { avviati: 0, turni: 100 }), CFG);
     assert.equal(no.scatta, false, `${N} giocatori, distacco ${D - 1}: non doveva scattare`);
     assert.equal(no.motivo, 'poco-distacco');
+  }
+});
+
+prova('regola: ogni fascia di giocatori usa la sua riga (provato con numeri tutti diversi)', () => {
+  // Nei valori di base 7-12 giocatori hanno tutti 20: qui si usano numeri diversi per essere sicuri
+  // che ogni numero di giocatori peschi dalla riga giusta (modificabile dall'Admin).
+  const diversa = configSalmoSicura({ distacchi: { finoA4: 11, finoA6: 12, finoA8: 13, finoA10: 14, finoA12: 15 } });
+  const attesi = { 2: 11, 3: 11, 4: 11, 5: 12, 6: 12, 7: 13, 8: 13, 9: 14, 10: 14, 11: 15, 12: 15 };
+  for (const [n, D] of Object.entries(attesi)) {
+    assert.equal(distaccoRichiesto(Number(n), diversa), D, `${n} giocatori`);
   }
 });
 
@@ -324,6 +335,44 @@ prova('regola: partita intera simulata a mano: massimo 2 prove, mai ravvicinate'
   assert.equal(avvii.length, 2);
   assert.equal(avvii[0], 1);
   assert.equal(avvii[1] - avvii[0], 2 * N);
+});
+
+prova('regola: dopo la pausa torna solo se il distacco c\'e\' di nuovo, e mai piu\' di 2 volte', () => {
+  // Con ogni numero di giocatori: il primo e' a 49, l'ultimo (tocca a lui) e' l'ultimo della lista.
+  for (const N of [3, 4, 5, 6, 7, 8, 10, 12]) {
+    const D = distaccoRichiesto(N, CFG);
+    const pos = Array(N).fill(45); pos[0] = 49; pos[N - 1] = 49 - D;
+    const s = stato(pos, N - 1, { avviati: 0, turni: 0 });
+    const ultimoA = casella => { s.giocatori[N - 1].posizione = casella; };
+    const passa = () => { s.salmo = contatoriDopoTurno(s); return valutaSalmo(s, CFG); };
+    const parte = v => { assert.equal(v.scatta, true, `${N} giocatori: doveva scattare (${v.motivo})`); s.salmo = contatoriDopoAvvio(s); };
+
+    // 1) col distacco richiesto scatta subito (prima volta)
+    parte(passa());
+    const t0 = s.salmo.turni;
+
+    // 2) per 2 giri interi non puo' tornare, nemmeno con un distacco enorme
+    ultimoA(2);
+    for (let i = 1; i < 2 * N; i++) {
+      assert.equal(passa().motivo, 'pausa', `${N} giocatori: al passaggio ${i} dopo la prova c'e' ancora pausa`);
+    }
+
+    // 3) finiti i 2 giri, se il distacco e' sceso di una casella sotto il richiesto, non scatta...
+    ultimoA(49 - D + 1);
+    const troppoPoco = passa();
+    assert.equal(troppoPoco.scatta, false);
+    assert.equal(troppoPoco.motivo, 'poco-distacco', `${N} giocatori: pausa finita ma il distacco non basta`);
+
+    // 4) ...e appena il distacco c'e' di nuovo, scatta (seconda e ultima volta)
+    ultimoA(49 - D);
+    parte(passa());
+    assert.equal(s.salmo.avviati, 2);
+    assert.equal(s.salmo.turni - t0, 2 * N + 1);
+
+    // 5) la terza volta non arriva mai, anche dopo molti giri e con un distacco enorme
+    ultimoA(1);
+    for (let i = 0; i < 10 * N; i++) assert.equal(passa().motivo, 'massimo-raggiunto');
+  }
 });
 
 prova('regola: stessa situazione, stessa risposta (nessun caso)', () => {

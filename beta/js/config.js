@@ -52,11 +52,11 @@ export const CONFIG = {
     attivo: true,
     giocatoriMinimi: 3,           // con 2 giocatori non scatta mai
     distacchi: {                  // distacco minimo primo-ultimo, in caselle, per numero di giocatori
-      finoA4: 20,
-      finoA6: 22,
-      finoA8: 24,
-      finoA10: 26,
-      finoA12: 28
+      finoA4: 16,                 //   3 o 4 giocatori
+      finoA6: 18,                 //   5 o 6 giocatori
+      finoA8: 20,                 //   7 o 8 giocatori
+      finoA10: 20,                //   9 o 10 giocatori
+      finoA12: 20                 //   11 o 12 giocatori
     },
     primoMassimo: 50,             // se il primo e' dalla casella 51 in poi, niente Salmo
     giriDiPausa: 2,               // giri completi del tavolo tra un Salmo e il successivo

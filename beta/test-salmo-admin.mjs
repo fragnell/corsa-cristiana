@@ -39,11 +39,11 @@ prova('campiDaConfig: i valori di base diventano campi leggibili', () => {
   const c = campiDaConfig(BASE);
   assert.equal(c.attivo, true);
   assert.equal(c.giocatoriMinimi, 3);
-  assert.equal(c.distacco4, 20);
-  assert.equal(c.distacco6, 22);
-  assert.equal(c.distacco8, 24);
-  assert.equal(c.distacco10, 26);
-  assert.equal(c.distacco12, 28);
+  assert.equal(c.distacco4, 16);
+  assert.equal(c.distacco6, 18);
+  assert.equal(c.distacco8, 20);
+  assert.equal(c.distacco10, 20);
+  assert.equal(c.distacco12, 20);
   assert.equal(c.primoMassimo, 50);
   assert.equal(c.giriDiPausa, 2);
   assert.equal(c.maxPerPartita, 2);
