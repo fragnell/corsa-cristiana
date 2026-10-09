@@ -56,6 +56,43 @@ body {
   white-space: nowrap;
 }
 
+/* --- il tastino BETA: piccolo e rosso, porta alla versione di prova (cartella beta/) --- */
+
+.link-beta {
+  position: fixed;
+  top: 6px;
+  left: 6px;
+  z-index: 5000;
+  padding: 3px 11px;
+  background: #c0392b;
+  color: #ffffff;
+  font: 700 12px/1.4 sans-serif;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+/* una zona piu' larga che risponde al tocco, senza ingrandire il tastino */
+.link-beta::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+}
+
+.link-beta:hover,
+.link-beta:focus-visible {
+  background: #a93226;
+}
+
+.link-beta:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
 /* --- il pannello centrale --- */
 
 .pannello {
