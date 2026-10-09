@@ -87,6 +87,14 @@ const abbandoniGestiti = new Set();
 // COLLABORIAMO! (Salmo 133:1): il modulo della prova si carica "a parte". Se non
 // si carica, o si rompe, il gioco va avanti normalmente senza la prova.
 let salmoModulo = null;
+// Il sorteggio dell'ordine di gioco e' un modulo a parte, caricato subito in sottofondo:
+// se non si carica (o ci mette troppo), si gioca nell'ordine di ingresso in lobby, come sempre.
+const ATTESA_MODULO_ORDINE_MS = 3000;
+const moduloOrdine = import('./ordine-gioco.js').catch(errore => {
+  console.warn("Sorteggio dell'ordine non disponibile, si gioca nell'ordine di ingresso", errore);
+  return null;
+});
+let ordineCaricato = null;
 
 function pausa(ms) {
   return new Promise(risolvi => setTimeout(risolvi, ms));
@@ -585,6 +593,30 @@ function configuraAscoltatoriDiPartita() {
   });
 }
 
+// ---------- Ordine di gioco sorteggiato ----------
+
+// Sorteggia l'ordine dei giocatori. Se il modulo non c'e' o qualcosa va storto restituisce
+// l'elenco com'e' (ordine di ingresso): la partita parte comunque.
+async function sorteggiaOrdineDiGioco(giocatoriInfo) {
+  try {
+    ordineCaricato = await Promise.race([moduloOrdine, pausa(ATTESA_MODULO_ORDINE_MS).then(() => null)]);
+    if (ordineCaricato) return ordineCaricato.sorteggiaOrdine(giocatoriInfo);
+    console.warn("Sorteggio dell'ordine non disponibile all'avvio, si gioca nell'ordine di ingresso");
+  } catch (errore) {
+    console.warn("Sorteggio dell'ordine non riuscito, si gioca nell'ordine di ingresso", errore);
+  }
+  return giocatoriInfo;
+}
+
+// Mostra per qualche secondo l'ordine sorteggiato. Non blocca il gioco.
+function annunciaOrdineSorteggiato() {
+  try {
+    if (ordineCaricato) ordineCaricato.annunciaOrdine(stato.giocatori);
+  } catch (errore) {
+    console.warn("Annuncio dell'ordine non riuscito (si gioca lo stesso)", errore);
+  }
+}
+
 async function iniziaPartitaVera(giocatoriInfo) {
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
@@ -595,7 +627,9 @@ async function iniziaPartitaVera(giocatoriInfo) {
 
   document.getElementById('codice-partita-gioco').textContent = codicePartita;
 
-  stato = creaStatoIniziale(giocatoriInfo);
+  // L'ordine di gioco si sorteggia qui, PRIMA di creare lo stato: da questo momento i numeri
+  // dei giocatori, i turni e i telefoni nascono gia' dall'ordine sorteggiato.
+  stato = creaStatoIniziale(await sorteggiaOrdineDiGioco(giocatoriInfo));
   creaPedine();
 
   localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
@@ -603,6 +637,7 @@ async function iniziaPartitaVera(giocatoriInfo) {
   await avviaSalmo();
 
   await pubblicaStato(codicePartita, stato);
+  annunciaOrdineSorteggiato();
   cicloDiGioco();
 }
 
