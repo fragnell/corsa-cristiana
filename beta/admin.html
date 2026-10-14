@@ -335,13 +335,49 @@
   </div>
 
   <div id="tab-statistiche" class="nascosta">
+    <section id="sezione-attivita">
+      <h2>📊 Quanto si gioca</h2>
+      <p id="attivita-avviso" class="admin-avviso nascosta"></p>
+
+      <div class="attivita-barra">
+        <span id="attivita-aggiornato" class="attivita-aggiornato">Carico i numeri…</span>
+        <button type="button" id="attivita-btn-aggiorna">🔄 Aggiorna</button>
+      </div>
+
+      <p id="attivita-adesso" class="attivita-adesso"></p>
+      <div id="attivita-periodi" class="attivita-periodi"></div>
+      <p id="attivita-ultima" class="attivita-ultima"></p>
+
+      <h3>Giorno per giorno, ultimi 30 giorni</h3>
+      <div id="attivita-grafico"></div>
+      <details id="attivita-numeri" class="attivita-scheda-dettaglio">
+        <summary>Vedi i numeri giorno per giorno</summary>
+        <div id="attivita-tabella"></div>
+      </details>
+
+      <h3>Dall'inizio</h3>
+      <div id="attivita-totale" class="statistiche-riepilogo"></div>
+      <p id="attivita-totale-nota" class="admin-nota"></p>
+
+      <details id="attivita-spiegazione" class="attivita-scheda-dettaglio">
+        <summary>Come si contano le partite</summary>
+        <ul>
+          <li><strong>Partita</strong>: una partita davvero iniziata (c'è stato almeno un lancio di dado) a cui hanno giocato almeno 2 giocatori. Le lobby aperte e poi abbandonate non contano.</li>
+          <li><strong>Da solo</strong>: le partite con un solo giocatore, di solito prove. Sono indicate a parte e non entrano nelle partite. Se provi il gioco con due o più telefoni, invece, la partita conta come una vera: non c'è modo di distinguerla.</li>
+          <li><strong>Concluse</strong>: quelle in cui qualcuno ha vinto. Le altre sono state lasciate a metà.</li>
+          <li><strong>Giorni</strong>: ogni partita conta nel giorno in cui è stata aperta. «7 giorni» e «30 giorni» sono gli ultimi giorni, compreso oggi: non partono dal lunedì né dal primo del mese.</li>
+          <li><strong>Giocatori</strong>: si sommano partita per partita (chi gioca tre partite conta tre volte), perché il gioco non sa chi sia chi.</li>
+          <li>I numeri sono ricostruiti dalle partite salvate nel database, quindi valgono anche per il passato. Se un giorno cancelli vecchie partite da Firebase, spariscono anche da qui.</li>
+        </ul>
+      </details>
+    </section>
+
     <section id="sezione-statistiche">
-      <h2>📊 Statistiche Conoscenza</h2>
-      <div id="statistiche-globali" class="statistiche-riepilogo"></div>
+      <h2>🧠 Statistiche Conoscenza</h2>
       <p>Domande ordinate dalla percentuale di corrette più bassa (le più sospette) alla più alta. Quelle mai uscite in nessuna partita sono in fondo.</p>
       <div id="statistiche-lista"></div>
       <div class="admin-form-bottoni">
-        <button type="button" id="statistiche-btn-azzera">🗑️ Azzera tutte le statistiche</button>
+        <button type="button" id="statistiche-btn-azzera">🗑️ Azzera le statistiche delle domande</button>
       </div>
     </section>
   </div>

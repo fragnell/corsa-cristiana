@@ -357,6 +357,14 @@ export async function leggiStatisticheGlobali() {
   return istantanea.val() || { partiteConcluse: 0, giocatoriTotali: 0 };
 }
 
+// Tutte le partite salvate (solo lettura, per la scheda Statistiche dell'Admin): da qui si
+// ricostruisce quanto si e' giocato oggi, negli ultimi 7 e 30 giorni — anche per il passato,
+// perche' le partite vecchie non vengono mai cancellate.
+export async function leggiPartiteUnaVolta() {
+  const istantanea = await get(ref(db, 'partite'));
+  return istantanea.val() || {};
+}
+
 
 // --- Presenza del TABELLONE stesso (non del giocatore) ---
 // Stesso principio già usato per i giocatori (onDisconnect + .info/connected),

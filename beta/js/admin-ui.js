@@ -48,6 +48,7 @@ function mostraTab(nome) {
   }
 
   if (nome === 'recensioni') avviaRecensioniUnaVolta();
+  if (nome === 'statistiche') avviaAttivitaUnaVolta();
 }
 
 // La scheda Recensioni si carica "a parte", la prima volta che la si apre: se qualcosa non va,
@@ -78,6 +79,38 @@ function mostraProblemaRecensioni(errore) {
   const avviso = document.getElementById('recensioni-avviso');
   if (!avviso) return;
   avviso.textContent = '⚠️ La scheda Recensioni non si è caricata. Ricarica la pagina con Ctrl+F5; se resta così, il resto del pannello funziona lo stesso.';
+  avviso.classList.remove('nascosta');
+}
+
+// Il riquadro «Quanto si gioca» della scheda Statistiche si carica "a parte" nello stesso modo: legge tutte
+// le partite dal database, quindi non ha senso farlo prima che la scheda venga aperta. Se qualcosa non va,
+// le statistiche delle domande (e il resto del pannello) funzionano come sempre e qui compare solo un avviso.
+let attivitaAvviata = false;
+
+function avviaAttivitaUnaVolta() {
+  if (attivitaAvviata) return;
+  attivitaAvviata = true;
+
+  import('./admin-attivita.js').then(
+    modulo => {
+      try {
+        modulo.avviaSezioneAttivita();
+      } catch (errore) {
+        mostraProblemaAttivita(errore);
+      }
+    },
+    errore => {
+      attivitaAvviata = false;   // riaprendo la scheda si puo' riprovare
+      mostraProblemaAttivita(errore);
+    }
+  );
+}
+
+function mostraProblemaAttivita(errore) {
+  console.warn('Il riquadro «Quanto si gioca» non si è avviato', errore);
+  const avviso = document.getElementById('attivita-avviso');
+  if (!avviso) return;
+  avviso.textContent = '⚠️ Il riquadro «Quanto si gioca» non si è caricato. Ricarica la pagina con Ctrl+F5; se resta così, le statistiche delle domande qui sotto e il resto del pannello funzionano lo stesso.';
   avviso.classList.remove('nascosta');
 }
 
