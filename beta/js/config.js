@@ -31,17 +31,21 @@ export const CONFIG = {
   // (Sono regole fisse e non si cambiano: un movimento-bonus non attiva mai la casella su cui
   // atterra, e superare l'ultima casella basta per vincere, senza rimbalzi indietro.)
   regole: {
-    saltoAttivaCasella: false    // false: il SALTO ti sposta e basta; true: dopo il salto scatta anche la casella
-                                 // su cui arrivi (per esempio una domanda Conoscenza)
+    // Interruttore interno del motore: NON si cambia qui e non sta nell'Admin, lo imposta la modalita' della
+    // partita (vedi configPerModalita). Partita NORMALE: sempre false, il SALTO ti sposta e basta, non scatta
+    // la casella di arrivo. Partita VELOCE: vale la spunta "saltoAttivaCasella" della sezione "veloce".
+    saltoAttivaCasella: false
   },
 
   // Partita veloce: si sceglie in lobby ("Normale" o "Veloce") e accorcia la partita di circa un terzo.
-  // Cambia solo questi quattro numeri rispetto alla partita normale; tutto il resto resta uguale.
+  // Cambia solo questi quattro valori rispetto alla partita normale; tutto il resto resta uguale.
   veloce: {
     bonusConoscenza: 8,          // risposta giusta: avanza di 8 (nella partita normale: 3)
     bonusProva: 3,               // prova superata: avanza di 3 (nella partita normale: 1)
     malusImprevisto: -1,         // imprevisto: arretra di 1 (nella partita normale: 5); sempre negativo
-    saltoAttivaCasella: true     // dopo un salto scatta anche la casella su cui arrivi
+    saltoAttivaCasella: true     // true: dopo un salto scatta anche la casella su cui arrivi (per esempio una
+                                 // domanda Conoscenza); false: il salto sposta e basta, come nella partita normale.
+                                 // Solo la partita veloce lo usa: nella normale il salto non attiva mai la casella.
   },
 
   // Recensioni di fine partita: ai giocatori "alle prime partite" il telefono propone di lasciare
@@ -109,7 +113,10 @@ export function unisciConfig(base, override) {
     conoscenza: { ...base.conoscenza, ...(override.conoscenza || {}) },
     imprevisto: { ...base.imprevisto, ...(override.imprevisto || {}) },
     prova: { ...base.prova, ...(override.prova || {}) },
-    regole: { ...base.regole, ...(override.regole || {}) },
+    // "regole" salvata su Firebase non si legge piu': contiene solo vecchi valori (le due spunte tolte) e la
+    // vecchia spunta del Salto, che ora vive solo nella sezione "veloce". Cosi' non puo' mai accendere il Salto
+    // nella partita normale.
+    regole: { ...base.regole },
     giocatori: { ...base.giocatori, ...(override.giocatori || {}) },
     timeout: { ...base.timeout, ...(override.timeout || {}) },
     veloce: { ...base.veloce, ...(override.veloce || {}) },
@@ -118,19 +125,23 @@ export function unisciConfig(base, override) {
   };
 }
 
-// La configurazione da usare in una partita: per la modalita' "veloce" sostituisce i quattro
-// numeri della sezione "veloce" a quelli normali. Per ogni altra modalita' (o nessuna, come nelle
-// partite iniziate prima di questa novita') restituisce la configurazione cosi' com'e'.
+// La configurazione da usare in una partita, secondo la modalita':
+//  - "veloce": al posto dei valori normali valgono i quattro della sezione "veloce" (bonus Conoscenza, bonus Prova,
+//    malus Imprevisto e se il Salto attiva la casella di arrivo);
+//  - qualunque altra modalita' (o nessuna, come nelle partite iniziate prima della partita veloce): i valori
+//    normali, e il Salto sposta e basta: la casella di arrivo NON scatta mai nella partita normale.
 // Non modifica mai l'originale.
 export function configPerModalita(config, modalita) {
-  if (modalita !== 'veloce' || !config.veloce) return config;
+  if (modalita !== 'veloce' || !config.veloce) {
+    return { ...config, regole: { ...config.regole, saltoAttivaCasella: false } };
+  }
   const v = config.veloce;
   return {
     ...config,
     conoscenza: { ...config.conoscenza, bonusRispostaCorretta: v.bonusConoscenza },
     prova: { ...config.prova, bonusSuperata: v.bonusProva },
     imprevisto: { ...config.imprevisto, malus: v.malusImprevisto },
-    regole: { ...config.regole, saltoAttivaCasella: v.saltoAttivaCasella }
+    regole: { ...config.regole, saltoAttivaCasella: !!v.saltoAttivaCasella }
   };
 }
 

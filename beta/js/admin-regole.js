@@ -14,6 +14,8 @@ let salmoSalvato = null;   // l'ultima sezione "salmo" letta da Firebase
 
 // Le sezioni che questa scheda mostra e salva. Tutte le altre sezioni che si trovassero su
 // Firebase (per esempio "dado" o "timeout") restano come sono: salvando le regole non si cancellano.
+// "regole" e' nella lista anche se questa scheda non la scrive piu' (il Salto della partita normale non
+// si sceglie piu': non scatta mai): cosi' al primo salvataggio i suoi vecchi valori spariscono da Firebase.
 const SEZIONI_DELLA_SCHEDA = ['conoscenza', 'imprevisto', 'prova', 'regole', 'giocatori', 'veloce', 'recensioni', 'salmo'];
 let configSalvata = {};    // l'ultima configurazione letta da Firebase, tale e quale
 let valoriAttuali = unisciConfig(CONFIG, {});   // quella stessa, completata con i valori di base: serve se nella pagina manca un campo
@@ -85,8 +87,6 @@ async function caricaValoriNelForm() {
 
   document.getElementById('regole-prova-bonus').value = attuale.prova.bonusSuperata;
   document.getElementById('regole-prova-malus').value = attuale.prova.malusFallita;
-
-  scriviSpunta('regole-salto-attiva-casella', attuale.regole.saltoAttivaCasella);
 
   scriviNumero('regole-veloce-bonus-conoscenza', attuale.veloce.bonusConoscenza);
   scriviNumero('regole-veloce-bonus-prova', attuale.veloce.bonusProva);
@@ -168,9 +168,6 @@ async function salva() {
     prova: {
       bonusSuperata: Number(document.getElementById('regole-prova-bonus').value),
       malusFallita: Number(document.getElementById('regole-prova-malus').value)
-    },
-    regole: {
-      saltoAttivaCasella: leggiSpunta('regole-salto-attiva-casella', valoriAttuali.regole.saltoAttivaCasella)
     },
     giocatori: {
       minimo: Number(document.getElementById('regole-giocatori-minimo').value),

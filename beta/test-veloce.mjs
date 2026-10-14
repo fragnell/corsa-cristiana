@@ -1,7 +1,8 @@
 // test-veloce.mjs
 // Prove della PARTITA VELOCE e del "salto che attiva la casella di arrivo":
 //  - la configurazione (cosa e' stato tolto, cosa e' stato aggiunto, come si uniscono i valori di Firebase);
-//  - configPerModalita(): cambia solo i quattro numeri della partita veloce e non tocca l'originale;
+//  - configPerModalita(): cambia solo i quattro valori della partita veloce e non tocca l'originale;
+//    la partita NORMALE non attiva mai la casella di arrivo dopo un Salto, qualunque cosa ci sia salvata su Firebase;
 //  - il motore con i numeri veloci (risposte giuste +8, prove +3, imprevisto -1, vittoria superando la fine);
 //  - saltoAttivaArrivo() / risolviCasellaDiArrivo() e il limite di salti di fila;
 //  - la durata: con numeri veri la partita veloce dura almeno un quarto in meno (partite simulate con un
@@ -47,7 +48,7 @@ prova('CONFIG: la Sfida non c\'e\' piu\' (niente sfidaBonusVincitore / sfidaMalu
   assert.deepEqual(Object.keys(CONFIG.conoscenza).sort(), ['bonusRispostaCorretta', 'malusRispostaErrata']);
 });
 
-prova('CONFIG: via anche "bonusAttivaCasella" e "arrivoLibero" (regole fisse), resta solo saltoAttivaCasella', () => {
+prova('CONFIG: via anche "bonusAttivaCasella" e "arrivoLibero" (regole fisse), resta solo l\'interruttore interno saltoAttivaCasella (spento)', () => {
   assert.deepEqual(Object.keys(CONFIG.regole), ['saltoAttivaCasella']);
   assert.equal(CONFIG.regole.saltoAttivaCasella, false);
 });
@@ -60,7 +61,7 @@ prova('CONFIG: i numeri della partita normale sono quelli di sempre (3, 0, -5, 1
   assert.equal(CONFIG.prova.malusFallita, 0);
 });
 
-prova('CONFIG.veloce: i quattro numeri di base (8, 3, -1, salto acceso)', () => {
+prova('CONFIG.veloce: i quattro valori di base (8, 3, -1, salto acceso)', () => {
   assert.deepEqual(CONFIG.veloce, { bonusConoscenza: 8, bonusProva: 3, malusImprevisto: -1, saltoAttivaCasella: true });
 });
 
@@ -77,13 +78,18 @@ prova('unisciConfig: senza personalizzazioni restano tutti i valori di base (anc
 });
 
 prova('unisciConfig: i valori di Firebase vincono, quelli non toccati restano', () => {
-  const c = unisciConfig(CONFIG, { veloce: { bonusConoscenza: 6 }, recensioni: { primePartite: 5 }, regole: { saltoAttivaCasella: true } });
+  const c = unisciConfig(CONFIG, { veloce: { bonusConoscenza: 6 }, recensioni: { primePartite: 5 } });
   assert.equal(c.veloce.bonusConoscenza, 6);
   assert.equal(c.veloce.bonusProva, 3);
   assert.equal(c.veloce.malusImprevisto, -1);
   assert.equal(c.recensioni.primePartite, 5);
   assert.equal(c.recensioni.attiva, true);
-  assert.equal(c.regole.saltoAttivaCasella, true);
+});
+
+prova('unisciConfig: la sezione "regole" salvata su Firebase non conta piu\' (la vecchia spunta del Salto non accende niente)', () => {
+  const c = unisciConfig(CONFIG, { regole: { saltoAttivaCasella: true, bonusAttivaCasella: true, arrivoLibero: false } });
+  assert.deepEqual(c.regole, { saltoAttivaCasella: false });
+  assert.equal(saltoAttivaArrivo({ tipo: 'SALTO' }, c, 0), false);
 });
 
 prova('unisciConfig: non modifica CONFIG e ignora le sezioni che non conosce', () => {
@@ -98,19 +104,59 @@ prova('unisciConfig: le vecchie chiavi della Sfida rimaste su Firebase non fanno
   const c = unisciConfig(CONFIG, { conoscenza: { bonusRispostaCorretta: 4, sfidaBonusVincitore: 3, sfidaMalusPerdente: -2 }, regole: { bonusAttivaCasella: false, arrivoLibero: true, saltoAttivaCasella: true } });
   assert.equal(c.conoscenza.bonusRispostaCorretta, 4);
   assert.equal(applicaRispostaConoscenza(statoCon(10), percorso, true, c).stato.giocatori[0].posizione, 14);
-  assert.equal(c.regole.saltoAttivaCasella, true);
+  assert.equal(c.regole.saltoAttivaCasella, false, 'la vecchia spunta del Salto salvata su Firebase non conta');
 });
 
 // ================= configPerModalita =================
 
-prova('configPerModalita: "normale", nessuna modalita\' o una modalita\' sconosciuta -> la stessa configurazione', () => {
-  assert.equal(configPerModalita(CONFIG, 'normale'), CONFIG);
-  assert.equal(configPerModalita(CONFIG, undefined), CONFIG);
-  assert.equal(configPerModalita(CONFIG, null), CONFIG);
-  assert.equal(configPerModalita(CONFIG, 'turbo'), CONFIG);
+prova('configPerModalita: "normale", nessuna modalita\' o una modalita\' sconosciuta -> gli stessi valori di sempre', () => {
+  assert.deepEqual(configPerModalita(CONFIG, 'normale'), CONFIG);
+  assert.deepEqual(configPerModalita(CONFIG, undefined), CONFIG);
+  assert.deepEqual(configPerModalita(CONFIG, null), CONFIG);
+  assert.deepEqual(configPerModalita(CONFIG, 'turbo'), CONFIG);
 });
 
-prova('configPerModalita: "veloce" cambia solo i quattro numeri', () => {
+// La configurazione "come l'aveva salvata l'Admin di prima" (la tua su Firebase): la spunta del Salto era accesa.
+const CON_VECCHIA_SPUNTA = { ...CONFIG, regole: { ...CONFIG.regole, saltoAttivaCasella: true } };
+
+prova('configPerModalita: la partita NORMALE non attiva mai l\'arrivo del Salto, anche con la vecchia spunta accesa', () => {
+  for (const modalita of ['normale', undefined, null, 'turbo', '']) {
+    const c = configPerModalita(CON_VECCHIA_SPUNTA, modalita);
+    assert.equal(c.regole.saltoAttivaCasella, false, `modalita ${String(modalita)}`);
+    assert.equal(saltoAttivaArrivo({ tipo: 'SALTO' }, c, 0), false, `modalita ${String(modalita)}`);
+  }
+  // e senza passare dalla partita: la configurazione unita con Firebase la ignora gia' da sola
+  const daFirebase = unisciConfig(CONFIG, { regole: { saltoAttivaCasella: true } });
+  assert.equal(saltoAttivaArrivo({ tipo: 'SALTO' }, configPerModalita(daFirebase, 'normale'), 0), false);
+});
+
+prova('configPerModalita: la normale lascia uguali tutti i numeri, anche quelli salvati dall\'Admin', () => {
+  const salvata = unisciConfig(CONFIG, { conoscenza: { bonusRispostaCorretta: 4 }, imprevisto: { malus: -2 }, prova: { bonusSuperata: 2 } });
+  const c = configPerModalita(salvata, 'normale');
+  assert.equal(c.conoscenza.bonusRispostaCorretta, 4);
+  assert.equal(c.imprevisto.malus, -2);
+  assert.equal(c.prova.bonusSuperata, 2);
+});
+
+prova('configPerModalita: il Salto della partita veloce si decide con il suo flag (acceso o spento)', () => {
+  const acceso = configPerModalita(unisciConfig(CONFIG, { veloce: { saltoAttivaCasella: true } }), 'veloce');
+  const spento = configPerModalita(unisciConfig(CONFIG, { veloce: { saltoAttivaCasella: false } }), 'veloce');
+  assert.equal(saltoAttivaArrivo({ tipo: 'SALTO' }, acceso, 0), true);
+  assert.equal(saltoAttivaArrivo({ tipo: 'SALTO' }, spento, 0), false);
+  // la vecchia spunta salvata da prima non c'entra: decide solo il flag della veloce
+  const vecchia = configPerModalita(unisciConfig(CONFIG, { regole: { saltoAttivaCasella: true }, veloce: { saltoAttivaCasella: false } }), 'veloce');
+  assert.equal(saltoAttivaArrivo({ tipo: 'SALTO' }, vecchia, 0), false);
+});
+
+prova('configPerModalita: dalla normale alla veloce (e viceversa) lo stesso originale non cambia', () => {
+  const originale = unisciConfig(CONFIG, {});
+  const prima = JSON.stringify(originale);
+  configPerModalita(originale, 'veloce');
+  configPerModalita(originale, 'normale');
+  assert.equal(JSON.stringify(originale), prima);
+});
+
+prova('configPerModalita: "veloce" cambia solo i quattro valori', () => {
   assert.equal(veloce.conoscenza.bonusRispostaCorretta, 8);
   assert.equal(veloce.prova.bonusSuperata, 3);
   assert.equal(veloce.imprevisto.malus, -1);
@@ -144,7 +190,7 @@ prova('configPerModalita: usa i valori salvati dall\'Admin (non quelli di base)'
 prova('configPerModalita: senza la sezione "veloce" non cambia niente (e non si rompe)', () => {
   const senza = { ...CONFIG };
   delete senza.veloce;
-  assert.equal(configPerModalita(senza, 'veloce'), senza);
+  assert.deepEqual(configPerModalita(senza, 'veloce'), senza);
 });
 
 // ================= il motore con i numeri veloci =================
@@ -210,7 +256,8 @@ prova('veloce: le prove "vincolo" funzionano come prima (restano in sospeso e po
 
 // ================= il salto che attiva la casella di arrivo =================
 
-const accesa = unisciConfig(CONFIG, { regole: { saltoAttivaCasella: true } });
+// Una configurazione con l'interruttore del Salto acceso, costruita a mano (e' quella che il tabellone usa nella partita veloce)
+const accesa = { ...CONFIG, regole: { ...CONFIG.regole, saltoAttivaCasella: true } };
 
 prova('saltoAttivaArrivo: solo dopo un SALTO, con la regola accesa', () => {
   assert.equal(saltoAttivaArrivo({ tipo: 'SALTO' }, accesa, 0), true);
