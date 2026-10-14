@@ -1,8 +1,8 @@
 // admin-recensioni.js
 // La scheda "Recensioni" dell'Admin: le stelline e i commenti lasciati dai giocatori a fine partita.
 // Mostra il riepilogo (media, quante per ogni voto), un elenco con filtri (voto, solo con commento,
-// normale/veloce, beta/ufficiale, ricerca nel testo), il cestino per eliminare una recensione e
-// l'esportazione in Excel. Le recensioni nuove compaiono da sole, senza ricaricare la pagina.
+// normale/veloce, beta/ufficiale, ricerca nel commento e nel soprannome), il cestino per eliminare una
+// recensione e l'esportazione in Excel. Le recensioni nuove compaiono da sole, senza ricaricare la pagina.
 //
 // Si carica "a parte" (import dinamico da admin-ui.js, la prima volta che si apre la scheda): se si
 // rompe qualcosa qui, il resto dell'Admin non ne risente.
@@ -11,7 +11,7 @@
 import { ascoltaRecensioni, eliminaRecensione } from './sincronizzazione.js';
 import {
   FILTRI_RECENSIONI_INIZIALI, filtraRecensioni, filtriAttivi, riassumi, contaRecensioni, righeExcel,
-  votoDi, commentoDi, modalitaDi, versioneDi, dataDi, etichettaStelle, dataEOra
+  votoDi, commentoDi, nomeDi, modalitaDi, versioneDi, dataDi, etichettaStelle, dataEOra
 } from './filtri-recensioni.js';
 
 const PER_PAGINA = 30;
@@ -152,8 +152,8 @@ function costruisciBarra() {
   const campoTesto = document.createElement('input');
   campoTesto.type = 'search';
   campoTesto.className = 'filtri-ricerca';
-  campoTesto.placeholder = '🔍 Cerca nei commenti…';
-  campoTesto.setAttribute('aria-label', 'Cerca nei commenti');
+  campoTesto.placeholder = '🔍 Cerca nei commenti o nei soprannomi…';
+  campoTesto.setAttribute('aria-label', 'Cerca nei commenti o nei soprannomi');
   campoTesto.autocomplete = 'off';
   campoTesto.addEventListener('input', () => cambiaFiltro('testo', campoTesto.value));
   campoTesto.addEventListener('keydown', evento => {
@@ -251,6 +251,8 @@ function creaRiga(recensione) {
   const corpo = creaElemento('div', 'recensione-corpo');
 
   const testa = creaElemento('div', 'recensione-testa');
+  const nome = nomeDi(recensione);
+  if (nome) testa.appendChild(creaElemento('span', 'recensione-autore', '👤 ' + nome));   // textContent: mai interpretato come pagina
   testa.appendChild(creaElemento('span', 'recensione-stelline', etichettaStelle(voto)));
   testa.appendChild(creaElemento('span', 'recensione-voto', voto ? `${voto}/5` : 'senza voto'));
   testa.appendChild(creaElemento('span', 'recensione-data', quandoScritta(dataDi(recensione))));
@@ -334,7 +336,7 @@ function esporta() {
   }
   try {
     const foglio = XLSX.utils.json_to_sheet(righe);
-    foglio['!cols'] = [{ wch: 11 }, { wch: 7 }, { wch: 7 }, { wch: 70 }, { wch: 10 }, { wch: 10 }, { wch: 7 }, { wch: 10 }, { wch: 13 }];
+    foglio['!cols'] = [{ wch: 11 }, { wch: 7 }, { wch: 18 }, { wch: 7 }, { wch: 70 }, { wch: 10 }, { wch: 10 }, { wch: 7 }, { wch: 10 }, { wch: 13 }];
     const libro = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(libro, foglio, 'Recensioni');
     const dataOggi = new Date().toISOString().slice(0, 10);

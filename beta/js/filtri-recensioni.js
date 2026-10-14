@@ -5,6 +5,7 @@
 //
 // I filtri sono un semplice oggetto:
 //   { testo: '', stelle: 'tutte', commento: 'tutte', modalita: 'tutte', versione: 'tutte', ordine: 'recenti' }
+//   testo:     le parole cercate nel commento e nel soprannome (devono esserci tutte)
 //   stelle:    'tutte' | '5' | '4' | '3' | '2' | '1'
 //   commento:  'tutte' | 'con' (solo quelle con un commento scritto)
 //   modalita:  'tutte' | 'normale' | 'veloce'
@@ -26,6 +27,12 @@ export function votoDi(recensione) {
 
 export function commentoDi(recensione) {
   return recensione && typeof recensione.commento === 'string' ? recensione.commento.trim() : '';
+}
+
+// Il soprannome con cui e' firmata (quelle arrivate prima, o con la spunta spenta, non ce l'hanno: '').
+// E' scritto dai telefoni e quindi va sempre mostrato come semplice testo, mai interpretato come pagina.
+export function nomeDi(recensione) {
+  return recensione && typeof recensione.nome === 'string' ? recensione.nome.trim() : '';
 }
 
 export function modalitaDi(recensione) {
@@ -122,7 +129,7 @@ export function corrisponde(recensione, filtri) {
 
   const parole = normalizzaTesto(f.testo).split(' ').filter(Boolean);
   if (parole.length > 0) {
-    const testo = normalizzaTesto(commentoDi(recensione));
+    const testo = normalizzaTesto(`${commentoDi(recensione)} ${nomeDi(recensione)}`);   // si cerca nel commento e nel soprannome
     if (!parole.every(parola => testo.includes(parola))) return false;
   }
   return true;
@@ -170,6 +177,7 @@ export function righeExcel(lista) {
     return {
       'Data': data,
       'Ora': ora,
+      'Soprannome': nomeDi(r),
       'Stelle': votoDi(r) || '',
       'Commento': commentoDi(r),
       'Modalità': modalitaDi(r) === 'veloce' ? 'Veloce' : 'Normale',

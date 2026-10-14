@@ -1,7 +1,8 @@
 // recensioni.js
 // La richiesta di recensione a fine partita, sul telefono: cinque stelline e un campo dove scrivere
-// (cosa e' piaciuto, cosa no, cosa si propone). La recensione e' ANONIMA e finisce su Firebase in
-// "recensioni/", dove la legge solo l'Admin (scheda Recensioni).
+// (cosa e' piaciuto, cosa no, cosa si propone). La recensione porta, se l'Admin lascia accesa la spunta, il
+// SOPRANNOME scelto in quella partita (la scheda lo dice chiaramente), altrimenti e' anonima. Finisce su
+// Firebase in "recensioni/", dove la legge solo l'Admin (scheda Recensioni).
 //
 // Questo modulo si carica "a parte" (import dinamico da giocatore-ui.js) e solo quando la partita e'
 // finita: se manca o si rompe qualcosa, la partita non ne risente.
@@ -15,7 +16,8 @@ import { CONFIG, unisciConfig } from './config.js';
 import { leggiConfigDaFirebase, nuovaChiaveRecensione, inviaRecensione, oraServer } from './sincronizzazione.js';
 import {
   CHIAVE_ARCHIVIO, MAX_CARATTERI_COMMENTO, leggiArchivio, scriviArchivio, registraFinePartita,
-  segnaChiesta, segnaInviata, decidiRichiesta, costruisciRecensione, tipoErroreInvio, versioneDalPercorso
+  segnaChiesta, segnaInviata, decidiRichiesta, costruisciRecensione, tipoErroreInvio, versioneDalPercorso,
+  sistemaConfigRecensioni, testoRiservatezza
 } from './recensioni-logica.js';
 
 const RITARDO_APERTURA_MS = 4000;          // si lascia il tempo di vedere chi ha vinto
@@ -121,7 +123,7 @@ const MODELLO_SCHEDA = `
         <button type="button" id="recensione-invia">Invia la recensione</button>
         <button type="button" id="recensione-salta">Non ora</button>
       </div>
-      <p class="recensione-privacy">È anonima: salviamo solo il voto, il commento e il tipo di partita, non il tuo nome.</p>
+      <p id="recensione-privacy" class="recensione-privacy"></p>
     </div>
     <div id="recensione-vista-grazie" class="nascosta">
       <h2>Grazie! 🙏</h2>
@@ -168,7 +170,8 @@ function creaScheda() {
     bottoneInvia: trova('recensione-invia'),
     bottoneSalta: trova('recensione-salta'),
     bottoneChiudi: trova('recensione-chiudi'),
-    testoGrazie: trova('recensione-grazie-testo')
+    testoGrazie: trova('recensione-grazie-testo'),
+    riservatezza: trova('recensione-privacy')
   };
 }
 
@@ -185,6 +188,7 @@ function testoDiErrore(tipo) {
 // Apre la scheda e la fa funzionare. "contesto" = i dati sulla partita che finiscono nella recensione.
 function mostraScheda({ forzata, contesto }) {
   const s = creaScheda();
+  s.riservatezza.textContent = testoRiservatezza(contesto.nome);   // textContent: il soprannome non e' mai letto come pagina
   const chiave = creaChiave();
   let voto = 0;
   let inInvio = false;
@@ -255,7 +259,17 @@ function mostraScheda({ forzata, contesto }) {
     s.bottoneInvia.disabled = true;
     scriviMessaggio(s, 'Invio in corso…', false);
     try {
-      await conTempoMassimo(inviaRecensione(chiave, esito.recensione), TEMPO_MASSIMO_INVIO_MS);
+      try {
+        await conTempoMassimo(inviaRecensione(chiave, esito.recensione), TEMPO_MASSIMO_INVIO_MS);
+      } catch (errore) {
+        // Le regole di Firebase potrebbero non conoscere ancora il campo "nome" (se non sono state aggiornate prima di
+        // questa pagina): in quel caso la recensione parte comunque, senza soprannome, invece di andare persa.
+        if (esito.recensione.nome === undefined || tipoErroreInvio(errore) !== 'permessi') throw errore;
+        const senzaNome = { ...esito.recensione };
+        delete senzaNome.nome;
+        console.warn('Recensioni: Firebase non accetta ancora il soprannome nella recensione (regole da aggiornare): la mando senza', errore);
+        await conTempoMassimo(inviaRecensione(chiave, senzaNome), TEMPO_MASSIMO_INVIO_MS);
+      }
       finito('inviata');
     } catch (errore) {
       if (errore && errore.codice === 'tempo-scaduto') {
@@ -310,9 +324,11 @@ export async function proponiRecensione({ codicePartita, stato, mioId }) {
 
   const giocatori = Array.isArray(stato.giocatori) ? stato.giocatori : [];
   const io = giocatori[mioId];
+  const conNome = sistemaConfigRecensioni(impostazioni).conNome;
   mostraScheda({
     forzata,
     contesto: {
+      nome: conNome && io ? io.nome : undefined,   // il soprannome scelto in lobby, solo se l'Admin lo permette
       versione: versioneDalPercorso(location.pathname),
       modalita: stato.modalita === 'veloce' ? 'veloce' : 'normale',
       giocatori: giocatori.length,

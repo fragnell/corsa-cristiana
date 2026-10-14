@@ -202,6 +202,7 @@
   font-size: 0.78rem;
   line-height: 1.35;
   color: #8a7355;
+  overflow-wrap: anywhere;            /* un soprannome lungo senza spazi non deve uscire dalla scheda */
 }
 
 /* --- il "Grazie" --- */
@@ -229,9 +230,15 @@
     font-size: 1.2rem;
   }
 
-  .recensione-intro,
-  .recensione-privacy {
+  .recensione-intro {
     display: none;
+  }
+
+  /* La riga che dice cosa si salva (anche il soprannome) non sparisce mai: qui solo piu' piccola */
+  .recensione-privacy {
+    margin-top: 0.2rem;
+    font-size: 0.72rem;
+    line-height: 1.25;
   }
 
   .recensione-stella {

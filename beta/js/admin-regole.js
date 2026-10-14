@@ -99,6 +99,7 @@ async function caricaValoriNelForm() {
   scriviSpunta('regole-recensioni-attiva', attuale.recensioni.attiva);
   scriviSpunta('regole-recensioni-solo-nuovi', attuale.recensioni.soloNuovi);
   scriviNumero('regole-recensioni-prime-partite', attuale.recensioni.primePartite);
+  scriviSpunta('regole-recensioni-con-nome', attuale.recensioni.conNome);
 
   if (salmoAdmin) {
     try {
@@ -130,7 +131,8 @@ function leggiSezioniNuove() {
   const recensioni = {
     attiva: leggiSpunta('regole-recensioni-attiva', r.attiva),
     soloNuovi: leggiSpunta('regole-recensioni-solo-nuovi', r.soloNuovi),
-    primePartite: prendi(leggiIntero('regole-recensioni-prime-partite', r.primePartite, 'Recensioni, quante sono le prime partite', 1, 50))
+    primePartite: prendi(leggiIntero('regole-recensioni-prime-partite', r.primePartite, 'Recensioni, quante sono le prime partite', 1, 50)),
+    conNome: leggiSpunta('regole-recensioni-con-nome', r.conNome)
   };
 
   return { veloce, recensioni, errori };

@@ -49,11 +49,14 @@ export const CONFIG = {
   },
 
   // Recensioni di fine partita: ai giocatori "alle prime partite" il telefono propone di lasciare
-  // delle stelline e un commento. Si accendono e si spengono dall'Admin (scheda Regole).
+  // delle stelline e un commento (firmati con il soprannome di quella partita, se "conNome" e' acceso).
+  // Si accendono e si spengono dall'Admin (scheda Regole).
   recensioni: {
     attiva: true,                // false: nessuno vede mai la richiesta di recensione
     soloNuovi: true,             // true: solo chi ha giocato poche partite su questo telefono; false: sempre
-    primePartite: 3              // quante sono "poche partite" (le prime 3 partite di quel telefono)
+    primePartite: 3,             // quante sono "poche partite" (le prime 3 partite di quel telefono)
+    conNome: true                // true: la recensione porta anche il soprannome scelto in quella partita (il telefono
+                                 // lo dice chiaramente a chi scrive); false: la recensione e' anonima
   },
 
   // Numero giocatori ammessi

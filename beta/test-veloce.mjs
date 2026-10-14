@@ -65,8 +65,8 @@ prova('CONFIG.veloce: i quattro valori di base (8, 3, -1, salto acceso)', () => 
   assert.deepEqual(CONFIG.veloce, { bonusConoscenza: 8, bonusProva: 3, malusImprevisto: -1, saltoAttivaCasella: true });
 });
 
-prova('CONFIG.recensioni: di base accese, solo per chi gioca le prime 3 partite', () => {
-  assert.deepEqual(CONFIG.recensioni, { attiva: true, soloNuovi: true, primePartite: 3 });
+prova('CONFIG.recensioni: di base accese, solo per chi gioca le prime 3 partite, firmate con il soprannome', () => {
+  assert.deepEqual(CONFIG.recensioni, { attiva: true, soloNuovi: true, primePartite: 3, conNome: true });
 });
 
 prova('unisciConfig: senza personalizzazioni restano tutti i valori di base (anche veloce e recensioni)', () => {

@@ -11,12 +11,12 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
-  CHIAVE_ARCHIVIO, MAX_CARATTERI_COMMENTO, STESSA_PARTITA_ENTRO_MS,
+  CHIAVE_ARCHIVIO, MAX_CARATTERI_COMMENTO, MAX_CARATTERI_NOME, STESSA_PARTITA_ENTRO_MS,
   sistemaConfigRecensioni, archivioVuoto, leggiArchivio, scriviArchivio, registraFinePartita, segnaChiesta, segnaInviata,
-  decidiRichiesta, pulisciCommento, stelleValide, costruisciRecensione, tipoErroreInvio, versioneDalPercorso
+  decidiRichiesta, pulisciCommento, pulisciNome, testoRiservatezza, stelleValide, costruisciRecensione, tipoErroreInvio, versioneDalPercorso
 } from './js/recensioni-logica.js';
 import {
-  FILTRI_RECENSIONI_INIZIALI, votoDi, commentoDi, modalitaDi, versioneDi, dataDi, etichettaStelle, dataEOra,
+  FILTRI_RECENSIONI_INIZIALI, votoDi, commentoDi, nomeDi, modalitaDi, versioneDi, dataDi, etichettaStelle, dataEOra,
   riassumi, contaRecensioni, corrisponde, ordinaRecensioni, filtraRecensioni, filtriAttivi, righeExcel
 } from './js/filtri-recensioni.js';
 import { CONFIG, unisciConfig } from './js/config.js';
@@ -30,17 +30,18 @@ function prova(nome, fn) {
 
 const ORA = 1760000000000;               // un istante qualsiasi
 const ORE = n => n * 60 * 60 * 1000;
-const CONFIG_BASE = { attiva: true, soloNuovi: true, primePartite: 3 };
+const CONFIG_BASE = { attiva: true, soloNuovi: true, primePartite: 3, conNome: true };
 
 // ================= le impostazioni =================
 
-prova('config.js: le recensioni sono accese per le prime 3 partite', () => {
-  assert.deepEqual(CONFIG.recensioni, { attiva: true, soloNuovi: true, primePartite: 3 });
+prova('config.js: le recensioni sono accese per le prime 3 partite, firmate con il soprannome', () => {
+  assert.deepEqual(CONFIG.recensioni, { attiva: true, soloNuovi: true, primePartite: 3, conNome: true });
 });
 
 prova('unisciConfig: i valori salvati nell\'Admin sostituiscono quelli di base, il resto resta', () => {
   const c = unisciConfig(CONFIG, { recensioni: { primePartite: 5 } });
-  assert.deepEqual(c.recensioni, { attiva: true, soloNuovi: true, primePartite: 5 });
+  assert.deepEqual(c.recensioni, { attiva: true, soloNuovi: true, primePartite: 5, conNome: true });
+  assert.deepEqual(unisciConfig(CONFIG, { recensioni: { conNome: false } }).recensioni, { attiva: true, soloNuovi: true, primePartite: 3, conNome: false });
   assert.deepEqual(unisciConfig(CONFIG, {}).recensioni, CONFIG.recensioni);
 });
 
@@ -55,12 +56,23 @@ prova('sistemaConfigRecensioni: valori di base se non c\'e\' niente o se sono st
 });
 
 prova('sistemaConfigRecensioni: i valori buoni passano; solo "false" spegne', () => {
-  assert.deepEqual(sistemaConfigRecensioni({ attiva: false, soloNuovi: false, primePartite: 7 }), { attiva: false, soloNuovi: false, primePartite: 7 });
+  assert.deepEqual(sistemaConfigRecensioni({ attiva: false, soloNuovi: false, primePartite: 7, conNome: false }), { attiva: false, soloNuovi: false, primePartite: 7, conNome: false });
   assert.equal(sistemaConfigRecensioni({ attiva: 0 }).attiva, true);
   assert.equal(sistemaConfigRecensioni({ attiva: 'no' }).attiva, true);
   assert.equal(sistemaConfigRecensioni({ primePartite: '4' }).primePartite, 4);
   assert.equal(sistemaConfigRecensioni({ primePartite: 50 }).primePartite, 50);
   assert.equal(sistemaConfigRecensioni({ primePartite: 1 }).primePartite, 1);
+});
+
+prova('sistemaConfigRecensioni: il soprannome e\' acceso se non c\'e\' scritto niente; una cosa strana lo SPEGNE (si sta dalla parte della riservatezza)', () => {
+  assert.equal(sistemaConfigRecensioni({}).conNome, true);
+  assert.equal(sistemaConfigRecensioni({ conNome: undefined }).conNome, true);
+  assert.equal(sistemaConfigRecensioni(undefined).conNome, true);
+  assert.equal(sistemaConfigRecensioni({ conNome: true }).conNome, true);
+  assert.equal(sistemaConfigRecensioni({ conNome: false }).conNome, false);
+  for (const strano of [0, 1, 'true', 'si', 'no', 'false', null, [], {}, NaN]) {
+    assert.equal(sistemaConfigRecensioni({ conNome: strano }).conNome, false, `conNome ${JSON.stringify(strano)}`);
+  }
 });
 
 // ================= la memoria del telefono =================
@@ -285,6 +297,67 @@ prova('versioneDalPercorso: la cartella /beta/ e\' la copia di prova, il resto e
   assert.equal(versioneDalPercorso(null), 'ufficiale');
 });
 
+// ================= il soprannome =================
+
+prova('pulisciNome: un nome normale resta com\'e\' (accenti, apostrofi, emoji)', () => {
+  assert.equal(pulisciNome('Anna'), 'Anna');
+  assert.equal(pulisciNome('Niccolò'), 'Niccolò');
+  assert.equal(pulisciNome("Mario D'Angelo"), "Mario D'Angelo");
+  assert.equal(pulisciNome('Gigi 😀'), 'Gigi 😀');
+});
+
+prova('pulisciNome: spazi in piu\', a capo e tabulazioni diventano uno spazio solo, e si tolgono i bordi', () => {
+  assert.equal(pulisciNome('  Anna   Maria  '), 'Anna Maria');
+  assert.equal(pulisciNome('Anna\nMaria'), 'Anna Maria');
+  assert.equal(pulisciNome('Anna\r\n\r\nMaria\tRossi'), 'Anna Maria Rossi');
+});
+
+prova('pulisciNome: via i caratteri invisibili, di controllo e quelli che girano il verso della scrittura', () => {
+  assert.equal(pulisciNome('An\u200bna'), 'Anna');
+  assert.equal(pulisciNome('\u202eAnna'), 'Anna');
+  assert.equal(pulisciNome('An\u0000na\u0007'), 'Anna');
+  assert.equal(pulisciNome('\ufeffAnna'), 'Anna');
+  assert.equal(pulisciNome('\u200b\u200b'), '');
+});
+
+prova('pulisciNome: al massimo ' + MAX_CARATTERI_NOME + ' caratteri, senza spezzare le emoji', () => {
+  assert.equal(MAX_CARATTERI_NOME, 30);
+  assert.equal(Array.from(pulisciNome('a'.repeat(500))).length, MAX_CARATTERI_NOME);
+  const emoji = pulisciNome('😀'.repeat(100));
+  assert.equal(Array.from(emoji).length, MAX_CARATTERI_NOME);
+  assert.ok(!/[\ud800-\udfff]/.test(emoji.replace(/[\ud800-\udbff][\udc00-\udfff]/g, '')), 'nessuna meta\' di emoji rimasta sola');
+  assert.equal(pulisciNome('x'.repeat(29) + '😀😀'), 'x'.repeat(29) + '😀');
+  assert.equal(pulisciNome('a'.repeat(29) + ' ' + 'b'.repeat(10)), 'a'.repeat(29));    // il taglio non lascia spazi in fondo
+});
+
+prova('pulisciNome: quello che non e\' un testo vale come "niente"', () => {
+  for (const strano of [undefined, null, 5, NaN, true, {}, [], ['Anna'], () => 'Anna', '', '   ', '\n\t']) {
+    assert.equal(pulisciNome(strano), '', String(strano));
+  }
+});
+
+prova('pulisciNome: un nome con codice HTML resta testo (verra\' mostrato come testo)', () => {
+  assert.equal(pulisciNome('<img src=x onerror=alert(1)>'), '<img src=x onerror=alert(1)>'.slice(0, 30));
+});
+
+prova('testoRiservatezza: col soprannome lo scrive per intero; senza dice che e\' anonima', () => {
+  const con = testoRiservatezza('Anna');
+  assert.ok(con.includes('«Anna»'));
+  assert.ok(/firmata/.test(con) && /soprannome/.test(con));
+  assert.ok(!/anonima/.test(con));
+  for (const niente of [undefined, null, '', '   ', 5, '\u200b']) {
+    const senza = testoRiservatezza(niente);
+    assert.ok(/anonima/.test(senza), String(niente));
+    assert.ok(!/soprannome/.test(senza), String(niente));
+  }
+});
+
+prova('testoRiservatezza: mostra il nome come l\'ha pulito la recensione (stesso taglio, stessa pulizia)', () => {
+  const lungo = 'z'.repeat(80);
+  assert.ok(testoRiservatezza(lungo).includes('«' + 'z'.repeat(MAX_CARATTERI_NOME) + '»'));
+  assert.ok(testoRiservatezza('  Anna   Maria ').includes('«Anna Maria»'));
+});
+
 // ================= il pacchetto da spedire =================
 
 const BASE = { stelle: 4, commento: ' Bello! ', adesso: ORA, versione: 'beta', modalita: 'veloce', giocatori: 4, junior: true, partite: 2 };
@@ -357,9 +430,39 @@ prova('costruisciRecensione: l\'ora si arrotonda (Firebase vuole numeri interi p
   assert.equal(costruisciRecensione({ ...BASE, adesso: ORA + 0.6 }).recensione.creataIl, ORA + 1);
 });
 
-prova('costruisciRecensione: la recensione e\' anonima (nessun nome, nessun codice partita) e ha solo i campi previsti', () => {
+prova('costruisciRecensione: senza soprannome la recensione e\' anonima (nessun nome, nessun codice partita) e ha solo i campi previsti', () => {
   const campi = Object.keys(costruisciRecensione(BASE).recensione).sort();
   assert.deepEqual(campi, ['commento', 'creataIl', 'giocatori', 'junior', 'modalita', 'partite', 'stelle', 'versione']);
+  assert.ok(!('nome' in costruisciRecensione({ ...BASE, nome: undefined }).recensione));
+});
+
+prova('costruisciRecensione: col soprannome c\'e\' un solo campo in piu\' ("nome"), ripulito; nient\'altro di personale', () => {
+  const r = costruisciRecensione({ ...BASE, nome: '  Anna  ' });
+  assert.equal(r.ok, true);
+  assert.equal(r.recensione.nome, 'Anna');
+  assert.deepEqual(Object.keys(r.recensione).sort(), ['commento', 'creataIl', 'giocatori', 'junior', 'modalita', 'nome', 'partite', 'stelle', 'versione']);
+  assert.deepEqual(JSON.parse(JSON.stringify(r.recensione)), r.recensione);
+});
+
+prova('costruisciRecensione: un soprannome vuoto, strano o non testuale non produce il campo', () => {
+  for (const niente of ['', '   ', '\n', '\u200b', undefined, null, 5, {}, [], true]) {
+    const r = costruisciRecensione({ ...BASE, nome: niente });
+    assert.equal(r.ok, true);
+    assert.ok(!('nome' in r.recensione), `nome ${JSON.stringify(niente)}`);
+  }
+});
+
+prova('costruisciRecensione: il soprannome lungo viene accorciato (il campo del nome in lobby non ha limiti)', () => {
+  const r = costruisciRecensione({ ...BASE, nome: 'k'.repeat(5000) }).recensione;
+  assert.equal(Array.from(r.nome).length, MAX_CARATTERI_NOME);
+});
+
+prova('costruisciRecensione: il soprannome non cambia gli altri campi', () => {
+  const senza = costruisciRecensione(BASE).recensione;
+  const con = costruisciRecensione({ ...BASE, nome: 'Anna' }).recensione;
+  const { nome, ...resto } = con;
+  assert.equal(nome, 'Anna');
+  assert.deepEqual(resto, senza);
 });
 
 prova('costruisciRecensione: il commento viene pulito e accorciato', () => {
@@ -394,6 +497,15 @@ prova('votoDi: un intero da 1 a 5, altrimenti 0', () => {
   assert.equal(votoDi(null), 0);
   assert.equal(votoDi(undefined), 0);
   assert.equal(votoDi({}), 0);
+});
+
+prova('nomeDi: il soprannome della recensione, oppure niente', () => {
+  assert.equal(nomeDi({ nome: 'Anna' }), 'Anna');
+  assert.equal(nomeDi({ nome: '  Anna ' }), 'Anna');
+  for (const strano of [5, null, undefined, {}, [], true]) assert.equal(nomeDi({ nome: strano }), '', String(strano));
+  assert.equal(nomeDi({}), '');
+  assert.equal(nomeDi(null), '');
+  assert.equal(nomeDi(undefined), '');
 });
 
 prova('commentoDi, modalitaDi, versioneDi, dataDi: tollerano i dati strani', () => {
@@ -486,9 +598,9 @@ prova('contaRecensioni: i numeri accanto ai pulsanti', () => {
 const LISTA = [
   R(5, { _chiave: 'a', creataIl: 1000, commento: 'Bellissimo, mi è piaciuta la modalità veloce!', modalita: 'veloce', giocatori: 4, partite: 1 }),
   R(2, { _chiave: 'b', creataIl: 2000, commento: 'Troppo lunga. Proporrei più domande per i bambini.', giocatori: 6, junior: true, partite: 2 }),
-  R(4, { _chiave: 'c', creataIl: 3000, versione: 'ufficiale', giocatori: 3 }),
+  R(4, { _chiave: 'c', creataIl: 3000, versione: 'ufficiale', giocatori: 3, nome: 'Marta' }),
   R(5, { _chiave: 'd', creataIl: 4000, commento: "L'Eden è la mia domanda preferita", versione: 'ufficiale', modalita: 'veloce' }),
-  R(3, { _chiave: 'e', creataIl: 5000, commento: 'Così così' }),
+  R(3, { _chiave: 'e', creataIl: 5000, commento: 'Così così', nome: 'Zaccaria' }),
   R(1, { _chiave: 'f', creataIl: 6000, commento: 'Non ho capito le regole' })
 ];
 const chiavi = lista => lista.map(r => r._chiave);
@@ -517,6 +629,17 @@ prova('filtraRecensioni: per modalita\' e per versione', () => {
   assert.deepEqual(trova({ modalita: 'normale' }), ['f', 'e', 'c', 'b']);
   assert.deepEqual(trova({ versione: 'ufficiale' }), ['d', 'c']);
   assert.deepEqual(trova({ versione: 'beta' }), ['f', 'e', 'b', 'a']);
+});
+
+prova('filtraRecensioni: la ricerca trova anche il soprannome (anche in minuscolo, con parti del nome)', () => {
+  assert.deepEqual(trova({ testo: 'marta' }), ['c']);
+  assert.deepEqual(trova({ testo: 'MARTA' }), ['c']);
+  assert.deepEqual(trova({ testo: 'zacc' }), ['e']);
+  assert.deepEqual(trova({ testo: 'zaccaria cosi' }), ['e']);           // soprannome e commento insieme
+  assert.deepEqual(trova({ testo: 'zaccaria bambini' }), []);           // tutte le parole devono esserci
+  assert.deepEqual(trova({ testo: 'marta', commento: 'con' }), []);     // Marta non ha scritto il commento
+  assert.deepEqual(trova({ testo: 'marta', stelle: '4' }), ['c']);
+  assert.deepEqual(trova({ testo: 'anonimo' }), []);
 });
 
 prova('filtraRecensioni: la ricerca trova nel commento, anche senza accenti e con le maiuscole', () => {
@@ -588,13 +711,13 @@ prova('filtraRecensioni: filtra e poi ordina', () => {
 prova('righeExcel: una riga per recensione, dalla piu\' vecchia, con le colonne in italiano', () => {
   const quando = new Date(2026, 9, 14, 10, 32).getTime();
   const righe = righeExcel([
-    R(4, { _chiave: 'x', creataIl: quando + 60000, commento: 'Bello', modalita: 'veloce', giocatori: 5, junior: true, partite: 2, versione: 'beta' }),
+    R(4, { _chiave: 'x', creataIl: quando + 60000, commento: 'Bello', nome: 'Anna', modalita: 'veloce', giocatori: 5, junior: true, partite: 2, versione: 'beta' }),
     R(2, { _chiave: 'y', creataIl: quando, versione: 'ufficiale' })
   ]);
   assert.equal(righe.length, 2);
-  assert.deepEqual(Object.keys(righe[0]), ['Data', 'Ora', 'Stelle', 'Commento', 'Modalità', 'Giocatori', 'Junior', 'Versione', 'Partite fatte']);
-  assert.deepEqual(righe[0], { 'Data': '2026-10-14', 'Ora': '10:32', 'Stelle': 2, 'Commento': '', 'Modalità': 'Normale', 'Giocatori': '', 'Junior': '', 'Versione': 'ufficiale', 'Partite fatte': '' });
-  assert.deepEqual(righe[1], { 'Data': '2026-10-14', 'Ora': '10:33', 'Stelle': 4, 'Commento': 'Bello', 'Modalità': 'Veloce', 'Giocatori': 5, 'Junior': 'sì', 'Versione': 'beta', 'Partite fatte': 2 });
+  assert.deepEqual(Object.keys(righe[0]), ['Data', 'Ora', 'Soprannome', 'Stelle', 'Commento', 'Modalità', 'Giocatori', 'Junior', 'Versione', 'Partite fatte']);
+  assert.deepEqual(righe[0], { 'Data': '2026-10-14', 'Ora': '10:32', 'Soprannome': '', 'Stelle': 2, 'Commento': '', 'Modalità': 'Normale', 'Giocatori': '', 'Junior': '', 'Versione': 'ufficiale', 'Partite fatte': '' });
+  assert.deepEqual(righe[1], { 'Data': '2026-10-14', 'Ora': '10:33', 'Soprannome': 'Anna', 'Stelle': 4, 'Commento': 'Bello', 'Modalità': 'Veloce', 'Giocatori': 5, 'Junior': 'sì', 'Versione': 'beta', 'Partite fatte': 2 });
 });
 
 prova('righeExcel: elenco vuoto o dati strani non rompono', () => {
@@ -604,6 +727,7 @@ prova('righeExcel: elenco vuoto o dati strani non rompono', () => {
   assert.equal(strana.length, 1);
   assert.equal(strana[0]['Stelle'], '');
   assert.equal(strana[0]['Data'], '');
+  assert.equal(strana[0]['Soprannome'], '');
 });
 
 // ================= i due file restano "puri" =================

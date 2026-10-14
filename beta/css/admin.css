@@ -535,6 +535,12 @@ button {
   gap: 0.2rem 0.7rem;
 }
 
+.recensione-autore {
+  font-weight: bold;
+  color: #5a3a12;
+  overflow-wrap: anywhere;   /* un soprannome lungo senza spazi non deve far uscire la riga */
+}
+
 .recensione-stelline {
   color: #f5b301;
   font-size: 1.15rem;

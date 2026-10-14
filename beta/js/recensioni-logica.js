@@ -4,8 +4,10 @@
 // telefono, pulisce e controlla quello che la persona scrive e prepara il pacchetto da spedire.
 // Cosi' si prova tutto con i test (test-recensioni.mjs), senza aprire nessun browser.
 //
-// La recensione e' ANONIMA: non si salva il nome di nessuno. Si salvano solo il voto, il commento
-// e qualche dato sulla partita (quanti giocatori, normale o veloce, ecc.).
+// La recensione NON porta mai cognome, codice della partita, colore o altri dati personali. Si salvano il voto,
+// il commento, qualche dato sulla partita (quanti giocatori, normale o veloce, ecc.) e, se l'Admin lascia accesa
+// la spunta "conNome", il SOPRANNOME che la persona ha scelto in quella partita: il telefono lo dice chiaramente
+// prima dell'invio. Con la spunta spenta la recensione resta del tutto anonima.
 
 // La "memoria" del telefono (localStorage): una sola voce, valida per tutto il sito.
 export const CHIAVE_ARCHIVIO = 'corsa-cristiana-recensioni';
@@ -13,6 +15,7 @@ export const CHIAVE_ARCHIVIO = 'corsa-cristiana-recensioni';
 export const STELLE_MINIME = 1;
 export const STELLE_MASSIME = 5;
 export const MAX_CARATTERI_COMMENTO = 600;
+export const MAX_CARATTERI_NOME = 30;      // il campo del nome in lobby non ha limiti: nella recensione si tengono i primi 30
 
 // Due "fine partita" con lo stesso codice entro questo tempo sono la STESSA partita
 // (per esempio: la pagina del telefono e' stata ricaricata dopo la vittoria): si contano una volta sola.
@@ -30,7 +33,10 @@ export function sistemaConfigRecensioni(grezza) {
   return {
     attiva: g.attiva !== false,
     soloNuovi: g.soloNuovi !== false,
-    primePartite: Number.isInteger(n) && n >= 1 && n <= 50 ? n : PRIME_PARTITE_DI_BASE
+    primePartite: Number.isInteger(n) && n >= 1 && n <= 50 ? n : PRIME_PARTITE_DI_BASE,
+    // Se non c'e' scritto niente vale il valore di base (acceso). Se c'e' scritto qualcosa di strano si sta dalla parte
+    // della riservatezza: niente soprannome. Solo "true" lo accende.
+    conNome: g.conNome === undefined ? true : g.conNome === true
   };
 }
 
@@ -139,6 +145,28 @@ export function pulisciCommento(testo) {
   return t;
 }
 
+// ---------- il soprannome ----------
+
+// Il soprannome che la persona ha scelto in lobby, messo in ordine: a capo e tabulazioni diventano spazi, via i
+// caratteri strani (invisibili, di controllo, che girano il verso della scrittura), via gli spazi in piu',
+// al massimo MAX_CARATTERI_NOME caratteri. Mai un errore: se non e' un testo, o resta vuoto, restituisce ''
+// e la recensione parte senza soprannome.
+export function pulisciNome(nome) {
+  if (typeof nome !== 'string') return '';
+  const t = Array.from(nome.replace(/[\r\n\t]+/g, ' ')).filter(caratterePermesso).join('').replace(/ {2,}/g, ' ').trim();
+  const caratteri = Array.from(t);
+  return caratteri.length > MAX_CARATTERI_NOME ? caratteri.slice(0, MAX_CARATTERI_NOME).join('').trim() : t;
+}
+
+// La riga sotto il modulo, che dice con chiarezza cosa viene salvato. Con un soprannome lo scrive per intero
+// (chi legge vede esattamente cosa partira'); senza, dice che la recensione e' anonima.
+export function testoRiservatezza(nome) {
+  const soprannome = pulisciNome(nome);
+  return soprannome
+    ? `Sarà firmata con il tuo soprannome «${soprannome}». Salviamo solo quello, il voto, il commento e il tipo di partita.`
+    : 'È anonima: salviamo solo il voto, il commento e il tipo di partita, non il tuo nome.';
+}
+
 // ---------- da quale versione del gioco arriva ----------
 
 // La copia di prova vive nella cartella /beta/ del sito; il gioco ufficiale no.
@@ -156,14 +184,18 @@ export function stelleValide(stelle) {
 // Costruisce quello che va scritto su Firebase (percorso recensioni/<chiave>).
 // Firebase non accetta "undefined": un dato che manca non si scrive proprio.
 //   versione: 'beta' | 'ufficiale'      modalita: 'normale' | 'veloce'
+//   nome: il soprannome della persona in quella partita; chi chiama lo passa solo se la spunta "conNome" e' accesa.
+//         Si scrive solo se dopo la pulizia resta qualcosa.
 // Restituisce { ok: true, recensione } oppure { ok: false, errore: 'stelle' | 'ora' }.
-export function costruisciRecensione({ stelle, commento, adesso, versione, modalita, giocatori, junior, partite }) {
+export function costruisciRecensione({ stelle, commento, nome, adesso, versione, modalita, giocatori, junior, partite }) {
   if (!stelleValide(stelle)) return { ok: false, errore: 'stelle' };
   if (!Number.isFinite(adesso)) return { ok: false, errore: 'ora' };
 
   const recensione = { stelle, creataIl: Math.round(adesso) };
   const testo = pulisciCommento(commento);
   if (testo) recensione.commento = testo;
+  const soprannome = pulisciNome(nome);
+  if (soprannome) recensione.nome = soprannome;
   recensione.versione = versione === 'beta' ? 'beta' : 'ufficiale';
   recensione.modalita = modalita === 'veloce' ? 'veloce' : 'normale';
   if (Number.isInteger(giocatori) && giocatori >= 1 && giocatori <= 99) recensione.giocatori = giocatori;

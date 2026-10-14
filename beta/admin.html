@@ -217,6 +217,11 @@
         <label>Quante sono «le prime partite»:
           <input type="number" id="regole-recensioni-prime-partite" min="1" max="50">
         </label>
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-recensioni-con-nome">
+          Firma la recensione con il soprannome scelto in quella partita
+        </label>
+        <p class="admin-nota">Il telefono lo dice chiaramente a chi sta per inviare («Sarà firmata con il tuo soprannome…»). Oltre al soprannome si salvano solo voto, commento e tipo di partita. Togli la spunta per avere recensioni del tutto anonime.</p>
       </div>
 
       <h3>COLLABORIAMO! (Salmo 133:1)</h3>
@@ -344,7 +349,7 @@
   <div id="tab-recensioni" class="nascosta">
     <section id="sezione-recensioni">
       <h2>⭐ Recensioni dei giocatori</h2>
-      <p>Le lasciano i giocatori dal telefono, a fine partita: delle stelline e un commento (cosa è piaciuto, cosa no, cosa propongono). Sono anonime: non c'è il nome di nessuno. Arrivano qui da sole, senza ricaricare la pagina.</p>
+      <p>Le lasciano i giocatori dal telefono, a fine partita: delle stelline e un commento (cosa è piaciuto, cosa no, cosa propongono). Se in Regole è accesa la spunta del soprannome, ognuna porta il soprannome che il giocatore aveva scelto in quella partita (e nient'altro: né cognome né codice partita); quelle arrivate prima, o con la spunta spenta, sono anonime. Arrivano qui da sole, senza ricaricare la pagina.</p>
       <p id="recensioni-avviso" class="admin-avviso nascosta"></p>
       <div id="recensioni-riepilogo"></div>
       <div id="recensioni-filtri"></div>
