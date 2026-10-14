@@ -653,6 +653,47 @@ body {
   box-shadow: none;
 }
 
+/* --- scelta della modalita' (Normale / Veloce): sta sopra il pulsante "Inizia partita" --- */
+
+#lobby-modalita {
+  position: absolute;
+  left: 50%;
+  top: 70.3%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  padding: 0.14em;
+  gap: 0.14em;
+  background: rgba(255, 255, 255, 0.55);
+  border: 0.08em solid rgba(122, 74, 16, 0.45);
+  border-radius: 999px;
+}
+
+.btn-modalita {
+  font: inherit;
+  font-size: 0.78em;
+  font-weight: bold;
+  padding: 0.25em 1.1em;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #5a4630;
+  cursor: pointer;
+}
+
+.btn-modalita.attiva {
+  background: #7a4a10;
+  color: #ffffff;
+  box-shadow: 0 0.1em 0.25em rgba(0, 0, 0, 0.3);
+}
+
+.btn-modalita[data-modalita="veloce"].attiva {
+  background: #d9801a;
+}
+
+#modalita-badge {
+  font-weight: bold;
+}
+
 /* --- prove vincolo: in sospeso, e la richiesta di conferma --- */
 
 .prova-sospesa-riga {

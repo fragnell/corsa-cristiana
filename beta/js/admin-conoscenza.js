@@ -17,10 +17,11 @@ let listaRispostePossibili = [];
 let listaOpzioni = [];
 let listaRisposteDirette = [];
 let opzioneCorrettaIndice = null;
+// L'elenco con i filtri vive in un modulo a parte (admin-conoscenza-elenco.js). Se non si carica,
+// o si rompe, l'Admin usa l'elenco semplice di sempre (disegnaLista): le domande si gestiscono lo stesso.
+let elencoConFiltri = null;
 
-export function avviaSezioneConoscenza() {
-  ascoltaMazzo(NOME_MAZZO, disegnaLista);
-
+export async function avviaSezioneConoscenza() {
   document.getElementById('conoscenza-btn-nuova').addEventListener('click', () => mostraForm(null));
   document.getElementById('conoscenza-btn-annulla').addEventListener('click', nascondiForm);
   document.getElementById('conoscenza-tipo').addEventListener('change', aggiornaCampiVisibili);
@@ -41,6 +42,38 @@ export function avviaSezioneConoscenza() {
   });
 
   document.getElementById('conoscenza-btn-prova-link').addEventListener('click', provaLink);
+
+  try {
+    const modulo = await import('./admin-conoscenza-elenco.js');
+    elencoConFiltri = modulo.creaElencoConoscenza({
+      contenitoreFiltri: document.getElementById('conoscenza-filtri'),
+      contenitoreLista: document.getElementById('conoscenza-lista'),
+      alModifica: carta => mostraForm(carta),
+      alElimina: carta => confermaEdElimina(carta)
+    });
+  } catch (errore) {
+    console.warn("Elenco con filtri non disponibile, uso l'elenco semplice", errore);
+    elencoConFiltri = null;
+  }
+
+  ascoltaMazzo(NOME_MAZZO, aggiornaElenco);
+}
+
+// Ogni volta che le carte cambiano: ridisegna l'elenco (con i filtri, se ci sono).
+function aggiornaElenco(carte) {
+  document.getElementById('conoscenza-conteggio').textContent = carte.length;
+  if (elencoConFiltri) {
+    try {
+      elencoConFiltri.aggiorna(carte);
+      return;
+    } catch (errore) {
+      console.warn("Elenco con filtri: errore, passo all'elenco semplice", errore);
+      elencoConFiltri = null;
+      const barra = document.getElementById('conoscenza-filtri');
+      if (barra) barra.innerHTML = '';
+    }
+  }
+  disegnaLista(carte);
 }
 
 // Segnalino nell'elenco: 🔗 se la domanda ha un link Approfondisci che il

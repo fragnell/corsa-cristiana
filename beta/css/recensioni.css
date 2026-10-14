@@ -1,0 +1,269 @@
+/* recensioni.css */
+/* La richiesta di recensione a fine partita, sul telefono (js/recensioni.js).
+   Si carica solo quando serve. Stesso stile del pannello del verdetto: scheda chiara su sfondo scuro. */
+
+#recensione-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;                       /* sopra il verdetto (300) e la prova COLLABORIAMO! (320) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0.6rem;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+#recensione-overlay.nascosta {
+  display: none;
+}
+
+#recensione-scheda {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 26rem;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 1.3rem 1.1rem 1rem;
+  background: #fffdf8;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  color: #3a2410;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#recensione-scheda:focus {
+  outline: none;
+}
+
+#recensione-scheda h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.recensione-intro {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* --- le stelline --- */
+
+#recensione-stelle {
+  display: flex;
+  justify-content: center;
+  gap: 0.1rem;
+  margin: 0.4rem 0 0;
+}
+
+.recensione-stella {
+  flex: 0 1 3.2rem;
+  min-width: 2.6rem;
+  min-height: 3rem;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  box-shadow: none;
+  color: #d9cdb8;
+  font-family: inherit;
+  font-size: 2.7rem;
+  font-weight: normal;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease;
+}
+
+.recensione-stella.accesa {
+  color: #f5b301;
+}
+
+.recensione-stella:active {
+  transform: scale(1.15);
+}
+
+.recensione-stella:focus-visible,
+#recensione-commento:focus-visible,
+#recensione-invia:focus-visible,
+#recensione-salta:focus-visible,
+#recensione-chiudi:focus-visible {
+  outline: 3px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+#recensione-voto-testo {
+  min-height: 1.4em;
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #8a5a2b;
+}
+
+/* --- il commento --- */
+
+.recensione-etichetta {
+  display: block;
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+  font-weight: bold;
+  text-align: left;
+}
+
+.recensione-etichetta span {
+  font-weight: normal;
+  color: #8a7355;
+}
+
+#recensione-commento {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 6.2rem;
+  padding: 0.6rem 0.7rem;
+  border: 2px solid #b79b72;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #3a2410;
+  font: inherit;
+  font-size: 1.05rem;                 /* almeno 16px: cosi' il telefono non ingrandisce la pagina quando si scrive */
+  line-height: 1.35;
+  resize: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+#recensione-contatore {
+  margin: 0.15rem 0.2rem 0;
+  font-size: 0.8rem;
+  color: #8a7355;
+  text-align: right;
+}
+
+#recensione-messaggio {
+  min-height: 1.4em;
+  margin: 0.2rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+#recensione-messaggio.recensione-errore {
+  color: #c62828;
+  font-weight: bold;
+}
+
+/* --- i pulsanti --- */
+
+.recensione-bottoni {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+}
+
+#recensione-invia,
+#recensione-chiudi {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 12px;
+  background: #4caf50;
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#recensione-invia:disabled {
+  background: #a5d6a7;
+  box-shadow: none;
+  cursor: default;
+}
+
+#recensione-salta {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: #8a5a2b;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: normal;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.recensione-privacy {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #8a7355;
+}
+
+/* --- il "Grazie" --- */
+
+#recensione-vista-grazie.nascosta,
+#recensione-vista-modulo.nascosta {
+  display: none;
+}
+
+#recensione-vista-grazie p {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+/* --- telefoni piccoli o girati in orizzontale: si stringe tutto --- */
+
+@media (max-height: 560px) {
+  #recensione-scheda {
+    padding: 0.7rem 0.9rem 0.6rem;
+  }
+
+  #recensione-scheda h2 {
+    margin-bottom: 0.2rem;
+    font-size: 1.2rem;
+  }
+
+  .recensione-intro,
+  .recensione-privacy {
+    display: none;
+  }
+
+  .recensione-stella {
+    min-height: 2.5rem;
+    font-size: 2.2rem;
+  }
+
+  #recensione-voto-testo {
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+  }
+
+  #recensione-commento {
+    min-height: 3.6rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  #recensione-invia,
+  #recensione-chiudi {
+    padding: 0.5rem 1rem;
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 340px) {
+  #recensione-scheda {
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+  }
+
+  .recensione-stella {
+    min-width: 2.3rem;
+    font-size: 2.3rem;
+  }
+}

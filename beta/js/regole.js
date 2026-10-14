@@ -100,6 +100,34 @@ export function muoviGiocatore(stato, percorso, valoreDado, config = CONFIG) {
   return risolviCasella(nuovoStato, percorso, casella, config);
 }
 
+// ---------- SALTO CHE ATTIVA LA CASELLA DI ARRIVO ----------
+
+// Un salto che porta su un altro salto (e cosi' via) non puo' andare avanti all'infinito:
+// dopo tre salti di fila la catena si ferma, qualunque sia il percorso.
+export const MAX_SALTI_DI_FILA = 3;
+
+// True se, dopo questo evento, bisogna far scattare anche la casella su cui il giocatore e'
+// arrivato: succede solo dopo un SALTO, con la regola "saltoAttivaCasella" accesa e senza aver
+// superato il limite di salti di fila. "saltiFatti" = quanti salti sono gia' stati risolti in questo turno.
+export function saltoAttivaArrivo(evento, config = CONFIG, saltiFatti = 0) {
+  return !!evento
+    && evento.tipo === 'SALTO'
+    && !!(config.regole && config.regole.saltoAttivaCasella)
+    && saltiFatti < MAX_SALTI_DI_FILA;
+}
+
+// Dopo un SALTO, se la regola "saltoAttivaCasella" e' accesa, la casella su cui
+// si arriva scatta come se ci si fosse atterrati con il dado (per esempio una
+// domanda Conoscenza). Non sposta nessuno: risolve la casella su cui il
+// giocatore di turno si trova adesso. Restituisce lo stesso tipo di risultato
+// di muoviGiocatore: { stato, evento }.
+export function risolviCasellaDiArrivo(stato, percorso, config = CONFIG) {
+  const nuovoStato = copiaStato(stato);
+  const giocatore = nuovoStato.giocatori[nuovoStato.turnoDi];
+  const casella = trovaCasella(percorso, giocatore.posizione);
+  return risolviCasella(nuovoStato, percorso, casella, config);
+}
+
 // ---------- ESITI CHE RICHIEDONO UN GIUDICE ----------
 
 export function applicaRispostaConoscenza(stato, percorso, corretta, config = CONFIG) {

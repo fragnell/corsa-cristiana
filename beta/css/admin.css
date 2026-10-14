@@ -345,3 +345,244 @@ button {
   font-size: 0.8rem;
   color: #666;
 }
+
+
+/* --- elenco delle domande Conoscenza: barra dei filtri e righe --- */
+
+.filtri-carte {
+  margin: 1rem 0 0.6rem;
+  padding: 0.8rem;
+  background: #f4f7fb;
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
+}
+
+.filtri-ricerca {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #999;
+  border-radius: 8px;
+  margin-bottom: 0.6rem;
+}
+
+.filtri-gruppo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.35rem 0;
+}
+
+.filtri-titolo {
+  min-width: 6.2rem;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #44556a;
+}
+
+.filtro-pulsante {
+  font-size: 0.88rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #9aa9bb;
+  background: white;
+  color: #222;
+}
+
+.filtro-pulsante.filtro-acceso {
+  background: #1976d2;
+  border-color: #0d47a1;
+  color: white;
+  font-weight: bold;
+}
+
+.filtro-conteggio { opacity: 0.75; font-weight: normal; }
+
+.filtro-pulsante[hidden],
+.filtri-azzera[hidden] { display: none; }
+
+.filtri-select {
+  font-size: 0.9rem;
+  padding: 0.3rem;
+  border-radius: 6px;
+  border: 1px solid #999;
+  max-width: 100%;
+}
+
+.filtri-ordine { justify-content: space-between; }
+
+.filtri-azzera {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+  border-color: #c0392b;
+  color: #c0392b;
+}
+
+.filtri-riepilogo {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #44556a;
+  font-weight: bold;
+}
+
+.filtri-vuoto {
+  padding: 1rem;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.filtri-altre {
+  display: block;
+  margin: 0.8rem auto 0;
+  padding: 0.6rem 1.4rem;
+  border-color: #1976d2;
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.riga-conoscenza { align-items: flex-start; }
+
+.conoscenza-domanda { line-height: 1.35; }
+
+.conoscenza-dettagli {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+.marcatore {
+  font-size: 0.75rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: #e8edf3;
+  color: #33465c;
+  white-space: nowrap;
+}
+
+.marcatore-junior { background: #dff3df; color: #1b5e20; }
+.marcatore-link { background: #e3f0fd; color: #0d47a1; }
+.marcatore-avviso { background: #fff1d6; color: #8a5200; }
+
+.conoscenza-risposta {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+
+/* --- scheda Recensioni --- */
+
+.recensioni-barre {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.9rem;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.recensioni-barra-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.recensioni-barra-voto {
+  width: 2.4rem;
+  color: #b8860b;
+  font-weight: bold;
+}
+
+.recensioni-barra-pista {
+  flex: 1;
+  height: 0.8rem;
+  background: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.recensioni-barra-piena {
+  height: 100%;
+  background: #f5b301;
+  border-radius: 999px;
+}
+
+.recensioni-barra-numero {
+  width: 2rem;
+  text-align: right;
+  color: #555;
+}
+
+.recensione-riga {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.recensione-corpo { flex: 1; min-width: 0; }
+
+.recensione-testa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.7rem;
+}
+
+.recensione-stelline {
+  color: #f5b301;
+  font-size: 1.15rem;
+  letter-spacing: 0.05em;
+}
+
+.recensione-voto { font-weight: bold; }
+
+.recensione-data {
+  margin-left: auto;
+  color: #666;
+  font-size: 0.82rem;
+}
+
+.recensione-testo {
+  margin: 0.3rem 0;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.recensione-senza-commento {
+  color: #888;
+  font-style: italic;
+}
+
+#recensioni-btn-esporta {
+  background: #2e7d32;
+  border-color: #1b5e20;
+  color: white;
+  font-weight: bold;
+}
+
+#recensioni-prova {
+  margin-top: 1.5rem;
+  padding: 0.6rem 0.9rem;
+  background: #f4f7fb;
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
+}
+
+#recensioni-prova summary { cursor: pointer; font-weight: bold; }
+
+.recensioni-indirizzo {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+}

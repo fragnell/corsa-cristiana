@@ -13,9 +13,7 @@ export const CONFIG = {
   // Caselle CONOSCENZA
   conoscenza: {
     bonusRispostaCorretta: 3,   // risposta giusta: avanza di 3
-    malusRispostaErrata: 0,     // risposta sbagliata: resta fermo
-    sfidaBonusVincitore: 3,     // provvisorio: chi vince la sfida avanza
-    sfidaMalusPerdente: -2      // provvisorio: chi perde la sfida retrocede
+    malusRispostaErrata: 0      // risposta sbagliata: resta fermo
   },
 
   // Caselle IMPREVISTO
@@ -29,11 +27,29 @@ export const CONFIG = {
     malusFallita: 0     // prova fallita: resta fermo
   },
 
-  // Regole generali del motore
+  // Regole generali del motore.
+  // (Sono regole fisse e non si cambiano: un movimento-bonus non attiva mai la casella su cui
+  // atterra, e superare l'ultima casella basta per vincere, senza rimbalzi indietro.)
   regole: {
-    bonusAttivaCasella: false,   // un movimento-bonus (es. +3 Conoscenza) non fa scattare la casella su cui atterra
-    saltoAttivaCasella: false,   // atterrare su SALTO ti sposta, ma non attiva subito la casella di arrivo
-    arrivoLibero: true           // basta superare l'ultima casella per vincere, nessun rimbalzo indietro
+    saltoAttivaCasella: false    // false: il SALTO ti sposta e basta; true: dopo il salto scatta anche la casella
+                                 // su cui arrivi (per esempio una domanda Conoscenza)
+  },
+
+  // Partita veloce: si sceglie in lobby ("Normale" o "Veloce") e accorcia la partita di circa un terzo.
+  // Cambia solo questi quattro numeri rispetto alla partita normale; tutto il resto resta uguale.
+  veloce: {
+    bonusConoscenza: 8,          // risposta giusta: avanza di 8 (nella partita normale: 3)
+    bonusProva: 3,               // prova superata: avanza di 3 (nella partita normale: 1)
+    malusImprevisto: -1,         // imprevisto: arretra di 1 (nella partita normale: 5); sempre negativo
+    saltoAttivaCasella: true     // dopo un salto scatta anche la casella su cui arrivi
+  },
+
+  // Recensioni di fine partita: ai giocatori "alle prime partite" il telefono propone di lasciare
+  // delle stelline e un commento. Si accendono e si spengono dall'Admin (scheda Regole).
+  recensioni: {
+    attiva: true,                // false: nessuno vede mai la richiesta di recensione
+    soloNuovi: true,             // true: solo chi ha giocato poche partite su questo telefono; false: sempre
+    primePartite: 3              // quante sono "poche partite" (le prime 3 partite di quel telefono)
   },
 
   // Numero giocatori ammessi
@@ -96,7 +112,25 @@ export function unisciConfig(base, override) {
     regole: { ...base.regole, ...(override.regole || {}) },
     giocatori: { ...base.giocatori, ...(override.giocatori || {}) },
     timeout: { ...base.timeout, ...(override.timeout || {}) },
+    veloce: { ...base.veloce, ...(override.veloce || {}) },
+    recensioni: { ...base.recensioni, ...(override.recensioni || {}) },
     salmo: unisciSalmo(base.salmo, override.salmo)
+  };
+}
+
+// La configurazione da usare in una partita: per la modalita' "veloce" sostituisce i quattro
+// numeri della sezione "veloce" a quelli normali. Per ogni altra modalita' (o nessuna, come nelle
+// partite iniziate prima di questa novita') restituisce la configurazione cosi' com'e'.
+// Non modifica mai l'originale.
+export function configPerModalita(config, modalita) {
+  if (modalita !== 'veloce' || !config.veloce) return config;
+  const v = config.veloce;
+  return {
+    ...config,
+    conoscenza: { ...config.conoscenza, bonusRispostaCorretta: v.bonusConoscenza },
+    prova: { ...config.prova, bonusSuperata: v.bonusProva },
+    imprevisto: { ...config.imprevisto, malus: v.malusImprevisto },
+    regole: { ...config.regole, saltoAttivaCasella: v.saltoAttivaCasella }
   };
 }
 

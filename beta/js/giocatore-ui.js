@@ -52,6 +52,19 @@ async function avviaSalmoTelefono() {
   }
 }
 
+// Recensione di fine partita (stelline + commento): il modulo si carica "a parte", solo quando la partita
+// e' finita. Se non si carica, o si rompe, il telefono funziona come sempre.
+let recensioneAvviata = false;
+let haAbbandonato = false;
+
+function avviaRecensione(stato) {
+  if (recensioneAvviata || haAbbandonato) return;
+  recensioneAvviata = true;
+  import('./recensioni.js')
+    .then(modulo => modulo.proponiRecensione({ codicePartita, stato, mioId }))
+    .catch(errore => console.warn('La recensione di fine partita non e\' disponibile', errore));
+}
+
 document.getElementById('btn-cerca').addEventListener('click', cercaPartita);
 
 async function cercaPartita() {
@@ -221,6 +234,10 @@ function aggiornaSchermo(stato) {
 
   document.getElementById('mia-posizione').textContent = `Sei sulla casella ${stato.giocatori[mioId].posizione}`;
 
+  // Targhetta "Partita veloce" (le partite di prima, o senza modalita', non hanno la targhetta)
+  const elModalita = document.getElementById('mia-modalita');
+  if (elModalita) elModalita.classList.toggle('nascosta', stato.modalita !== 'veloce');
+
   const elProvaSospesa = document.getElementById('mia-prova-sospesa');
   const mioProvaSospesa = stato.giocatori[mioId].provaInSospeso;
   if (mioProvaSospesa) {
@@ -234,6 +251,7 @@ function aggiornaSchermo(stato) {
     const vincitore = stato.giocatori[stato.vincitore];
     statoTurno.textContent = `🏆 Ha vinto ${vincitore.nome}!`;
     bottoneDado.classList.add('nascosta');
+    avviaRecensione(stato);
     return;
   }
 
@@ -375,6 +393,7 @@ document.getElementById('btn-abbandona').addEventListener('click', async () => {
   if (!conferma) return;
 
   await richiediAbbandono(codicePartita, mioId);
+  haAbbandonato = true;   // chi ha lasciato la partita non riceve la richiesta di recensione
 
   document.getElementById('gioco').classList.add('nascosta');
   document.getElementById('messaggio-abbandonato').classList.remove('nascosta');

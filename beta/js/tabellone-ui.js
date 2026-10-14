@@ -8,9 +8,9 @@
 // fatto solo di domande a scelta multipla segnate come tali — previa
 // conferma del gruppo, chiesta sul tabellone appena arriva la richiesta.
 
-import { CONFIG, unisciConfig } from './config.js';
+import { CONFIG, unisciConfig, configPerModalita } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
-import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
+import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
 import { creaMazzo, pesca, creaMazzoARotazione, peschaARotazione } from './mazzi.js';
 import { leggiMemoriaRotazione, numeroNuovaPartita, segnaDomandaUscita } from './rotazione-domande.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
@@ -257,33 +257,11 @@ async function risolviProvaVincoloDiTurno(giocatore) {
   await pubblicaStato(codicePartita, stato);
 }
 
-async function giocaTurno() {
-  let giocatore = giocatoreDiTurno(stato);
-
-  if (stato.giocatori[giocatore.id].provaInSospeso) {
-    await risolviProvaVincoloDiTurno(giocatore);
-    if (partitaFinita(stato)) return;
-    giocatore = giocatoreDiTurno(stato);
-  }
-
-  const infoTurno = document.getElementById('turno-info');
-
-  const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
-  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...` +
-    (sembraDisconnesso ? ' ⚠️ Il suo dispositivo sembra disconnesso.' : ' (se non risponde entro un minuto, si procede comunque)');
-  await aspettaIntenzioneDado(codicePartita, giocatore.id, configPartita.timeout.dadoMs);
-  stato.turnoInCorso = true;
-
-  const posizionePrima = giocatore.posizione;
-  const dado = tiraDado(configPartita);
-  await animaDado(dado);
-
-  const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
-  await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
-
-  let r = muoviGiocatore(stato, percorso, dado, configPartita);
-  stato = r.stato;
-
+// Tutto quello che succede dopo che una pedina e' arrivata su una casella: l'eventuale spostamento
+// (imprevisto, salto), le carte da mostrare e, per Conoscenza e Prova, la domanda o la prova con il suo esito.
+// "posizioneAtterrata" e' la casella su cui la pedina si trova sullo schermo in questo momento.
+// Restituisce il risultato finale ({ stato, evento }) nello stesso formato del motore.
+async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
   const posizioneDopoEffetto = stato.giocatori[giocatore.id].posizione;
   if (posizioneDopoEffetto !== posizioneAtterrata && r.evento.tipo !== 'IN_ATTESA') {
     await pausa(200);
@@ -307,7 +285,7 @@ async function giocaTurno() {
 
   if (r.evento.tipo === 'SALTO') {
     const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${r.evento.destinazione}.` };
-        await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
+    await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
   }
 
   if (r.evento.tipo === 'IN_ATTESA') {
@@ -436,6 +414,49 @@ async function giocaTurno() {
       await pausa(200);
       await animaSpostamento(giocatore.id, posizionePrimaEsito, posizioneDopoEsito);
     }
+  }
+
+  return r;
+}
+
+async function giocaTurno() {
+  let giocatore = giocatoreDiTurno(stato);
+
+  if (stato.giocatori[giocatore.id].provaInSospeso) {
+    await risolviProvaVincoloDiTurno(giocatore);
+    if (partitaFinita(stato)) return;
+    giocatore = giocatoreDiTurno(stato);
+  }
+
+  const infoTurno = document.getElementById('turno-info');
+
+  const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
+  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...` +
+    (sembraDisconnesso ? ' ⚠️ Il suo dispositivo sembra disconnesso.' : ' (se non risponde entro un minuto, si procede comunque)');
+  await aspettaIntenzioneDado(codicePartita, giocatore.id, configPartita.timeout.dadoMs);
+  stato.turnoInCorso = true;
+
+  const posizionePrima = giocatore.posizione;
+  const dado = tiraDado(configPartita);
+  await animaDado(dado);
+
+  const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
+  await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
+
+  let r = muoviGiocatore(stato, percorso, dado, configPartita);
+  stato = r.stato;
+  r = await gestisciEffettoCasella(giocatore, r, posizioneAtterrata);
+
+  // Con la regola "il salto attiva la casella di arrivo" (nella partita veloce e' accesa di base) dopo
+  // un salto scatta anche la casella su cui si e' arrivati, come se ci si fosse atterrati con il dado.
+  // Il limite di salti di fila evita che un percorso strano giri all'infinito.
+  let salti = 0;
+  while (!partitaFinita(stato) && saltoAttivaArrivo(r.evento, configPartita, salti)) {
+    salti++;
+    const posizioneArrivo = stato.giocatori[giocatore.id].posizione;
+    r = risolviCasellaDiArrivo(stato, percorso, configPartita);
+    stato = r.stato;
+    r = await gestisciEffettoCasella(giocatore, r, posizioneArrivo);
   }
 
   if (!partitaFinita(stato)) {
@@ -568,11 +589,25 @@ function avviaVistaLobby() {
       `🌍 ${numeroPartite} partit${numeroPartite === 1 ? 'a' : 'e'} in corso, ${numeroGiocatori} giocator${numeroGiocatori === 1 ? 'e' : 'i'} online`;
   });
 
+  // Scelta della modalita' (Normale / Veloce). Se i bottoni non ci sono, si gioca in modalita' normale.
+  let modalitaScelta = 'normale';
+  const bottoniModalita = document.querySelectorAll('#lobby-modalita .btn-modalita');
+  bottoniModalita.forEach(bottone => {
+    bottone.addEventListener('click', () => {
+      modalitaScelta = bottone.dataset.modalita === 'veloce' ? 'veloce' : 'normale';
+      bottoniModalita.forEach(altro => {
+        const attivo = altro.dataset.modalita === modalitaScelta;
+        altro.classList.toggle('attiva', attivo);
+        altro.setAttribute('aria-pressed', String(attivo));
+      });
+    });
+  });
+
   bottoneInizia.addEventListener('click', async () => {
     avviaMusica(); // secondo tentativo, garantito: questo è un clic vero sulla pagina
     bottoneInizia.disabled = true;
     const lobbyFinale = await leggiLobbyUnaVolta(codicePartita);
-    iniziaPartitaVera(lobbyFinale);
+    iniziaPartitaVera(lobbyFinale, modalitaScelta);
   });
 }
 
@@ -617,7 +652,18 @@ function annunciaOrdineSorteggiato() {
   }
 }
 
-async function iniziaPartitaVera(giocatoriInfo) {
+// Mostra (o toglie) la scritta "Partita veloce" accanto al codice, nella scena di gioco.
+function mostraBadgeModalita(modalita) {
+  const badge = document.getElementById('modalita-badge');
+  if (badge) badge.classList.toggle('nascosta', modalita !== 'veloce');
+}
+
+async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
+  // La partita veloce cambia solo pochi numeri (vedi "veloce" in config.js): da qui in poi tutto il
+  // gioco usa la configurazione della modalita' scelta.
+  const modalitaPartita = modalita === 'veloce' ? 'veloce' : 'normale';
+  configPartita = configPerModalita(configPartita, modalitaPartita);
+
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
 
@@ -630,6 +676,8 @@ async function iniziaPartitaVera(giocatoriInfo) {
   // L'ordine di gioco si sorteggia qui, PRIMA di creare lo stato: da questo momento i numeri
   // dei giocatori, i turni e i telefoni nascono gia' dall'ordine sorteggiato.
   stato = creaStatoIniziale(await sorteggiaOrdineDiGioco(giocatoriInfo));
+  stato.modalita = modalitaPartita;      // i telefoni la leggono dallo stato (targhetta "Partita veloce")
+  mostraBadgeModalita(stato.modalita);
   creaPedine();
 
   localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
@@ -652,6 +700,10 @@ async function riprendiPartitaEsistente(statoEsistente) {
   stato = statoEsistente;
   stato.turnoInCorso = false;
   stato.richiestaConoscenza = null;
+  // Una partita iniziata veloce resta veloce anche dopo la ripresa (le partite di prima non hanno
+  // nessuna modalita': sono normali).
+  configPartita = configPerModalita(configPartita, stato.modalita);
+  mostraBadgeModalita(stato.modalita);
   delete stato.salmoInCorso;   // una prova (COLLABORIAMO!) rimasta a meta' non esiste piu'
   if (stato.vincitore === undefined) stato.vincitore = null;
 

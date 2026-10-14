@@ -41,6 +41,22 @@ body {
   margin: 0 0 1rem;
 }
 
+/* targhetta "Partita veloce": compare solo se la partita e' stata iniziata in modalita' veloce */
+#mia-modalita {
+  display: inline-block;
+  margin: 0 auto 0.4rem;
+  padding: 0.1rem 0.7rem;
+  background: #d9801a;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border-radius: 999px;
+}
+
+#mia-modalita.nascosta {
+  display: none;
+}
+
 input[type="text"] {
   font-size: 1.4rem;
   padding: 0.5rem;

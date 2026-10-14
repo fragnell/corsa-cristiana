@@ -404,3 +404,30 @@ export async function tabellonePresente(codicePartita) {
   const istantanea = await get(ref(db, `tabelloni-attivi/${codicePartita}`));
   return istantanea.exists();
 }
+
+// --- Recensioni di fine partita ---
+// Si scrivono in "recensioni/<chiave>". Chiunque puo' AGGIUNGERNE una (anche senza login, come chi gioca
+// da telefono), ma solo l'amministratore puo' leggerle ed eliminarle: lo decidono le regole di Firebase.
+
+export function nuovaChiaveRecensione() {
+  return push(ref(db, 'recensioni')).key;
+}
+
+export function inviaRecensione(chiave, recensione) {
+  return set(ref(db, `recensioni/${chiave}`), recensione);
+}
+
+// Si aggiorna da sola quando arriva una recensione nuova. "alErrore" riceve l'errore se Firebase
+// non permette di leggere (per esempio: manca il login, o le regole non sono ancora state aggiornate).
+export function ascoltaRecensioni(callback, alErrore) {
+  return onValue(ref(db, 'recensioni'), (istantanea) => {
+    const oggetto = istantanea.val() || {};
+    callback(Object.entries(oggetto).map(([chiave, recensione]) => ({ ...recensione, _chiave: chiave })));
+  }, (errore) => {
+    if (alErrore) alErrore(errore);
+  });
+}
+
+export function eliminaRecensione(chiave) {
+  return remove(ref(db, `recensioni/${chiave}`));
+}

@@ -31,6 +31,11 @@
         <ul id="lista-lobby"></ul>
       </div>
 
+      <div id="lobby-modalita" role="group" aria-label="Modalità di gioco">
+        <button type="button" class="btn-modalita attiva" data-modalita="normale" aria-pressed="true">Normale</button>
+        <button type="button" class="btn-modalita" data-modalita="veloce" aria-pressed="false" title="Partita più corta: si avanza di più con le risposte giuste">⚡ Veloce</button>
+      </div>
+
       <button id="btn-inizia-partita" disabled>▶ Inizia partita</button>
     </div>
   </div>
@@ -54,7 +59,7 @@
         <div id="turno-info"></div>
       </div>
 
-      <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span></div>
+      <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span><span id="modalita-badge" class="nascosta"> · ⚡ Partita veloce</span></div>
     </div>
 
     
