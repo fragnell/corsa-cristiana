@@ -83,6 +83,17 @@ const pedineDom = new Map();
 const richiesteJuniorGestite = new Set();
 let presenzaGiocatori = {};
 const abbandoniGestiti = new Set();
+// COLLABORIAMO! (Salmo 133:1): il modulo della prova si carica "a parte". Se non
+// si carica, o si rompe, il gioco va avanti normalmente senza la prova.
+let salmoModulo = null;
+// Il sorteggio dell'ordine di gioco e' un modulo a parte, caricato subito in sottofondo:
+// se non si carica (o ci mette troppo), si gioca nell'ordine di ingresso in lobby, come sempre.
+const ATTESA_MODULO_ORDINE_MS = 3000;
+const moduloOrdine = import('./ordine-gioco.js').catch(errore => {
+  console.warn("Sorteggio dell'ordine non disponibile, si gioca nell'ordine di ingresso", errore);
+  return null;
+});
+let ordineCaricato = null;
 
 function pausa(ms) {
   return new Promise(risolvi => setTimeout(risolvi, ms));
@@ -173,6 +184,42 @@ async function animaSpostamento(giocatoreId, posizioneIniziale, posizioneFinale)
     await pausa(DURATA_SALTO_MS);
   }
   evidenziaCasella(posizioneFinale);
+}
+
+// ---------- COLLABORIAMO! (Salmo 133:1) ----------
+
+async function avviaSalmo() {
+  salmoModulo = null;
+  try {
+    const modulo = await import('./salmo/tabellone-salmo.js');
+    modulo.inizializza({
+      codicePartita,
+      configSalmo: configPartita.salmo,
+      ultimaCasella: percorso.length,
+      getStato: () => stato,
+      setStato: nuovo => { stato = nuovo; },
+      pubblica: nuovo => pubblicaStato(codicePartita, nuovo),
+      presente: id => presenzaGiocatori[id] !== false,
+      animaSpostamento
+    });
+    salmoModulo = modulo;
+  } catch (errore) {
+    console.warn('COLLABORIAMO! non disponibile, si gioca normalmente', errore);
+  }
+}
+
+// Dopo ogni passaggio di turno: se e' il momento della prova, parte qui.
+async function salmoDopoPassaggioDiTurno() {
+  if (!salmoModulo) return;
+  try {
+    await salmoModulo.dopoPassaggioDiTurno();
+  } catch (errore) {
+    console.warn('COLLABORIAMO!: errore ignorato', errore);
+    if (stato && stato.salmoInCorso) {
+      stato = { ...stato };
+      delete stato.salmoInCorso;
+    }
+  }
 }
 
 function aggiornaProveInSospeso() {
@@ -392,6 +439,7 @@ async function giocaTurno() {
 
   if (!partitaFinita(stato)) {
     stato = passaTurno(stato);
+    await salmoDopoPassaggioDiTurno();   // COLLABORIAMO!, se e' il momento
   }
   stato.turnoInCorso = false;
 
@@ -544,6 +592,30 @@ function configuraAscoltatoriDiPartita() {
   });
 }
 
+// ---------- Ordine di gioco sorteggiato ----------
+
+// Sorteggia l'ordine dei giocatori. Se il modulo non c'e' o qualcosa va storto restituisce
+// l'elenco com'e' (ordine di ingresso): la partita parte comunque.
+async function sorteggiaOrdineDiGioco(giocatoriInfo) {
+  try {
+    ordineCaricato = await Promise.race([moduloOrdine, pausa(ATTESA_MODULO_ORDINE_MS).then(() => null)]);
+    if (ordineCaricato) return ordineCaricato.sorteggiaOrdine(giocatoriInfo);
+    console.warn("Sorteggio dell'ordine non disponibile all'avvio, si gioca nell'ordine di ingresso");
+  } catch (errore) {
+    console.warn("Sorteggio dell'ordine non riuscito, si gioca nell'ordine di ingresso", errore);
+  }
+  return giocatoriInfo;
+}
+
+// Mostra per qualche secondo l'ordine sorteggiato. Non blocca il gioco.
+function annunciaOrdineSorteggiato() {
+  try {
+    if (ordineCaricato) ordineCaricato.annunciaOrdine(stato.giocatori);
+  } catch (errore) {
+    console.warn("Annuncio dell'ordine non riuscito (si gioca lo stesso)", errore);
+  }
+}
+
 async function iniziaPartitaVera(giocatoriInfo) {
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
@@ -554,13 +626,17 @@ async function iniziaPartitaVera(giocatoriInfo) {
 
   document.getElementById('codice-partita-gioco').textContent = codicePartita;
 
-  stato = creaStatoIniziale(giocatoriInfo);
+  // L'ordine di gioco si sorteggia qui, PRIMA di creare lo stato: da questo momento i numeri
+  // dei giocatori, i turni e i telefoni nascono gia' dall'ordine sorteggiato.
+  stato = creaStatoIniziale(await sorteggiaOrdineDiGioco(giocatoriInfo));
   creaPedine();
 
   localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
   configuraAscoltatoriDiPartita();
+  await avviaSalmo();
 
   await pubblicaStato(codicePartita, stato);
+  annunciaOrdineSorteggiato();
   cicloDiGioco();
 }
 
@@ -575,6 +651,7 @@ async function riprendiPartitaEsistente(statoEsistente) {
   stato = statoEsistente;
   stato.turnoInCorso = false;
   stato.richiestaConoscenza = null;
+  delete stato.salmoInCorso;   // una prova (COLLABORIAMO!) rimasta a meta' non esiste piu'
   if (stato.vincitore === undefined) stato.vincitore = null;
 
   // Ripristina anche la memoria di quali domande Conoscenza sono già
@@ -600,6 +677,8 @@ async function riprendiPartitaEsistente(statoEsistente) {
 
   configuraAscoltatoriDiPartita();
   annunciaTabellonePresente(codicePartita);
+  await avviaSalmo();
+  if (salmoModulo) salmoModulo.pulisciInRipresa(stato);   // toglie anche i resti da Firebase
 
   await pubblicaStato(codicePartita, stato);
   cicloDiGioco();

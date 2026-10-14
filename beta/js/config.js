@@ -46,8 +46,8 @@ export const CONFIG = {
   // regole precise) quando chi sta per giocare e' molto indietro rispetto al
   // primo: il primo ha visto un mosaico e lo descrive a voce, l'ultimo lo
   // rimette in ordine. Se riesce l'ultimo avanza, se fallisce arretra il primo.
-  // Tutta la logica sta in js/salmo/. Nel gioco vero questa sezione resta
-  // spenta (attivo: false); nella beta e' accesa.
+  // Tutta la logica sta in js/salmo/. Si accende e si spegne dall'Admin
+  // (casella "COLLABORIAMO! attivo"), senza toccare il codice.
   salmo: {
     attivo: true,
     giocatoriMinimi: 3,           // con 2 giocatori non scatta mai

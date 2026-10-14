@@ -35,6 +35,22 @@ let richiestaIdCorrente = null;
 let annullaRispostaCorrente = null;
 let inArrivoScadenzaGestita = null;
 let timerInArrivo = null;
+// COLLABORIAMO! (Salmo 133:1): il modulo della prova si carica "a parte". Se
+// non si carica, o si rompe, il telefono funziona come sempre.
+let salmoTelefono = null;
+let ultimoStatoRicevuto = null;
+
+async function avviaSalmoTelefono() {
+  if (salmoTelefono) return;
+  try {
+    const modulo = await import('./salmo/telefono-salmo.js');
+    modulo.inizializza({ codicePartita, mioId });
+    salmoTelefono = modulo;
+    if (ultimoStatoRicevuto) modulo.aggiorna(ultimoStatoRicevuto);
+  } catch (errore) {
+    console.warn('COLLABORIAMO! non disponibile su questo telefono', errore);
+  }
+}
 
 document.getElementById('btn-cerca').addEventListener('click', cercaPartita);
 
@@ -98,6 +114,7 @@ function rientraComeGiocatore(giocatore) {
   document.getElementById('gioco').classList.remove('nascosta');
   document.getElementById('mio-nome').textContent = mioNome;
   impostaPresenza(codicePartita, mioId);
+  avviaSalmoTelefono();
 
   ascoltaStato(codicePartita, aggiornaSchermo);
 }
@@ -179,6 +196,7 @@ function entraInAttesa() {
       document.getElementById('gioco').classList.remove('nascosta');
       document.getElementById('mio-nome').textContent = mioNome;
       impostaPresenza(codicePartita, mioId);
+      avviaSalmoTelefono();
     }
 
     aggiornaSchermo(stato);
@@ -186,6 +204,16 @@ function entraInAttesa() {
 }
 
 function aggiornaSchermo(stato) {
+  // COLLABORIAMO!: se c'e' una prova in corso, la sua schermata copre tutto.
+  ultimoStatoRicevuto = stato;
+  if (salmoTelefono) {
+    try {
+      salmoTelefono.aggiorna(stato);
+    } catch (errore) {
+      console.warn('COLLABORIAMO!: errore ignorato', errore);
+    }
+  }
+
   const bottoneDado = document.getElementById('btn-tira-dado');
   const statoTurno = document.getElementById('stato-turno');
   const notifica = document.getElementById('notifica-evento');

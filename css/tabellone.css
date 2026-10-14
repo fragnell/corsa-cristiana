@@ -686,6 +686,63 @@ body {
 }
 
 
+/* --- ordine di gioco sorteggiato: compare per qualche secondo a inizio partita --- */
+
+#annuncio-ordine {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 150;                 /* sopra la scena, sotto carte, dado e finestre */
+  max-width: 86vw;
+  font-size: max(1rem, 1.5vw);
+  padding: 0.6em 1.2em 0.8em;
+  background: rgba(255, 250, 236, 0.97);
+  color: #4a3b2a;
+  border: 0.15em solid #c9a15a;
+  border-radius: 0.8em;
+  box-shadow: 0 0.4em 1.1em rgba(0, 0, 0, 0.45);
+  text-align: center;
+  pointer-events: none;         /* non intercetta tocchi o clic */
+  animation: annuncio-ordine-entra 0.45s ease-out;
+}
+
+.annuncio-ordine-titolo {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 0.4em;
+}
+
+#annuncio-ordine-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3em 1.1em;
+  counter-reset: posizione;
+}
+
+#annuncio-ordine-lista li {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  font-weight: bold;
+  counter-increment: posizione;
+}
+
+#annuncio-ordine-lista li::before {
+  content: counter(posizione) "°";
+  color: #8a6a3a;
+}
+
+@keyframes annuncio-ordine-entra {
+  from { opacity: 0; transform: translateX(-50%) translateY(-1em); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+
 /* --- richiesta password, per "Accetta risposta" --- */
 
 .password-overlay {

@@ -6,15 +6,35 @@
 import { CONFIG, unisciConfig } from './config.js';
 import { leggiConfigDaFirebase, salvaConfigDaFirebase, eliminaConfigDaFirebase } from './sincronizzazione.js';
 
+// Il blocco COLLABORIAMO! (Salmo 133:1) si carica "a parte": se non si carica, le
+// regole di sempre funzionano lo stesso e salvarle NON cancella quello che il Salmo
+// aveva salvato (Firebase sostituisce tutto il blocco "configurazione" in una volta).
+let salmoAdmin = null;
+let salmoSalvato = null;   // l'ultima sezione "salmo" letta da Firebase
+
 export async function avviaSezioneRegole() {
+  try {
+    salmoAdmin = await import('./admin-salmo.js');
+  } catch (errore) {
+    console.warn("Blocco COLLABORIAMO! dell'Admin non disponibile", errore);
+    salmoAdmin = null;
+  }
   await caricaValoriNelForm();
   document.getElementById('regole-btn-salva').addEventListener('click', salva);
   document.getElementById('regole-btn-ripristina').addEventListener('click', ripristina);
+  if (salmoAdmin) {
+    try {
+      salmoAdmin.collegaBottoniSalmo();
+    } catch (errore) {
+      console.warn('COLLABORIAMO! Admin: pulsanti non collegati', errore);
+    }
+  }
 }
 
 async function caricaValoriNelForm() {
   const override = await leggiConfigDaFirebase();
   const attuale = unisciConfig(CONFIG, override);
+  salmoSalvato = (override && override.salmo) || null;
 
   document.getElementById('regole-conoscenza-bonus').value = attuale.conoscenza.bonusRispostaCorretta;
   document.getElementById('regole-conoscenza-malus').value = attuale.conoscenza.malusRispostaErrata;
@@ -32,6 +52,14 @@ async function caricaValoriNelForm() {
 
   document.getElementById('regole-giocatori-minimo').value = attuale.giocatori.minimo;
   document.getElementById('regole-giocatori-massimo').value = attuale.giocatori.massimo;
+
+  if (salmoAdmin) {
+    try {
+      salmoAdmin.riempiFormSalmo(attuale.salmo);
+    } catch (errore) {
+      console.warn('COLLABORIAMO! Admin: campi non riempiti', errore);
+    }
+  }
 }
 
 async function salva() {
@@ -67,7 +95,34 @@ async function salva() {
     return;
   }
 
-  await salvaConfigDaFirebase(nuovaConfig);
+  // COLLABORIAMO!: la sua sezione va salvata insieme alle altre, altrimenti
+  // salvare le regole di sempre la cancellerebbe.
+  if (salmoAdmin) {
+    let salmo;
+    try {
+      salmo = salmoAdmin.leggiFormSalmo();
+    } catch (errore) {
+      console.warn('COLLABORIAMO! Admin: campi illeggibili', errore);
+      risultato.textContent = '❌ Il blocco COLLABORIAMO! ha un problema: non ho salvato nulla.';
+      return;
+    }
+    if (salmo.errori.length > 0) {
+      risultato.textContent = '❌ Non ho salvato nulla. Controlla COLLABORIAMO!: ' + salmo.errori.join(' ');
+      return;
+    }
+    nuovaConfig.salmo = salmo.valori;
+  } else if (salmoSalvato) {
+    nuovaConfig.salmo = salmoSalvato;
+  }
+
+  try {
+    await salvaConfigDaFirebase(nuovaConfig);
+  } catch (errore) {
+    console.warn('Regole: salvataggio non riuscito', errore);
+    risultato.textContent = '❌ Non sono riuscito a salvare. Controlla la connessione e di essere entrato con la tua email, poi riprova.';
+    return;
+  }
+  salmoSalvato = nuovaConfig.salmo || null;
   risultato.textContent = '✅ Regole salvate. Valgono dalla prossima partita creata.';
 }
 
