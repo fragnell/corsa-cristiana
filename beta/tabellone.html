@@ -7,6 +7,22 @@
   <link rel="apple-touch-icon" href="img/icona-app-180.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#f0e2cc">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png">
+  <!-- Anteprima del link (WhatsApp, Telegram...): gli indirizzi devono essere completi, con https:// -->
+  <meta name="description" content="Apri questa pagina sulla TV o sul computer: è il tabellone della partita. I giocatori si collegano con il telefono.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Corsa Cristiana">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:title" content="Corsa Cristiana — Tabellone">
+  <meta property="og:description" content="Apri questa pagina sulla TV o sul computer: è il tabellone della partita. I giocatori si collegano con il telefono.">
+  <meta property="og:url" content="https://fragnell.github.io/corsa-cristiana/beta/tabellone.html">
+  <meta property="og:image" content="https://fragnell.github.io/corsa-cristiana/beta/img/anteprima.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Corsa Cristiana, il gioco biblico: cartelli del percorso, pedine e dadi su un tavolo di legno">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="css/tabellone.css">
   <link rel="stylesheet" href="css/beta.css">
   <meta name="robots" content="noindex">
@@ -23,6 +39,12 @@
         </div>
         <div id="codice-partita-box"><span id="codice-partita"></span></div>
         <p>Condividi questo codice con gli altri giocatori</p>
+      </div>
+
+      <!-- Il QR per entrare nella partita: lo disegna js/qr-lobby.js, e' diverso a ogni partita -->
+      <div id="lobby-qr" class="nascosta">
+        <div id="lobby-qr-immagine"></div>
+        <p>Inquadra per entrare</p>
       </div>
 
       <div id="lobby-giocatori-area">

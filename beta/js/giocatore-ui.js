@@ -9,6 +9,7 @@
 import { raccogliRisposta } from './risposta-ui.js';
 import { PALETTE, NOMI_COLORI } from './colori.js';
 import { mostraVerdettoSulTelefono, chiudiAvvisoSeAperto } from './verdetto-telefono-ui.js';
+import { codiceDalLink } from './link-partita.js';
 
 import {
   verificaPartitaEsiste,
@@ -398,3 +399,11 @@ document.getElementById('btn-abbandona').addEventListener('click', async () => {
   document.getElementById('gioco').classList.add('nascosta');
   document.getElementById('messaggio-abbandonato').classList.remove('nascosta');
 });
+
+// Pagina aperta dal QR del tabellone (o da un link con ?codice=ABCD): il codice e' gia' scritto e la
+// ricerca parte da sola. Se il link non ha un codice valido non cambia niente: si scrive a mano come sempre.
+const codiceDelLink = codiceDalLink(location.search);
+if (codiceDelLink) {
+  document.getElementById('input-codice').value = codiceDelLink;
+  cercaPartita();
+}

@@ -563,6 +563,14 @@ async function gestisciRichiestaJunior(nome) {
   }
 }
 
+// Il QR per entrare nella partita (in alto a sinistra della lobby) si disegna "a parte", in js/qr-lobby.js.
+// Se non si carica, la lobby funziona come sempre, con il codice scritto in grande.
+function mostraQrLobby(codice) {
+  import('./qr-lobby.js')
+    .then(modulo => modulo.mostraQrLobby(codice))
+    .catch(errore => console.warn('Il QR della lobby non e\' disponibile', errore));
+}
+
 function avviaVistaLobby() {
   const listaEl = document.getElementById('lista-lobby');
   const bottoneInizia = document.getElementById('btn-inizia-partita');
@@ -822,6 +830,7 @@ async function avvia() {
 
   codicePartita = generaCodicePartita();
   document.getElementById('codice-partita').textContent = codicePartita;
+  mostraQrLobby(codicePartita);
   await iniziaLobby(codicePartita);
 
   annunciaTabellonePresente(codicePartita);
