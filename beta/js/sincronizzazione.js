@@ -5,6 +5,7 @@
 // database, così tabellone e telefono restano sempre d'accordo tra loro.
 
 import { db, ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update } from './rete.js';
+import { risposteSicure } from './testo-sicuro.js';
 
 // Orologio "vero", allineato al server Firebase — non a quello di ogni
 // singolo dispositivo (tabellone e telefoni possono essere sfasati anche
@@ -108,7 +109,8 @@ export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso, timeou
     const staccaAscolto = onValue(percorsoIntenzione, (istantanea) => {
       const intenzione = istantanea.val();
       if (intenzione && intenzione.tipo === 'RISPOSTA_CONOSCENZA' && intenzione.giocatoreId === giocatoreAtteso) {
-        concludi(intenzione.risposte || []);
+        // le risposte arrivano da un telefono: qualunque cosa ci abbia scritto, qui diventano un elenco di testi
+        concludi(risposteSicure(intenzione.risposte));
       }
     });
 

@@ -30,6 +30,9 @@
 <body>
   <div class="etichetta-beta">BETA</div>
 
+  <!-- Compare solo se manca il collegamento a Internet per qualche secondo (js/avviso-connessione.js) -->
+  <div id="avviso-connessione" class="avviso-connessione nascosta" role="status">📡 Nessuna connessione: sto riprovando…</div>
+
   <div id="scena">
     <div id="pannello-contenuto">
 
@@ -73,8 +76,9 @@
         <h2 id="mio-nome"></h2>
         <p id="mia-modalita" class="nascosta">⚡ Partita veloce</p>
         <p id="mia-posizione"></p>
+        <p id="mio-codice" class="nascosta">Codice partita: <strong id="mio-codice-valore"></strong></p>
         <div id="mia-prova-sospesa" class="nascosta"></div>
-        <div id="stato-turno"></div>
+        <div id="stato-turno" aria-live="polite"></div>
         <button id="btn-tira-dado" class="nascosta">🎲 Tira il dado</button>
 
       <div id="area-conoscenza-in-arrivo" class="nascosta">

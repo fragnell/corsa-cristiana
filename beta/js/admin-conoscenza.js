@@ -11,6 +11,7 @@
 
 import { ascoltaMazzo, salvaCarta, eliminaCarta, nuovaChiaveMazzo } from './sincronizzazione.js';
 import { controllaLink, linkDaUsare } from './link-approfondimento.js';
+import { testoSicuro } from './testo-sicuro.js';
 
 const NOME_MAZZO = 'conoscenza';
 let listaRispostePossibili = [];
@@ -106,7 +107,7 @@ function disegnaLista(carte) {
     const etichettaTipo = etichetteTipo[carta.tipo] || '💬';
     const etichettaJunior = carta.junior ? ' 🟢<small>junior</small>' : '';
     riga.innerHTML = `
-      <span class="admin-riga-testo">${etichettaTipo} ${carta.domanda}${etichettaJunior}${segnalinoLink(carta)}</span>
+      <span class="admin-riga-testo">${etichettaTipo} ${testoSicuro(carta.domanda)}${etichettaJunior}${segnalinoLink(carta)}</span>
       <button type="button" class="admin-btn-modifica">✏️</button>
       <button type="button" class="admin-btn-elimina">🗑️</button>
     `;
@@ -209,7 +210,7 @@ function aggiungiRispostaPossibile() {
 function disegnaListaRispostePossibili() {
   const contenitore = document.getElementById('conoscenza-lista-risposte');
   contenitore.innerHTML = listaRispostePossibili.map((r, indice) =>
-    `<div>${r} <button type="button" data-indice="${indice}" class="admin-btn-rimuovi-risposta">✕</button></div>`
+    `<div>${testoSicuro(r)} <button type="button" data-indice="${indice}" class="admin-btn-rimuovi-risposta">✕</button></div>`
   ).join('');
 
   contenitore.querySelectorAll('.admin-btn-rimuovi-risposta').forEach(bottone => {
@@ -234,7 +235,7 @@ function aggiungiRispostaDiretta() {
 function disegnaListaRisposteDirette() {
   const contenitore = document.getElementById('conoscenza-lista-risposte-diretta');
   contenitore.innerHTML = listaRisposteDirette.map((r, indice) =>
-    `<div>${r} <button type="button" data-indice="${indice}" class="admin-btn-rimuovi-risposta-diretta">✕</button></div>`
+    `<div>${testoSicuro(r)} <button type="button" data-indice="${indice}" class="admin-btn-rimuovi-risposta-diretta">✕</button></div>`
   ).join('');
 
   contenitore.querySelectorAll('.admin-btn-rimuovi-risposta-diretta').forEach(bottone => {
@@ -261,7 +262,7 @@ function disegnaListaOpzioni() {
   contenitore.innerHTML = listaOpzioni.map((opzione, indice) => `
     <div class="admin-riga-opzione">
       <input type="radio" name="conoscenza-opzione-corretta" ${indice === opzioneCorrettaIndice ? 'checked' : ''} data-indice="${indice}">
-      <span>${opzione}</span>
+      <span>${testoSicuro(opzione)}</span>
       <button type="button" data-indice="${indice}" class="admin-btn-rimuovi-opzione">✕</button>
     </div>
   `).join('');

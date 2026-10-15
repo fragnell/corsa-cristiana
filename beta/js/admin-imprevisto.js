@@ -4,6 +4,7 @@
 // per il riferimento scritturale.
 
 import { ascoltaMazzo, salvaCarta, eliminaCarta, nuovaChiaveMazzo } from './sincronizzazione.js';
+import { testoSicuro } from './testo-sicuro.js';
 
 const NOME_MAZZO = 'imprevisto';
 
@@ -21,7 +22,7 @@ function disegnaLista(carte) {
     const riga = document.createElement('div');
     riga.className = 'admin-riga-carta';
     riga.innerHTML = `
-      <span class="admin-riga-testo">${carta.testo}</span>
+      <span class="admin-riga-testo">${testoSicuro(carta.testo)}</span>
       <button type="button" class="admin-btn-modifica">✏️</button>
       <button type="button" class="admin-btn-elimina">🗑️</button>
     `;

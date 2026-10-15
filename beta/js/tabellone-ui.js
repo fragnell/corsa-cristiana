@@ -20,6 +20,7 @@ import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { linkDaUsare } from './link-approfondimento.js';
 import { animaDado } from './dado-ui.js';
 import { PALETTE } from './colori.js';
+import { testoSicuro, numeroSicuro, coloreSicuro } from './testo-sicuro.js';
 import {
   generaCodicePartita,
   iniziaLobby,
@@ -48,6 +49,9 @@ const DURATA_SALTO_MS = 300;
 // BETA: chiave diversa da quella del gioco vero, cosi' i due non si scambiano la partita da riprendere.
 const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-beta-partita-attiva';
 const DURATA_COUNTDOWN_RIPRESA_S = 15;
+// Quando la ripresa e' chiesta di proposito scrivendo il codice (vedi preparaRipresaDaCodice), la pagina si ricarica:
+// questo segno (valido solo per questa scheda) dice alla pagina nuova che la persona ha gia' confermato.
+const CHIAVE_RIPRESA_CONFERMATA = 'corsa-cristiana-beta-ripresa-confermata';
 // Oltre questa eta' dall'ultima mossa pubblicata, una partita interrotta si
 // considera troppo vecchia per riproporla: non ha senso chiedere di
 // riprendere una partita di ieri sera. Punto unico da cambiare per
@@ -233,7 +237,7 @@ function aggiornaProveInSospeso() {
   }
 
   contenitore.innerHTML = inAttesa.map(g =>
-    `<div class="prova-sospesa-riga">${g.nome}</div>`
+    `<div class="prova-sospesa-riga">${testoSicuro(g.nome)}</div>`
   ).join('');
 }
 
@@ -490,6 +494,7 @@ function mostraVittoria() {
   fermaMusica();
   fermaEffetti();
   riproduciEffetto('vittoria');
+  if (schermoAcceso) { try { schermoAcceso.spegni(); } catch (errore) { /* pazienza */ } }   // partita finita: lo schermo torna a spegnersi da solo
 
   const video = document.getElementById('vittoria-video');
   video.currentTime = 0;
@@ -500,8 +505,8 @@ function disegnaClassificaConoscenza() {
   const contenitore = document.getElementById('vittoria-statistiche-lista');
 
   const classifica = stato.giocatori.map(g => {
-    const totali = g.conoscenzaTotali || 0;
-    const corrette = g.conoscenzaCorrette || 0;
+    const totali = numeroSicuro(g.conoscenzaTotali);
+    const corrette = numeroSicuro(g.conoscenzaCorrette);
     const percentuale = totali > 0 ? Math.round((corrette / totali) * 100) : 0;
     return { nome: g.nome, colore: g.colore, corrette, totali, percentuale, storico: g.rispostoStorico || [] };
   });
@@ -514,7 +519,7 @@ function disegnaClassificaConoscenza() {
     const righeDettaglio = g.storico.length > 0
       ? g.storico.map(r => `
           <div class="dettaglio-domanda-riga ${r.corretta ? 'dettaglio-corretta' : 'dettaglio-errata'}">
-            <span>${r.corretta ? '✅' : '❌'}</span> <span>${r.domanda}</span>
+            <span>${r.corretta ? '✅' : '❌'}</span> <span>${testoSicuro(r.domanda)}</span>
           </div>
         `).join('')
       : '<p class="dettaglio-vuoto">Nessuna domanda Conoscenza risposta.</p>';
@@ -522,8 +527,8 @@ function disegnaClassificaConoscenza() {
     return `
       <div class="classifica-riga classifica-cliccabile" data-target="${idDettaglio}">
         <span class="classifica-posizione">${indice + 1}°</span>
-        <span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>
-        <span class="classifica-nome">${g.nome}</span>
+        <span class="pallino-lista" style="background:${coloreSicuro(g.colore)}"></span>
+        <span class="classifica-nome">${testoSicuro(g.nome)}</span>
         <span class="classifica-percentuale">${g.totali > 0 ? `${g.corrette}/${g.totali} (${g.percentuale}%)` : 'nessuna Conoscenza risposta'}</span>
         <span class="classifica-freccia">▾</span>
       </div>
@@ -571,14 +576,75 @@ function mostraQrLobby(codice) {
     .catch(errore => console.warn('Il QR della lobby non e\' disponibile', errore));
 }
 
+// Riprendere una partita gia' iniziata scrivendo il suo codice: serve quando il tabellone si e' spento, o si e'
+// chiusa la pagina per sbaglio, o si vuole continuare su un altro schermo. I telefoni non devono fare niente.
+// Il pulsante si vede solo finche' nessuno e' entrato nella partita nuova. Chi decide se la partita si puo'
+// riprendere e' js/ripresa-da-codice.js (caricato "a parte": se non si carica, la lobby funziona come sempre).
+// Restituisce la funzione da chiamare a ogni cambiamento della lobby.
+function preparaRipresaDaCodice() {
+  const contenitore = document.getElementById('lobby-ripresa');
+  const bottoneApri = document.getElementById('lobby-ripresa-apri');
+  const modulo = document.getElementById('lobby-ripresa-form');
+  const campo = document.getElementById('lobby-ripresa-codice');
+  const bottoneVai = document.getElementById('lobby-ripresa-vai');
+  const bottoneAnnulla = document.getElementById('lobby-ripresa-annulla');
+  const messaggio = document.getElementById('lobby-ripresa-messaggio');
+  if (!contenitore || !bottoneApri || !modulo || !campo || !bottoneVai || !bottoneAnnulla || !messaggio) return () => {};
+
+  const chiudi = () => {
+    modulo.classList.add('nascosta');
+    bottoneApri.classList.remove('nascosta');
+    messaggio.textContent = '';
+    campo.value = '';
+  };
+
+  bottoneApri.addEventListener('click', () => {
+    bottoneApri.classList.add('nascosta');
+    modulo.classList.remove('nascosta');
+    campo.focus();
+  });
+  bottoneAnnulla.addEventListener('click', chiudi);
+
+  modulo.addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    bottoneVai.disabled = true;
+    messaggio.textContent = 'Controllo la partita...';
+    try {
+      const { controllaRipresaDaCodice } = await import('./ripresa-da-codice.js');
+      const esito = await controllaRipresaDaCodice(campo.value, { leggiStato: leggiStatoUnaVolta, tabellonePresente });
+      if (!esito.ok) {
+        messaggio.textContent = '❌ ' + esito.messaggio;
+        return;
+      }
+      messaggio.textContent = '✅ Trovata! Riprendo la partita...';
+      localStorage.setItem(CHIAVE_PARTITA_ATTIVA, esito.codice);
+      try { sessionStorage.setItem(CHIAVE_RIPRESA_CONFERMATA, esito.codice); } catch (errore) { /* pazienza */ }
+      location.reload();
+    } catch (errore) {
+      console.warn('La ripresa con il codice non e\' riuscita', errore);
+      messaggio.textContent = '❌ Non riesco a controllare la partita in questo momento. Riprova tra poco.';
+    } finally {
+      bottoneVai.disabled = false;
+    }
+  });
+
+  return (numeroGiocatori) => {
+    const qualcunoEntrato = numeroGiocatori > 0;
+    contenitore.classList.toggle('nascosta', qualcunoEntrato);
+    if (qualcunoEntrato) chiudi();
+  };
+}
+
 function avviaVistaLobby() {
   const listaEl = document.getElementById('lista-lobby');
   const bottoneInizia = document.getElementById('btn-inizia-partita');
   const conteggioEl = document.getElementById('conteggio-lobby');
+  const aggiornaRipresa = preparaRipresaDaCodice();
 
   ascoltaLobby(codicePartita, (lobby) => {
+    aggiornaRipresa(lobby.length);
     listaEl.innerHTML = lobby.map(g =>
-      `<li><span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>${g.nome}${g.junior ? ' 🟢' : ''}</li>`
+      `<li><span class="pallino-lista" style="background:${coloreSicuro(g.colore)}"></span>${testoSicuro(g.nome)}${g.junior ? ' 🟢' : ''}</li>`
     ).join('');
     conteggioEl.textContent = `${lobby.length} (minimo ${configPartita.giocatori.minimo}, massimo ${configPartita.giocatori.massimo})`;
     bottoneInizia.disabled = lobby.length < configPartita.giocatori.minimo || lobby.length > configPartita.giocatori.massimo;
@@ -809,15 +875,28 @@ async function avvia() {
 
   const codiceSalvato = localStorage.getItem(CHIAVE_PARTITA_ATTIVA);
   if (codiceSalvato) {
+    // La persona ha scritto il codice di proposito (preparaRipresaDaCodice): niente domanda, e un limite di tempo piu' largo.
+    let ripresaConfermata = false;
+    try {
+      ripresaConfermata = sessionStorage.getItem(CHIAVE_RIPRESA_CONFERMATA) === codiceSalvato;
+      sessionStorage.removeItem(CHIAVE_RIPRESA_CONFERMATA);
+    } catch (errore) { /* pazienza */ }
+    let limiteRipresaMs = LIMITE_RIPRESA_MS;
+    if (ripresaConfermata) {
+      try {
+        limiteRipresaMs = (await import('./ripresa-da-codice.js')).LIMITE_RIPRESA_DA_CODICE_MS;
+      } catch (errore) { /* pazienza: resta il limite di sempre */ }
+    }
+
     const statoSalvato = await leggiStatoUnaVolta(codiceSalvato);
     // Senza timestamp (partite salvate prima di questa modifica) la si tratta
     // come vecchia per prudenza, invece di riproporla alla cieca.
     const eta = statoSalvato ? Date.now() - (statoSalvato.ultimoAggiornamento || 0) : Infinity;
-    const troppoVecchia = eta > LIMITE_RIPRESA_MS;
+    const troppoVecchia = eta > limiteRipresaMs;
     if (statoSalvato && statoSalvato.vincitore == null && !troppoVecchia) {
       const giaAttivaAltrove = await tabellonePresente(codiceSalvato);
       if (!giaAttivaAltrove) {
-        const vuoleRiprendere = await chiediRipresaPartita(codiceSalvato);
+        const vuoleRiprendere = ripresaConfermata ? true : await chiediRipresaPartita(codiceSalvato);
         if (vuoleRiprendere) {
           codicePartita = codiceSalvato;
           await riprendiPartitaEsistente(statoSalvato);
@@ -837,6 +916,29 @@ async function avvia() {
 
   avviaVistaLobby();
 }
+
+// Lo schermo del tabellone resta acceso finche' dura la partita (un tablet o un portatile lasciato fermo si
+// spegne, e con lui si ferma la partita). E' lo stesso aiuto dei telefoni (salmo/schermo-acceso.js), caricato
+// "a parte": se manca o il dispositivo non lo permette, il tabellone funziona come sempre.
+let schermoAcceso = null;
+import('./salmo/schermo-acceso.js')
+  .then(modulo => {
+    schermoAcceso = modulo.creaSchermoAcceso();
+    schermoAcceso.accendi();
+    // un tocco o un tasto sono occasioni per (ri)chiedere lo schermo acceso: alcuni dispositivi accettano solo cosi'
+    const riprova = () => { try { schermoAcceso.riprova(); } catch (errore) { /* pazienza */ } };
+    document.addEventListener('pointerdown', riprova, { passive: true });
+    document.addEventListener('keydown', riprova);
+  })
+  .catch(errore => console.warn('Lo schermo sempre acceso non e\' disponibile', errore));
+
+// L'avviso "nessuna connessione" (compare solo se il collegamento manca per qualche secondo). Moduli caricati "a parte".
+Promise.all([import('./avviso-connessione.js'), import('./connessione.js')])
+  .then(([avviso, connessione]) => avviso.avviaAvvisoConnessione({
+    elemento: document.getElementById('avviso-connessione'),
+    ascolta: connessione.ascoltaConnessione
+  }))
+  .catch(errore => console.warn('L\'avviso di connessione non e\' disponibile', errore));
 
 avvia();
 avviaMusica(); // primo tentativo, appena si apre la pagina — funziona solo per chi ha già familiarità col sito

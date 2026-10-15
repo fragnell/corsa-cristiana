@@ -4,6 +4,7 @@
 // prove che si svolgono nel tempo invece di giudicarsi subito.
 
 import { ascoltaMazzo, salvaCarta, eliminaCarta, nuovaChiaveMazzo } from './sincronizzazione.js';
+import { testoSicuro } from './testo-sicuro.js';
 
 const NOME_MAZZO = 'prova';
 
@@ -22,7 +23,7 @@ function disegnaLista(carte) {
     riga.className = 'admin-riga-carta';
     const etichetta = carta.vincolo ? '⏳ ' : '';
     riga.innerHTML = `
-      <span class="admin-riga-testo">${etichetta}${carta.testo}</span>
+      <span class="admin-riga-testo">${etichetta}${testoSicuro(carta.testo)}</span>
       <button type="button" class="admin-btn-modifica">✏️</button>
       <button type="button" class="admin-btn-elimina">🗑️</button>
     `;
