@@ -6,13 +6,14 @@
 //     rientrare, rischiare di perdere il proprio turno. Adesso non succede piu' (se il telefono lo permette).
 //
 //  2) UN AVVISO quando tocca a te (hai il dado da tirare) o quando devi rispondere a una domanda:
-//     il telefono vibra (Android) e il riquadro giusto (lo stato, o la domanda) lampeggia per qualche
-//     secondo (funziona anche su iPhone, che non sa vibrare).
+//     il telefono vibra (Android), il riquadro giusto (lo stato, o la domanda) lampeggia per qualche
+//     secondo (funziona anche su iPhone, che non sa vibrare) e si sente un suono breve
+//     (lo produce js/suono-avviso.js; la persona puo' spegnerlo con l'interruttore «Suono»).
 //
 // Niente di tutto questo e' indispensabile: se il telefono non conosce queste funzioni, o le rifiuta
 // (per esempio con il risparmio energetico acceso), la partita funziona come sempre.
-// Non lancia MAI errori verso chi la usa. "ambiente" serve solo ai collaudi (navigator, document e
-// "alAvviso" finti).
+// Non lancia MAI errori verso chi la usa. "ambiente" serve solo ai collaudi (navigator, document,
+// "alAvviso" e "suono" finti) e a passare il suono dell'avviso (ambiente.suono: vedi giocatore-ui.js).
 
 import { creaSchermoAcceso } from './salmo/schermo-acceso.js';
 
@@ -61,6 +62,8 @@ export function creaComoditaTelefono(ambiente = {}) {
     : (typeof document !== 'undefined' ? document : null);
 
   const schermo = creaSchermoAcceso(ambiente);
+  // Il suono dell'avviso: se manca (o non e' fatto come ci aspettiamo) l'avviso resta senza suono.
+  const suono = ambiente.suono && typeof ambiente.suono.suona === 'function' ? ambiente.suono : null;
   let ultimaRichiesta = null;     // cosa mi chiedeva la partita l'ultima volta (per avvisare solo quando CAMBIA)
   let timerLampeggio = null;
   let riquadroAcceso = null;      // il riquadro che sta lampeggiando adesso (uno solo alla volta)
@@ -75,6 +78,13 @@ export function creaComoditaTelefono(ambiente = {}) {
     } catch (errore) {
       return false;
     }
+  }
+
+  // Fa sentire il suono dell'avviso. Se la persona l'ha spento, o il telefono non riesce a suonare, non succede niente.
+  function suona(tipo) {
+    try {
+      if (suono) suono.suona(tipo);
+    } catch (errore) { /* pazienza */ }
   }
 
   function smettiDiLampeggiare() {
@@ -137,6 +147,7 @@ export function creaComoditaTelefono(ambiente = {}) {
       const tipo = richiesta === 'dado' ? 'dado' : 'domanda';
       const vibrato = vibra(tipo === 'dado' ? VIBRAZIONE_TOCCA_A_TE : VIBRAZIONE_DOMANDA);
       lampeggia(tipo);
+      suona(tipo);                  // per ultimo: il lampeggio e la vibrazione partono comunque senza aspettare l'audio
       return { avviso: tipo, vibrato };
     },
 

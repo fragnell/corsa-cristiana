@@ -1,9 +1,9 @@
 // test-comodita-telefono.mjs
 // Prove delle "comodita' del telefono" (js/comodita-telefono.js): lo schermo resta acceso per tutta la partita,
-// e quando tocca a te (o devi rispondere) il telefono vibra e il riquadro dello stato lampeggia.
+// e quando tocca a te (o devi rispondere) il telefono vibra, il riquadro dello stato lampeggia e si sente un "din".
 // Si lancia con:  node test-comodita-telefono.mjs
 //
-// Niente telefono vero: navigator, document e i riquadri della pagina sono FINTI.
+// Niente telefono vero: navigator, document, i riquadri della pagina e il suono sono FINTI.
 
 import assert from 'node:assert/strict';
 import { creaComoditaTelefono, cosaMiChiede, VIBRAZIONE_TOCCA_A_TE, VIBRAZIONE_DOMANDA, DURATA_LAMPEGGIO_MS } from './js/comodita-telefono.js';
@@ -451,6 +451,122 @@ await prova('i disegni della vibrazione e la durata del lampeggio sono quelli pr
   assert.deepEqual(VIBRAZIONE_TOCCA_A_TE, [200, 100, 200]);
   assert.deepEqual(VIBRAZIONE_DOMANDA, [350]);
   assert.equal(DURATA_LAMPEGGIO_MS, 3000, 'quanto dura l\'animazione nel CSS (4 volte 0,75 secondi)');
+});
+
+// ================= il suono dell'avviso (js/suono-avviso.js) =================
+
+// Un suono finto che si ricorda cosa gli e' stato chiesto (e, se serve, cosa si vedeva in quel momento).
+function creaSuonoSpia({ rompe = false, vedi = null } = {}) {
+  const suonati = [];
+  const visto = [];
+  return {
+    suonati, visto,
+    suona(tipo) {
+      suonati.push(tipo);
+      if (vedi) visto.push(vedi());
+      if (rompe) throw new Error('il suono ha lanciato un errore');
+      return true;
+    }
+  };
+}
+
+await prova('suono: tocca a me -> un "din" del dado; la domanda -> il "din" della domanda; ripetere lo stato non risuona', () => {
+  const f = creaFinti();
+  const suono = creaSuonoSpia();
+  const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono });
+  c.aggiorna(stato({ turnoDi: 0 }), 1);                                    // tocca ad Anna: per Bruno niente
+  assert.deepEqual(suono.suonati, []);
+  c.aggiorna(stato({ turnoDi: 1 }), 1);
+  assert.deepEqual(suono.suonati, ['dado']);
+  for (let i = 0; i < 4; i++) c.aggiorna(stato({ turnoDi: 1, ultimoAggiornamento: i }), 1);
+  assert.deepEqual(suono.suonati, ['dado'], 'lo stesso stato ripetuto non risuona');
+  c.aggiorna(stato({ turnoDi: 1, turnoInCorso: true }), 1);                // ha tirato
+  c.aggiorna(stato({ turnoDi: 1, turnoInCorso: true, richiestaConoscenza: { id: 'r1', giocatoreId: 1 } }), 1);
+  assert.deepEqual(suono.suonati, ['dado', 'domanda']);
+  c.aggiorna(stato({ turnoDi: 1, turnoInCorso: true, richiestaConoscenza: { id: 'r1', giocatoreId: 1 } }), 1);
+  assert.deepEqual(suono.suonati, ['dado', 'domanda'], 'la stessa domanda non risuona');
+  c.aggiorna(stato({ turnoDi: 1, turnoInCorso: true }), 1);
+  c.aggiorna(stato({ turnoDi: 1, turnoInCorso: true, richiestaConoscenza: { id: 'r2', giocatoreId: 1 } }), 1);
+  assert.deepEqual(suono.suonati, ['dado', 'domanda', 'domanda'], 'un\'altra domanda risuona');
+});
+
+await prova('suono: niente suono quando la partita non mi chiede niente', () => {
+  const f = creaFinti();
+  const suono = creaSuonoSpia();
+  const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono });
+  c.aggiorna(stato({ turnoDi: 0 }), 1);                                                        // tocca a un altro
+  c.aggiorna(stato({ turnoDi: 1, turnoInCorso: true }), 1);                                    // ho gia' tirato
+  c.aggiorna(stato({ turnoDi: 1, vincitore: 2 }), 1);                                          // partita finita
+  c.aggiorna(stato({ turnoDi: 1, salmoInCorso: { id: 's1' } }), 1);                            // COLLABORIAMO!
+  const conProva = stato({ turnoDi: 1 }); conProva.giocatori[1].provaInSospeso = { testo: 'Canta' };
+  c.aggiorna(conProva, 1);                                                                     // prova in sospeso
+  c.aggiorna(stato({ turnoDi: 0, turnoInCorso: true, richiestaConoscenza: { id: 'r9', giocatoreId: 0 } }), 1);   // la domanda e' di un altro
+  assert.deepEqual(suono.suonati, []);
+});
+
+await prova('suono: parte DOPO il lampeggio (il lampeggio non aspetta l\'audio)', () => {
+  const f = creaFinti();
+  const suono = creaSuonoSpia({ vedi: () => f.riquadro.classList.contains('avviso-turno') });
+  const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono });
+  c.aggiorna(stato({ turnoDi: 1 }), 1);
+  assert.deepEqual(suono.visto, [true], 'quando si chiede il suono il riquadro sta gia\' lampeggiando');
+  assert.equal(f.vibrazioni.length, 1, 'e la vibrazione c\'e\' lo stesso');
+});
+
+await prova('suono che lancia un errore: vibrazione e lampeggio ci sono lo stesso, nessun errore, stesso risultato di sempre', () => {
+  const f = creaFinti();
+  const suono = creaSuonoSpia({ rompe: true });
+  const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono });
+  let r;
+  assert.doesNotThrow(() => { r = c.aggiorna(stato({ turnoDi: 1 }), 1); });
+  assert.deepEqual(r, { avviso: 'dado', vibrato: true }, 'il risultato non cambia con l\'arrivo del suono');
+  assert.deepEqual(f.vibrazioni, [VIBRAZIONE_TOCCA_A_TE]);
+  assert.ok(f.riquadro.classList.contains('avviso-turno'));
+  assert.doesNotThrow(() => c.aggiorna(stato({ turnoDi: 1, turnoInCorso: true, richiestaConoscenza: { id: 'r1', giocatoreId: 1 } }), 1));
+  assert.ok(f.riquadroDomanda.classList.contains('avviso-turno'));
+});
+
+await prova('senza suono (null, assente o fatto male): tutto va come prima', () => {
+  for (const suono of [undefined, null, {}, { suona: 5 }, 'din', 7]) {
+    const f = creaFinti();
+    const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono });
+    let r;
+    assert.doesNotThrow(() => { r = c.aggiorna(stato({ turnoDi: 1 }), 1); });
+    assert.deepEqual(r, { avviso: 'dado', vibrato: true });
+    assert.ok(f.riquadro.classList.contains('avviso-turno'));
+  }
+});
+
+await prova('suono: indipendente dalla vibrazione (iPhone, pagina mai toccata, vibrazione rifiutata) e dal lampeggio personalizzato', () => {
+  for (const opzioni of [{ conVibrazione: false }, { toccato: false }, { vibrazioneRifiutata: true }, { vibrazioneRompe: true }]) {
+    const f = creaFinti(opzioni);
+    const suono = creaSuonoSpia();
+    const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono });
+    c.aggiorna(stato({ turnoDi: 1 }), 1);
+    assert.deepEqual(suono.suonati, ['dado'], JSON.stringify(opzioni));
+  }
+  const f = creaFinti();
+  const suono = creaSuonoSpia();
+  const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono, alAvviso: () => {} });
+  c.aggiorna(stato({ turnoDi: 1 }), 1);
+  assert.deepEqual(suono.suonati, ['dado'], 'anche con un lampeggio personalizzato');
+});
+
+await prova('suono: dopo esciDallaPartita si riparte da zero, come per la vibrazione', () => {
+  const f = creaFinti();
+  const suono = creaSuonoSpia();
+  const c = creaComoditaTelefono({ navigator: f.navigatore, document: f.documento, suono });
+  c.aggiorna(stato({ turnoDi: 1 }), 1);
+  c.esciDallaPartita();
+  c.aggiorna(stato({ turnoDi: 1 }), 1);
+  assert.deepEqual(suono.suonati, ['dado', 'dado']);
+});
+
+await prova('senza navigator ne\' document ma con il suono: il suono c\'e\' lo stesso', () => {
+  const suono = creaSuonoSpia();
+  const c = creaComoditaTelefono({ navigator: null, document: null, suono });
+  assert.doesNotThrow(() => c.aggiorna(stato({ turnoDi: 1 }), 1));
+  assert.deepEqual(suono.suonati, ['dado']);
 });
 
 console.log(`\nComodita' del telefono: ${provati - falliti.length}/${provati} ok${falliti.length ? `, ${falliti.length} FALLITI` : ''}`);

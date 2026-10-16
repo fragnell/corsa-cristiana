@@ -155,6 +155,53 @@ button {
   letter-spacing: 0.15em;
 }
 
+/* L'interruttore del suono dell'avviso (js/suono-avviso.js): piccolo, accanto al codice della partita, senza
+   l'aspetto "grosso e verde" degli altri bottoni. Compare solo se il telefono sa suonare.
+   Acceso: «🔔 Suono». Spento: «🔕» e la parola barrata. La larghezza non cambia, e i margini negativi in alto e in
+   basso fanno si' che la riga del codice non diventi piu' alta (e non vada a capo nemmeno sugli schermi stretti). */
+#btn-avviso-sonoro {
+  position: relative;              /* serve per l'area di tocco piu' grande (vedi ::after qui sotto) */
+  margin: -4px 0 -4px 0.3rem;
+  padding: 0.12rem 0.55rem;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  vertical-align: middle;
+  background: transparent;
+  color: #3a2410;
+  border: 1.5px solid #3a2410;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+/* L'area che risponde al tocco e' piu' grande del pulsante (che resta piccolo per non dare fastidio): anche un dito
+   poco preciso lo prende. Non cambia ne' l'aspetto ne' la posizione degli altri pezzi della pagina. */
+#btn-avviso-sonoro::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -8px;
+  right: -8px;
+}
+
+#btn-avviso-sonoro::before {
+  content: '🔔';
+  display: inline-block;           /* inline-block: la barra sulla parola non passa anche sopra la campanella */
+  margin-right: 0.3em;
+}
+
+#btn-avviso-sonoro[aria-pressed="false"] {
+  text-decoration: line-through;
+}
+
+#btn-avviso-sonoro[aria-pressed="false"]::before {
+  content: '🔕';
+}
+
+#btn-avviso-sonoro.nascosta {
+  display: none;
+}
+
 /* "Nessuna connessione": in alto, sopra tutto (anche sopra la schermata di COLLABORIAMO!). Compare e sparisce da solo. */
 .avviso-connessione {
   position: fixed;

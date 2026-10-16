@@ -67,9 +67,25 @@ function avviaRecensione(stato) {
     .catch(errore => console.warn('La recensione di fine partita non e\' disponibile', errore));
 }
 
+// Il suono dell'avviso (il file audio/allert-giocatore.mp3, breve, quando tocca a te o devi rispondere). Il modulo si
+// carica "a parte" appena si apre la pagina: cosi' sblocca l'audio e scarica il file gia' ai primi tocchi (cerca
+// partita, entra...) e, quando serve, e' pronto.
+// Se non si carica, o si rompe, il telefono funziona come sempre (restano il lampeggio e la vibrazione).
+// Questa promessa non fallisce mai: se il suono non c'e' vale null.
+const suonoPronto = import('./suono-avviso.js')
+  .then(modulo => {
+    const suono = modulo.suonoDellaPagina();
+    modulo.collegaPulsanteSuono(document.getElementById('btn-avviso-sonoro'), suono);
+    return suono;
+  })
+  .catch(errore => {
+    console.warn('Il suono dell\'avviso non e\' disponibile', errore);
+    return null;
+  });
+
 // Comodita' del telefono: lo schermo resta acceso per tutta la partita e, quando tocca a te, il telefono
-// vibra e il riquadro dello stato lampeggia. Il modulo si carica "a parte": se non si carica, o si rompe,
-// il telefono funziona come sempre.
+// vibra, il riquadro dello stato lampeggia e si sente un breve suono. Il modulo si carica "a parte": se non si
+// carica, o si rompe, il telefono funziona come sempre.
 let comodita = null;
 let comoditaInCaricamento = false;
 let partitaFinita = false;
@@ -79,8 +95,9 @@ async function avviaComodita() {
   comoditaInCaricamento = true;
   try {
     const modulo = await import('./comodita-telefono.js');
+    const suono = await suonoPronto;
     if (haAbbandonato || partitaFinita) return;       // nel frattempo la partita e' finita o si e' abbandonata
-    const nuova = modulo.creaComoditaTelefono();
+    const nuova = modulo.creaComoditaTelefono({ suono });
     nuova.entraInPartita();
     comodita = nuova;
     if (ultimoStatoRicevuto && mioId !== null) nuova.aggiorna(ultimoStatoRicevuto, mioId);
