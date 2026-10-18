@@ -1,0 +1,14 @@
+Cartella "vendor": codice scritto da altri, copiato qui SENZA modifiche.
+
+qrcode.mjs
+  Cos'e':    "QR Code Generator for JavaScript" (versione 2.0.4)
+  Autore:    Kazuhiko Arase
+  Licenza:   MIT (il testo completo e' in qrcode-LICENZA.txt)
+  Origine:   https://github.com/kazuhikoarase/qrcode-generator  (file dist/qrcode.mjs)
+  A cosa serve: disegna il QR della lobby (js/qr-lobby.js). Gira tutto nel browser,
+                nessun servizio esterno e nessun dato che esce dal tabellone.
+  Impronta (SHA-256) del file originale:
+  ea91d7118a5395289170da848b7c6758b996163bfbccf312591ab65a4911b7c0
+
+Regola: questo file non si modifica. Se un giorno serve una versione nuova si
+sostituisce l'intero file e si aggiorna questa nota.

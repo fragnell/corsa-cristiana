@@ -9,6 +9,8 @@
 import { raccogliRisposta } from './risposta-ui.js';
 import { PALETTE, NOMI_COLORI } from './colori.js';
 import { mostraVerdettoSulTelefono, chiudiAvvisoSeAperto } from './verdetto-telefono-ui.js';
+import { codiceDalLink } from './link-partita.js';
+import { testoSicuro, coloreSicuro } from './testo-sicuro.js';
 
 import {
   verificaPartitaEsiste,
@@ -51,6 +53,79 @@ async function avviaSalmoTelefono() {
     console.warn('COLLABORIAMO! non disponibile su questo telefono', errore);
   }
 }
+
+// Recensione di fine partita (stelline + commento): il modulo si carica "a parte", solo quando la partita
+// e' finita. Se non si carica, o si rompe, il telefono funziona come sempre.
+let recensioneAvviata = false;
+let haAbbandonato = false;
+
+function avviaRecensione(stato) {
+  if (recensioneAvviata || haAbbandonato) return;
+  recensioneAvviata = true;
+  import('./recensioni.js')
+    .then(modulo => modulo.proponiRecensione({ codicePartita, stato, mioId }))
+    .catch(errore => console.warn('La recensione di fine partita non e\' disponibile', errore));
+}
+
+// Il suono dell'avviso (il file audio/allert-giocatore.mp3, breve, quando tocca a te o devi rispondere). Il modulo si
+// carica "a parte" appena si apre la pagina: cosi' sblocca l'audio e scarica il file gia' ai primi tocchi (cerca
+// partita, entra...) e, quando serve, e' pronto.
+// Se non si carica, o si rompe, il telefono funziona come sempre (restano il lampeggio e la vibrazione).
+// Questa promessa non fallisce mai: se il suono non c'e' vale null.
+const suonoPronto = import('./suono-avviso.js')
+  .then(modulo => {
+    const suono = modulo.suonoDellaPagina();
+    modulo.collegaPulsanteSuono(document.getElementById('btn-avviso-sonoro'), suono);
+    return suono;
+  })
+  .catch(errore => {
+    console.warn('Il suono dell\'avviso non e\' disponibile', errore);
+    return null;
+  });
+
+// Comodita' del telefono: lo schermo resta acceso per tutta la partita e, quando tocca a te, il telefono
+// vibra, il riquadro dello stato lampeggia e si sente un breve suono. Il modulo si carica "a parte": se non si
+// carica, o si rompe, il telefono funziona come sempre.
+let comodita = null;
+let comoditaInCaricamento = false;
+let partitaFinita = false;
+
+async function avviaComodita() {
+  if (comodita || comoditaInCaricamento || haAbbandonato || partitaFinita) return;
+  comoditaInCaricamento = true;
+  try {
+    const modulo = await import('./comodita-telefono.js');
+    const suono = await suonoPronto;
+    if (haAbbandonato || partitaFinita) return;       // nel frattempo la partita e' finita o si e' abbandonata
+    const nuova = modulo.creaComoditaTelefono({ suono });
+    nuova.entraInPartita();
+    comodita = nuova;
+    if (ultimoStatoRicevuto && mioId !== null) nuova.aggiorna(ultimoStatoRicevuto, mioId);
+    // ogni tocco e' un'occasione per (ri)chiedere di tenere acceso lo schermo (alcuni telefoni accettano solo cosi')
+    document.addEventListener('pointerdown', () => { try { nuova.riprova(); } catch (errore) { /* pazienza */ } }, { passive: true });
+  } catch (errore) {
+    console.warn('Le comodita\' del telefono non sono disponibili', errore);
+  } finally {
+    comoditaInCaricamento = false;
+  }
+}
+
+// Il codice della partita, in piccolo: serve se il tabellone va riavviato (si riprende scrivendo il codice).
+function mostraCodicePartita() {
+  const riga = document.getElementById('mio-codice');
+  const valore = document.getElementById('mio-codice-valore');
+  if (!riga || !valore) return;
+  valore.textContent = codicePartita;
+  riga.classList.remove('nascosta');
+}
+
+// L'avviso "nessuna connessione" (compare solo se il collegamento manca per qualche secondo). Moduli caricati "a parte".
+Promise.all([import('./avviso-connessione.js'), import('./connessione.js')])
+  .then(([avviso, connessione]) => avviso.avviaAvvisoConnessione({
+    elemento: document.getElementById('avviso-connessione'),
+    ascolta: connessione.ascoltaConnessione
+  }))
+  .catch(errore => console.warn('L\'avviso di connessione non e\' disponibile', errore));
 
 document.getElementById('btn-cerca').addEventListener('click', cercaPartita);
 
@@ -100,7 +175,7 @@ function mostraSchermataRientro(statoAttuale) {
     const bottone = document.createElement('button');
     bottone.type = 'button';
     bottone.className = 'bottone-rientro';
-    bottone.innerHTML = `<span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>${g.nome}`;
+    bottone.innerHTML = `<span class="pallino-lista" style="background:${coloreSicuro(g.colore)}"></span>${testoSicuro(g.nome)}`;
     bottone.addEventListener('click', () => rientraComeGiocatore(g));
     contenitore.appendChild(bottone);
   });
@@ -115,6 +190,8 @@ function rientraComeGiocatore(giocatore) {
   document.getElementById('mio-nome').textContent = mioNome;
   impostaPresenza(codicePartita, mioId);
   avviaSalmoTelefono();
+  mostraCodicePartita();
+  avviaComodita();
 
   ascoltaStato(codicePartita, aggiornaSchermo);
 }
@@ -180,9 +257,10 @@ function entraInAttesa() {
   document.getElementById('passo-registrazione').classList.add('nascosta');
   document.getElementById('vista-attesa').classList.remove('nascosta');
   document.getElementById('nome-in-attesa').textContent = mioNome;
+  avviaComodita();      // anche in sala d'attesa: lo schermo spento farebbe uscire il telefono dalla partita
 
   ascoltaLobby(codicePartita, (lobby) => {
-    document.getElementById('lista-attesa').innerHTML = lobby.map(g => `<li>${g.nome}</li>`).join('');
+    document.getElementById('lista-attesa').innerHTML = lobby.map(g => `<li>${testoSicuro(g.nome)}</li>`).join('');
   });
 
   ascoltaStato(codicePartita, (stato) => {
@@ -197,6 +275,7 @@ function entraInAttesa() {
       document.getElementById('mio-nome').textContent = mioNome;
       impostaPresenza(codicePartita, mioId);
       avviaSalmoTelefono();
+      mostraCodicePartita();
     }
 
     aggiornaSchermo(stato);
@@ -214,12 +293,25 @@ function aggiornaSchermo(stato) {
     }
   }
 
+  // Comodita': avvisa (vibrazione e lampeggio) quando la partita comincia a chiedere qualcosa a me.
+  if (comodita) {
+    try {
+      comodita.aggiorna(stato, mioId);
+    } catch (errore) {
+      console.warn('Comodita del telefono: errore ignorato', errore);
+    }
+  }
+
   const bottoneDado = document.getElementById('btn-tira-dado');
   const statoTurno = document.getElementById('stato-turno');
   const notifica = document.getElementById('notifica-evento');
   const giocatoreDiTurno = stato.giocatori[stato.turnoDi];
 
   document.getElementById('mia-posizione').textContent = `Sei sulla casella ${stato.giocatori[mioId].posizione}`;
+
+  // Targhetta "Partita veloce" (le partite di prima, o senza modalita', non hanno la targhetta)
+  const elModalita = document.getElementById('mia-modalita');
+  if (elModalita) elModalita.classList.toggle('nascosta', stato.modalita !== 'veloce');
 
   const elProvaSospesa = document.getElementById('mia-prova-sospesa');
   const mioProvaSospesa = stato.giocatori[mioId].provaInSospeso;
@@ -234,6 +326,9 @@ function aggiornaSchermo(stato) {
     const vincitore = stato.giocatori[stato.vincitore];
     statoTurno.textContent = `🏆 Ha vinto ${vincitore.nome}!`;
     bottoneDado.classList.add('nascosta');
+    partitaFinita = true;
+    if (comodita) { try { comodita.esciDallaPartita(); } catch (errore) { /* pazienza */ } }   // lo schermo torna a spegnersi da solo
+    avviaRecensione(stato);
     return;
   }
 
@@ -375,7 +470,17 @@ document.getElementById('btn-abbandona').addEventListener('click', async () => {
   if (!conferma) return;
 
   await richiediAbbandono(codicePartita, mioId);
+  haAbbandonato = true;   // chi ha lasciato la partita non riceve la richiesta di recensione
+  if (comodita) { try { comodita.esciDallaPartita(); } catch (errore) { /* pazienza */ } }
 
   document.getElementById('gioco').classList.add('nascosta');
   document.getElementById('messaggio-abbandonato').classList.remove('nascosta');
 });
+
+// Pagina aperta dal QR del tabellone (o da un link con ?codice=ABCD): il codice e' gia' scritto e la
+// ricerca parte da sola. Se il link non ha un codice valido non cambia niente: si scrive a mano come sempre.
+const codiceDelLink = codiceDalLink(location.search);
+if (codiceDelLink) {
+  document.getElementById('input-codice').value = codiceDelLink;
+  cercaPartita();
+}

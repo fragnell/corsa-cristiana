@@ -7,9 +7,28 @@
   <link rel="apple-touch-icon" href="img/icona-app-180.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#f0e2cc">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png">
+  <!-- Anteprima del link (WhatsApp, Telegram...): gli indirizzi devono essere completi, con https:// -->
+  <meta name="description" content="Entra nella partita dal tuo telefono: il codice è quello che vedi sul tabellone.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Corsa Cristiana">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:title" content="Corsa Cristiana — Entra in partita">
+  <meta property="og:description" content="Entra nella partita dal tuo telefono: il codice è quello che vedi sul tabellone.">
+  <meta property="og:url" content="https://fragnell.github.io/corsa-cristiana/giocatore.html">
+  <meta property="og:image" content="https://fragnell.github.io/corsa-cristiana/img/anteprima.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Corsa Cristiana, il gioco biblico: cartelli del percorso, pedine e dadi su un tavolo di legno">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="css/giocatore.css">
 </head>
 <body>
+
+  <!-- Compare solo se manca il collegamento a Internet per qualche secondo (js/avviso-connessione.js) -->
+  <div id="avviso-connessione" class="avviso-connessione nascosta" role="status">📡 Nessuna connessione: sto riprovando…</div>
 
   <div id="scena">
     <div id="pannello-contenuto">
@@ -52,9 +71,11 @@
 
       <div id="gioco" class="nascosta">
         <h2 id="mio-nome"></h2>
+        <p id="mia-modalita" class="nascosta">⚡ Partita veloce</p>
         <p id="mia-posizione"></p>
+        <p id="mio-codice" class="nascosta">Codice partita: <strong id="mio-codice-valore"></strong> <button id="btn-avviso-sonoro" class="nascosta" type="button" aria-pressed="true" aria-label="Suono dell'avviso">Suono</button></p>
         <div id="mia-prova-sospesa" class="nascosta"></div>
-        <div id="stato-turno"></div>
+        <div id="stato-turno" aria-live="polite"></div>
         <button id="btn-tira-dado" class="nascosta">🎲 Tira il dado</button>
 
       <div id="area-conoscenza-in-arrivo" class="nascosta">

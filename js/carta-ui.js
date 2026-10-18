@@ -11,6 +11,7 @@
 
 import { riproduciEffetto } from './audio-ui.js';
 import { oraServer } from './sincronizzazione.js';
+import { testoSicuro } from './testo-sicuro.js';
 
 const EFFETTO_PER_TIPO = {
   CONOSCENZA: 'conoscenza',
@@ -231,7 +232,7 @@ export function chiediEsitoProvaVincolo(nomeGiocatore, prova) {
     let secondiRimasti = DURATA_COUNTDOWN_PROVA_S;
 
     elBottoni.innerHTML = `
-      <p class="prova-vincolo-titolo">${nomeGiocatore}, hai superato la prova?</p>
+      <p class="prova-vincolo-titolo">${testoSicuro(nomeGiocatore)}, hai superato la prova?</p>
       <p class="prova-vincolo-countdown">Se nessuno risponde entro <span id="prova-vincolo-conto">${secondiRimasti}</span>s, si considera superata</p>
       <button id="prova-vincolo-si">✅ Sì, superata</button>
       <button id="prova-vincolo-no">❌ No, fallita</button>

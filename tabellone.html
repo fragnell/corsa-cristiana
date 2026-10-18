@@ -7,9 +7,28 @@
   <link rel="apple-touch-icon" href="img/icona-app-180.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#f0e2cc">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png">
+  <!-- Anteprima del link (WhatsApp, Telegram...): gli indirizzi devono essere completi, con https:// -->
+  <meta name="description" content="Apri questa pagina sulla TV o sul computer: è il tabellone della partita. I giocatori si collegano con il telefono.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Corsa Cristiana">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:title" content="Corsa Cristiana — Tabellone">
+  <meta property="og:description" content="Apri questa pagina sulla TV o sul computer: è il tabellone della partita. I giocatori si collegano con il telefono.">
+  <meta property="og:url" content="https://fragnell.github.io/corsa-cristiana/tabellone.html">
+  <meta property="og:image" content="https://fragnell.github.io/corsa-cristiana/img/anteprima.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Corsa Cristiana, il gioco biblico: cartelli del percorso, pedine e dadi su un tavolo di legno">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="css/tabellone.css">
 </head>
 <body>
+
+  <!-- Compare solo se manca il collegamento a Internet per qualche secondo (js/avviso-connessione.js) -->
+  <div id="avviso-connessione" class="avviso-connessione nascosta" role="status">📡 Nessuna connessione: sto riprovando… (le mosse dei telefoni non arrivano finché non torna)</div>
 
   <div id="vista-lobby">
     <div id="scena-lobby">
@@ -22,13 +41,37 @@
         <p>Condividi questo codice con gli altri giocatori</p>
       </div>
 
+      <!-- Il QR per entrare nella partita: lo disegna js/qr-lobby.js, e' diverso a ogni partita -->
+      <div id="lobby-qr" class="nascosta">
+        <div id="lobby-qr-immagine"></div>
+        <p>Inquadra per entrare</p>
+      </div>
+
       <div id="lobby-giocatori-area">
         <h2>Giocatori entrati</h2>
         <div id="conteggio-lobby-contenitore"><span id="conteggio-lobby">0</span></div>
         <ul id="lista-lobby"></ul>
       </div>
 
+      <div id="lobby-modalita" role="group" aria-label="Modalità di gioco">
+        <button type="button" class="btn-modalita attiva" data-modalita="normale" aria-pressed="true">Normale</button>
+        <button type="button" class="btn-modalita" data-modalita="veloce" aria-pressed="false" title="Partita più corta: si avanza di più con le risposte giuste">⚡ Veloce</button>
+      </div>
+
       <button id="btn-inizia-partita" disabled>▶ Inizia partita</button>
+
+      <!-- Riprendere una partita gia' iniziata scrivendo il suo codice (il tabellone si e' spento, o si cambia schermo).
+           Si vede solo finche' nessuno e' entrato in questa partita. La logica sta in js/ripresa-da-codice.js -->
+      <div id="lobby-ripresa" class="nascosta">
+        <button type="button" id="lobby-ripresa-apri">↩ Riprendi una partita già iniziata</button>
+        <form id="lobby-ripresa-form" class="nascosta" autocomplete="off">
+          <label for="lobby-ripresa-codice">Codice della partita:</label>
+          <input type="text" id="lobby-ripresa-codice" maxlength="4" placeholder="ABCD" autocapitalize="characters" spellcheck="false">
+          <button type="submit" id="lobby-ripresa-vai">Riprendi</button>
+          <button type="button" id="lobby-ripresa-annulla">Annulla</button>
+          <p id="lobby-ripresa-messaggio" role="status"></p>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -51,10 +94,10 @@
         <div id="turno-info"></div>
       </div>
 
-      <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span></div>
+      <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span><span id="modalita-badge" class="nascosta"> · ⚡ Partita veloce</span></div>
     </div>
 
-    
+
     <div id="annuncio-ordine" class="nascosta" role="status" aria-live="polite">
       <div class="annuncio-ordine-titolo">🎲 Ordine di gioco sorteggiato</div>
       <ol id="annuncio-ordine-lista"></ol>
@@ -132,7 +175,7 @@
       </div>
     </div>
   </div>
-  
+
   <button id="btn-audio-toggle" class="audio-toggle" type="button">🔊</button>
   <script type="module" src="js/tabellone-ui.js"></script>
 </body>

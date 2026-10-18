@@ -5,6 +5,7 @@
 // database, così tabellone e telefono restano sempre d'accordo tra loro.
 
 import { db, ref, set, get, onValue, push, runTransaction, remove, onDisconnect, increment, update } from './rete.js';
+import { risposteSicure } from './testo-sicuro.js';
 
 // Orologio "vero", allineato al server Firebase — non a quello di ogni
 // singolo dispositivo (tabellone e telefoni possono essere sfasati anche
@@ -108,7 +109,8 @@ export function aspettaIntenzioneRisposta(codicePartita, giocatoreAtteso, timeou
     const staccaAscolto = onValue(percorsoIntenzione, (istantanea) => {
       const intenzione = istantanea.val();
       if (intenzione && intenzione.tipo === 'RISPOSTA_CONOSCENZA' && intenzione.giocatoreId === giocatoreAtteso) {
-        concludi(intenzione.risposte || []);
+        // le risposte arrivano da un telefono: qualunque cosa ci abbia scritto, qui diventano un elenco di testi
+        concludi(risposteSicure(intenzione.risposte));
       }
     });
 
@@ -357,6 +359,14 @@ export async function leggiStatisticheGlobali() {
   return istantanea.val() || { partiteConcluse: 0, giocatoriTotali: 0 };
 }
 
+// Tutte le partite salvate (solo lettura, per la scheda Statistiche dell'Admin): da qui si
+// ricostruisce quanto si e' giocato oggi, negli ultimi 7 e 30 giorni — anche per il passato,
+// perche' le partite vecchie non vengono mai cancellate.
+export async function leggiPartiteUnaVolta() {
+  const istantanea = await get(ref(db, 'partite'));
+  return istantanea.val() || {};
+}
+
 
 // --- Presenza del TABELLONE stesso (non del giocatore) ---
 // Stesso principio già usato per i giocatori (onDisconnect + .info/connected),
@@ -403,4 +413,31 @@ export function ascoltaRiepilogoTabelloniAttivi(callback) {
 export async function tabellonePresente(codicePartita) {
   const istantanea = await get(ref(db, `tabelloni-attivi/${codicePartita}`));
   return istantanea.exists();
+}
+
+// --- Recensioni di fine partita ---
+// Si scrivono in "recensioni/<chiave>". Chiunque puo' AGGIUNGERNE una (anche senza login, come chi gioca
+// da telefono), ma solo l'amministratore puo' leggerle ed eliminarle: lo decidono le regole di Firebase.
+
+export function nuovaChiaveRecensione() {
+  return push(ref(db, 'recensioni')).key;
+}
+
+export function inviaRecensione(chiave, recensione) {
+  return set(ref(db, `recensioni/${chiave}`), recensione);
+}
+
+// Si aggiorna da sola quando arriva una recensione nuova. "alErrore" riceve l'errore se Firebase
+// non permette di leggere (per esempio: manca il login, o le regole non sono ancora state aggiornate).
+export function ascoltaRecensioni(callback, alErrore) {
+  return onValue(ref(db, 'recensioni'), (istantanea) => {
+    const oggetto = istantanea.val() || {};
+    callback(Object.entries(oggetto).map(([chiave, recensione]) => ({ ...recensione, _chiave: chiave })));
+  }, (errore) => {
+    if (alErrore) alErrore(errore);
+  });
+}
+
+export function eliminaRecensione(chiave) {
+  return remove(ref(db, `recensioni/${chiave}`));
 }

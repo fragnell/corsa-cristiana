@@ -41,6 +41,22 @@ body {
   margin: 0 0 1rem;
 }
 
+/* targhetta "Partita veloce": compare solo se la partita e' stata iniziata in modalita' veloce */
+#mia-modalita {
+  display: inline-block;
+  margin: 0 auto 0.4rem;
+  padding: 0.1rem 0.7rem;
+  background: #d9801a;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border-radius: 999px;
+}
+
+#mia-modalita.nascosta {
+  display: none;
+}
+
 input[type="text"] {
   font-size: 1.4rem;
   padding: 0.5rem;
@@ -88,6 +104,123 @@ button {
 #stato-turno {
   font-size: 1.3rem;
   margin: 1.5rem 0;
+}
+
+/* Quando tocca a te il riquadro dello stato lampeggia per qualche secondo; quando devi rispondere a una
+   domanda lampeggia il riquadro giallo della domanda (li accende js/comodita-telefono.js).
+   Solo colore e contorno: niente movimenti che allargano la pagina. */
+#stato-turno.avviso-turno {
+  border-radius: 12px;
+  animation: avviso-turno 0.75s ease-in-out 4;
+}
+
+@keyframes avviso-turno {
+  0%, 100% { background-color: rgba(255, 224, 130, 0); box-shadow: 0 0 0 0 rgba(217, 128, 26, 0); }
+  50% { background-color: rgba(255, 224, 130, 0.95); box-shadow: 0 0 0 8px rgba(217, 128, 26, 0.55); }
+}
+
+/* Il riquadro della domanda e' gia' giallo: lampeggia un po' piu' forte, con lo stesso contorno. */
+#area-domanda-conoscenza.avviso-turno {
+  animation: avviso-domanda 0.75s ease-in-out 4;
+}
+
+@keyframes avviso-domanda {
+  0%, 100% { background-color: #fff3cd; box-shadow: 0 0 0 0 rgba(217, 128, 26, 0); }
+  50% { background-color: #ffe082; box-shadow: 0 0 0 8px rgba(217, 128, 26, 0.55); }
+}
+
+/* Chi preferisce meno movimento vede un contorno fermo, senza lampeggiare. */
+@media (prefers-reduced-motion: reduce) {
+  #stato-turno.avviso-turno {
+    animation: none;
+    background-color: rgba(255, 224, 130, 0.95);
+    box-shadow: 0 0 0 6px rgba(217, 128, 26, 0.55);
+  }
+
+  #area-domanda-conoscenza.avviso-turno {
+    animation: none;
+    background-color: #ffe082;
+    box-shadow: 0 0 0 6px rgba(217, 128, 26, 0.55);
+  }
+}
+
+/* Il codice della partita, piccolo: serve se il tabellone va riavviato (si riprende scrivendo il codice). */
+#mio-codice {
+  margin: -0.5rem 0 0.8rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+#mio-codice strong {
+  letter-spacing: 0.15em;
+}
+
+/* L'interruttore del suono dell'avviso (js/suono-avviso.js): piccolo, accanto al codice della partita, senza
+   l'aspetto "grosso e verde" degli altri bottoni. Compare solo se il telefono sa suonare.
+   Acceso: «🔔 Suono». Spento: «🔕» e la parola barrata. La larghezza non cambia, e i margini negativi in alto e in
+   basso fanno si' che la riga del codice non diventi piu' alta (e non vada a capo nemmeno sugli schermi stretti). */
+#btn-avviso-sonoro {
+  position: relative;              /* serve per l'area di tocco piu' grande (vedi ::after qui sotto) */
+  margin: -4px 0 -4px 0.3rem;
+  padding: 0.12rem 0.55rem;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  vertical-align: middle;
+  background: transparent;
+  color: #3a2410;
+  border: 1.5px solid #3a2410;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+/* L'area che risponde al tocco e' piu' grande del pulsante (che resta piccolo per non dare fastidio): anche un dito
+   poco preciso lo prende. Non cambia ne' l'aspetto ne' la posizione degli altri pezzi della pagina. */
+#btn-avviso-sonoro::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -8px;
+  right: -8px;
+}
+
+#btn-avviso-sonoro::before {
+  content: '🔔';
+  display: inline-block;           /* inline-block: la barra sulla parola non passa anche sopra la campanella */
+  margin-right: 0.3em;
+}
+
+#btn-avviso-sonoro[aria-pressed="false"] {
+  text-decoration: line-through;
+}
+
+#btn-avviso-sonoro[aria-pressed="false"]::before {
+  content: '🔕';
+}
+
+#btn-avviso-sonoro.nascosta {
+  display: none;
+}
+
+/* "Nessuna connessione": in alto, sopra tutto (anche sopra la schermata di COLLABORIAMO!). Compare e sparisce da solo. */
+.avviso-connessione {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  padding: 0.5rem 0.8rem 0.5rem 3.6rem;   /* a sinistra resta libera la targhetta BETA */
+  background: #c0392b;
+  color: #ffffff;
+  text-align: center;
+  font-family: sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.avviso-connessione.nascosta {
+  display: none;
 }
 
 #mia-prova-sospesa {

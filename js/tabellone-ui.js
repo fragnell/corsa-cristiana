@@ -8,9 +8,9 @@
 // fatto solo di domande a scelta multipla segnate come tali — previa
 // conferma del gruppo, chiesta sul tabellone appena arriva la richiesta.
 
-import { CONFIG, unisciConfig } from './config.js';
+import { CONFIG, unisciConfig, configPerModalita } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
-import { tiraDado, muoviGiocatore, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
+import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
 import { creaMazzo, pesca, creaMazzoARotazione, peschaARotazione } from './mazzi.js';
 import { leggiMemoriaRotazione, numeroNuovaPartita, segnaDomandaUscita } from './rotazione-domande.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
@@ -20,6 +20,7 @@ import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
 import { linkDaUsare } from './link-approfondimento.js';
 import { animaDado } from './dado-ui.js';
 import { PALETTE } from './colori.js';
+import { testoSicuro, numeroSicuro, coloreSicuro } from './testo-sicuro.js';
 import {
   generaCodicePartita,
   iniziaLobby,
@@ -45,8 +46,12 @@ import {
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
-const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-partita-attiva';
+// BETA: chiave diversa da quella del gioco vero, cosi' i due non si scambiano la partita da riprendere.
+const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-beta-partita-attiva';
 const DURATA_COUNTDOWN_RIPRESA_S = 15;
+// Quando la ripresa e' chiesta di proposito scrivendo il codice (vedi preparaRipresaDaCodice), la pagina si ricarica:
+// questo segno (valido solo per questa scheda) dice alla pagina nuova che la persona ha gia' confermato.
+const CHIAVE_RIPRESA_CONFERMATA = 'corsa-cristiana-beta-ripresa-confermata';
 // Oltre questa eta' dall'ultima mossa pubblicata, una partita interrotta si
 // considera troppo vecchia per riproporla: non ha senso chiedere di
 // riprendere una partita di ieri sera. Punto unico da cambiare per
@@ -232,7 +237,7 @@ function aggiornaProveInSospeso() {
   }
 
   contenitore.innerHTML = inAttesa.map(g =>
-    `<div class="prova-sospesa-riga">${g.nome}</div>`
+    `<div class="prova-sospesa-riga">${testoSicuro(g.nome)}</div>`
   ).join('');
 }
 
@@ -256,33 +261,11 @@ async function risolviProvaVincoloDiTurno(giocatore) {
   await pubblicaStato(codicePartita, stato);
 }
 
-async function giocaTurno() {
-  let giocatore = giocatoreDiTurno(stato);
-
-  if (stato.giocatori[giocatore.id].provaInSospeso) {
-    await risolviProvaVincoloDiTurno(giocatore);
-    if (partitaFinita(stato)) return;
-    giocatore = giocatoreDiTurno(stato);
-  }
-
-  const infoTurno = document.getElementById('turno-info');
-
-  const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
-  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...` +
-    (sembraDisconnesso ? ' ⚠️ Il suo dispositivo sembra disconnesso.' : ' (se non risponde entro un minuto, si procede comunque)');
-  await aspettaIntenzioneDado(codicePartita, giocatore.id, configPartita.timeout.dadoMs);
-  stato.turnoInCorso = true;
-
-  const posizionePrima = giocatore.posizione;
-  const dado = tiraDado(configPartita);
-  await animaDado(dado);
-
-  const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
-  await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
-
-  let r = muoviGiocatore(stato, percorso, dado, configPartita);
-  stato = r.stato;
-
+// Tutto quello che succede dopo che una pedina e' arrivata su una casella: l'eventuale spostamento
+// (imprevisto, salto), le carte da mostrare e, per Conoscenza e Prova, la domanda o la prova con il suo esito.
+// "posizioneAtterrata" e' la casella su cui la pedina si trova sullo schermo in questo momento.
+// Restituisce il risultato finale ({ stato, evento }) nello stesso formato del motore.
+async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
   const posizioneDopoEffetto = stato.giocatori[giocatore.id].posizione;
   if (posizioneDopoEffetto !== posizioneAtterrata && r.evento.tipo !== 'IN_ATTESA') {
     await pausa(200);
@@ -306,7 +289,7 @@ async function giocaTurno() {
 
   if (r.evento.tipo === 'SALTO') {
     const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${r.evento.destinazione}.` };
-        await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
+    await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
   }
 
   if (r.evento.tipo === 'IN_ATTESA') {
@@ -437,6 +420,49 @@ async function giocaTurno() {
     }
   }
 
+  return r;
+}
+
+async function giocaTurno() {
+  let giocatore = giocatoreDiTurno(stato);
+
+  if (stato.giocatori[giocatore.id].provaInSospeso) {
+    await risolviProvaVincoloDiTurno(giocatore);
+    if (partitaFinita(stato)) return;
+    giocatore = giocatoreDiTurno(stato);
+  }
+
+  const infoTurno = document.getElementById('turno-info');
+
+  const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
+  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...` +
+    (sembraDisconnesso ? ' ⚠️ Il suo dispositivo sembra disconnesso.' : ' (se non risponde entro un minuto, si procede comunque)');
+  await aspettaIntenzioneDado(codicePartita, giocatore.id, configPartita.timeout.dadoMs);
+  stato.turnoInCorso = true;
+
+  const posizionePrima = giocatore.posizione;
+  const dado = tiraDado(configPartita);
+  await animaDado(dado);
+
+  const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
+  await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
+
+  let r = muoviGiocatore(stato, percorso, dado, configPartita);
+  stato = r.stato;
+  r = await gestisciEffettoCasella(giocatore, r, posizioneAtterrata);
+
+  // Con la regola "il salto attiva la casella di arrivo" (nella partita veloce e' accesa di base) dopo
+  // un salto scatta anche la casella su cui si e' arrivati, come se ci si fosse atterrati con il dado.
+  // Il limite di salti di fila evita che un percorso strano giri all'infinito.
+  let salti = 0;
+  while (!partitaFinita(stato) && saltoAttivaArrivo(r.evento, configPartita, salti)) {
+    salti++;
+    const posizioneArrivo = stato.giocatori[giocatore.id].posizione;
+    r = risolviCasellaDiArrivo(stato, percorso, configPartita);
+    stato = r.stato;
+    r = await gestisciEffettoCasella(giocatore, r, posizioneArrivo);
+  }
+
   if (!partitaFinita(stato)) {
     stato = passaTurno(stato);
     await salmoDopoPassaggioDiTurno();   // COLLABORIAMO!, se e' il momento
@@ -468,6 +494,7 @@ function mostraVittoria() {
   fermaMusica();
   fermaEffetti();
   riproduciEffetto('vittoria');
+  if (schermoAcceso) { try { schermoAcceso.spegni(); } catch (errore) { /* pazienza */ } }   // partita finita: lo schermo torna a spegnersi da solo
 
   const video = document.getElementById('vittoria-video');
   video.currentTime = 0;
@@ -478,8 +505,8 @@ function disegnaClassificaConoscenza() {
   const contenitore = document.getElementById('vittoria-statistiche-lista');
 
   const classifica = stato.giocatori.map(g => {
-    const totali = g.conoscenzaTotali || 0;
-    const corrette = g.conoscenzaCorrette || 0;
+    const totali = numeroSicuro(g.conoscenzaTotali);
+    const corrette = numeroSicuro(g.conoscenzaCorrette);
     const percentuale = totali > 0 ? Math.round((corrette / totali) * 100) : 0;
     return { nome: g.nome, colore: g.colore, corrette, totali, percentuale, storico: g.rispostoStorico || [] };
   });
@@ -492,7 +519,7 @@ function disegnaClassificaConoscenza() {
     const righeDettaglio = g.storico.length > 0
       ? g.storico.map(r => `
           <div class="dettaglio-domanda-riga ${r.corretta ? 'dettaglio-corretta' : 'dettaglio-errata'}">
-            <span>${r.corretta ? '✅' : '❌'}</span> <span>${r.domanda}</span>
+            <span>${r.corretta ? '✅' : '❌'}</span> <span>${testoSicuro(r.domanda)}</span>
           </div>
         `).join('')
       : '<p class="dettaglio-vuoto">Nessuna domanda Conoscenza risposta.</p>';
@@ -500,8 +527,8 @@ function disegnaClassificaConoscenza() {
     return `
       <div class="classifica-riga classifica-cliccabile" data-target="${idDettaglio}">
         <span class="classifica-posizione">${indice + 1}°</span>
-        <span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>
-        <span class="classifica-nome">${g.nome}</span>
+        <span class="pallino-lista" style="background:${coloreSicuro(g.colore)}"></span>
+        <span class="classifica-nome">${testoSicuro(g.nome)}</span>
         <span class="classifica-percentuale">${g.totali > 0 ? `${g.corrette}/${g.totali} (${g.percentuale}%)` : 'nessuna Conoscenza risposta'}</span>
         <span class="classifica-freccia">▾</span>
       </div>
@@ -541,14 +568,83 @@ async function gestisciRichiestaJunior(nome) {
   }
 }
 
+// Il QR per entrare nella partita (in alto a sinistra della lobby) si disegna "a parte", in js/qr-lobby.js.
+// Se non si carica, la lobby funziona come sempre, con il codice scritto in grande.
+function mostraQrLobby(codice) {
+  import('./qr-lobby.js')
+    .then(modulo => modulo.mostraQrLobby(codice))
+    .catch(errore => console.warn('Il QR della lobby non e\' disponibile', errore));
+}
+
+// Riprendere una partita gia' iniziata scrivendo il suo codice: serve quando il tabellone si e' spento, o si e'
+// chiusa la pagina per sbaglio, o si vuole continuare su un altro schermo. I telefoni non devono fare niente.
+// Il pulsante si vede solo finche' nessuno e' entrato nella partita nuova. Chi decide se la partita si puo'
+// riprendere e' js/ripresa-da-codice.js (caricato "a parte": se non si carica, la lobby funziona come sempre).
+// Restituisce la funzione da chiamare a ogni cambiamento della lobby.
+function preparaRipresaDaCodice() {
+  const contenitore = document.getElementById('lobby-ripresa');
+  const bottoneApri = document.getElementById('lobby-ripresa-apri');
+  const modulo = document.getElementById('lobby-ripresa-form');
+  const campo = document.getElementById('lobby-ripresa-codice');
+  const bottoneVai = document.getElementById('lobby-ripresa-vai');
+  const bottoneAnnulla = document.getElementById('lobby-ripresa-annulla');
+  const messaggio = document.getElementById('lobby-ripresa-messaggio');
+  if (!contenitore || !bottoneApri || !modulo || !campo || !bottoneVai || !bottoneAnnulla || !messaggio) return () => {};
+
+  const chiudi = () => {
+    modulo.classList.add('nascosta');
+    bottoneApri.classList.remove('nascosta');
+    messaggio.textContent = '';
+    campo.value = '';
+  };
+
+  bottoneApri.addEventListener('click', () => {
+    bottoneApri.classList.add('nascosta');
+    modulo.classList.remove('nascosta');
+    campo.focus();
+  });
+  bottoneAnnulla.addEventListener('click', chiudi);
+
+  modulo.addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    bottoneVai.disabled = true;
+    messaggio.textContent = 'Controllo la partita...';
+    try {
+      const { controllaRipresaDaCodice } = await import('./ripresa-da-codice.js');
+      const esito = await controllaRipresaDaCodice(campo.value, { leggiStato: leggiStatoUnaVolta, tabellonePresente });
+      if (!esito.ok) {
+        messaggio.textContent = '❌ ' + esito.messaggio;
+        return;
+      }
+      messaggio.textContent = '✅ Trovata! Riprendo la partita...';
+      localStorage.setItem(CHIAVE_PARTITA_ATTIVA, esito.codice);
+      try { sessionStorage.setItem(CHIAVE_RIPRESA_CONFERMATA, esito.codice); } catch (errore) { /* pazienza */ }
+      location.reload();
+    } catch (errore) {
+      console.warn('La ripresa con il codice non e\' riuscita', errore);
+      messaggio.textContent = '❌ Non riesco a controllare la partita in questo momento. Riprova tra poco.';
+    } finally {
+      bottoneVai.disabled = false;
+    }
+  });
+
+  return (numeroGiocatori) => {
+    const qualcunoEntrato = numeroGiocatori > 0;
+    contenitore.classList.toggle('nascosta', qualcunoEntrato);
+    if (qualcunoEntrato) chiudi();
+  };
+}
+
 function avviaVistaLobby() {
   const listaEl = document.getElementById('lista-lobby');
   const bottoneInizia = document.getElementById('btn-inizia-partita');
   const conteggioEl = document.getElementById('conteggio-lobby');
+  const aggiornaRipresa = preparaRipresaDaCodice();
 
   ascoltaLobby(codicePartita, (lobby) => {
+    aggiornaRipresa(lobby.length);
     listaEl.innerHTML = lobby.map(g =>
-      `<li><span class="pallino-lista" style="background:${PALETTE[g.colore] || g.colore}"></span>${g.nome}${g.junior ? ' 🟢' : ''}</li>`
+      `<li><span class="pallino-lista" style="background:${coloreSicuro(g.colore)}"></span>${testoSicuro(g.nome)}${g.junior ? ' 🟢' : ''}</li>`
     ).join('');
     conteggioEl.textContent = `${lobby.length} (minimo ${configPartita.giocatori.minimo}, massimo ${configPartita.giocatori.massimo})`;
     bottoneInizia.disabled = lobby.length < configPartita.giocatori.minimo || lobby.length > configPartita.giocatori.massimo;
@@ -567,11 +663,25 @@ function avviaVistaLobby() {
       `🌍 ${numeroPartite} partit${numeroPartite === 1 ? 'a' : 'e'} in corso, ${numeroGiocatori} giocator${numeroGiocatori === 1 ? 'e' : 'i'} online`;
   });
 
+  // Scelta della modalita' (Normale / Veloce). Se i bottoni non ci sono, si gioca in modalita' normale.
+  let modalitaScelta = 'normale';
+  const bottoniModalita = document.querySelectorAll('#lobby-modalita .btn-modalita');
+  bottoniModalita.forEach(bottone => {
+    bottone.addEventListener('click', () => {
+      modalitaScelta = bottone.dataset.modalita === 'veloce' ? 'veloce' : 'normale';
+      bottoniModalita.forEach(altro => {
+        const attivo = altro.dataset.modalita === modalitaScelta;
+        altro.classList.toggle('attiva', attivo);
+        altro.setAttribute('aria-pressed', String(attivo));
+      });
+    });
+  });
+
   bottoneInizia.addEventListener('click', async () => {
     avviaMusica(); // secondo tentativo, garantito: questo è un clic vero sulla pagina
     bottoneInizia.disabled = true;
     const lobbyFinale = await leggiLobbyUnaVolta(codicePartita);
-    iniziaPartitaVera(lobbyFinale);
+    iniziaPartitaVera(lobbyFinale, modalitaScelta);
   });
 }
 
@@ -616,7 +726,18 @@ function annunciaOrdineSorteggiato() {
   }
 }
 
-async function iniziaPartitaVera(giocatoriInfo) {
+// Mostra (o toglie) la scritta "Partita veloce" accanto al codice, nella scena di gioco.
+function mostraBadgeModalita(modalita) {
+  const badge = document.getElementById('modalita-badge');
+  if (badge) badge.classList.toggle('nascosta', modalita !== 'veloce');
+}
+
+async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
+  // La partita veloce cambia solo pochi numeri (vedi "veloce" in config.js): da qui in poi tutto il
+  // gioco usa la configurazione della modalita' scelta.
+  const modalitaPartita = modalita === 'veloce' ? 'veloce' : 'normale';
+  configPartita = configPerModalita(configPartita, modalitaPartita);
+
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
 
@@ -629,6 +750,8 @@ async function iniziaPartitaVera(giocatoriInfo) {
   // L'ordine di gioco si sorteggia qui, PRIMA di creare lo stato: da questo momento i numeri
   // dei giocatori, i turni e i telefoni nascono gia' dall'ordine sorteggiato.
   stato = creaStatoIniziale(await sorteggiaOrdineDiGioco(giocatoriInfo));
+  stato.modalita = modalitaPartita;      // i telefoni la leggono dallo stato (targhetta "Partita veloce")
+  mostraBadgeModalita(stato.modalita);
   creaPedine();
 
   localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
@@ -651,6 +774,10 @@ async function riprendiPartitaEsistente(statoEsistente) {
   stato = statoEsistente;
   stato.turnoInCorso = false;
   stato.richiestaConoscenza = null;
+  // Una partita iniziata veloce resta veloce anche dopo la ripresa (le partite di prima non hanno
+  // nessuna modalita': sono normali).
+  configPartita = configPerModalita(configPartita, stato.modalita);
+  mostraBadgeModalita(stato.modalita);
   delete stato.salmoInCorso;   // una prova (COLLABORIAMO!) rimasta a meta' non esiste piu'
   if (stato.vincitore === undefined) stato.vincitore = null;
 
@@ -748,15 +875,28 @@ async function avvia() {
 
   const codiceSalvato = localStorage.getItem(CHIAVE_PARTITA_ATTIVA);
   if (codiceSalvato) {
+    // La persona ha scritto il codice di proposito (preparaRipresaDaCodice): niente domanda, e un limite di tempo piu' largo.
+    let ripresaConfermata = false;
+    try {
+      ripresaConfermata = sessionStorage.getItem(CHIAVE_RIPRESA_CONFERMATA) === codiceSalvato;
+      sessionStorage.removeItem(CHIAVE_RIPRESA_CONFERMATA);
+    } catch (errore) { /* pazienza */ }
+    let limiteRipresaMs = LIMITE_RIPRESA_MS;
+    if (ripresaConfermata) {
+      try {
+        limiteRipresaMs = (await import('./ripresa-da-codice.js')).LIMITE_RIPRESA_DA_CODICE_MS;
+      } catch (errore) { /* pazienza: resta il limite di sempre */ }
+    }
+
     const statoSalvato = await leggiStatoUnaVolta(codiceSalvato);
     // Senza timestamp (partite salvate prima di questa modifica) la si tratta
     // come vecchia per prudenza, invece di riproporla alla cieca.
     const eta = statoSalvato ? Date.now() - (statoSalvato.ultimoAggiornamento || 0) : Infinity;
-    const troppoVecchia = eta > LIMITE_RIPRESA_MS;
+    const troppoVecchia = eta > limiteRipresaMs;
     if (statoSalvato && statoSalvato.vincitore == null && !troppoVecchia) {
       const giaAttivaAltrove = await tabellonePresente(codiceSalvato);
       if (!giaAttivaAltrove) {
-        const vuoleRiprendere = await chiediRipresaPartita(codiceSalvato);
+        const vuoleRiprendere = ripresaConfermata ? true : await chiediRipresaPartita(codiceSalvato);
         if (vuoleRiprendere) {
           codicePartita = codiceSalvato;
           await riprendiPartitaEsistente(statoSalvato);
@@ -769,12 +909,36 @@ async function avvia() {
 
   codicePartita = generaCodicePartita();
   document.getElementById('codice-partita').textContent = codicePartita;
+  mostraQrLobby(codicePartita);
   await iniziaLobby(codicePartita);
 
   annunciaTabellonePresente(codicePartita);
 
   avviaVistaLobby();
 }
+
+// Lo schermo del tabellone resta acceso finche' dura la partita (un tablet o un portatile lasciato fermo si
+// spegne, e con lui si ferma la partita). E' lo stesso aiuto dei telefoni (salmo/schermo-acceso.js), caricato
+// "a parte": se manca o il dispositivo non lo permette, il tabellone funziona come sempre.
+let schermoAcceso = null;
+import('./salmo/schermo-acceso.js')
+  .then(modulo => {
+    schermoAcceso = modulo.creaSchermoAcceso();
+    schermoAcceso.accendi();
+    // un tocco o un tasto sono occasioni per (ri)chiedere lo schermo acceso: alcuni dispositivi accettano solo cosi'
+    const riprova = () => { try { schermoAcceso.riprova(); } catch (errore) { /* pazienza */ } };
+    document.addEventListener('pointerdown', riprova, { passive: true });
+    document.addEventListener('keydown', riprova);
+  })
+  .catch(errore => console.warn('Lo schermo sempre acceso non e\' disponibile', errore));
+
+// L'avviso "nessuna connessione" (compare solo se il collegamento manca per qualche secondo). Moduli caricati "a parte".
+Promise.all([import('./avviso-connessione.js'), import('./connessione.js')])
+  .then(([avviso, connessione]) => avviso.avviaAvvisoConnessione({
+    elemento: document.getElementById('avviso-connessione'),
+    ascolta: connessione.ascoltaConnessione
+  }))
+  .catch(errore => console.warn('L\'avviso di connessione non e\' disponibile', errore));
 
 avvia();
 avviaMusica(); // primo tentativo, appena si apre la pagina — funziona solo per chi ha già familiarità col sito

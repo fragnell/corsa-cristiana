@@ -1,11 +1,13 @@
 // admin-statistiche.js
-// Scheda "Statistiche": per ogni domanda Conoscenza già uscita almeno
+// Scheda "Statistiche", parte "Statistiche Conoscenza": per ogni domanda Conoscenza già uscita almeno
 // una volta, mostra quante volte è stata proposta, la percentuale di
 // risposte corrette, e per le domande a scelta multipla quale opzione
 // sbagliata viene scelta più spesso. Le domande mai uscite compaiono in
 // fondo, segnate come tali.
+// (Il riquadro «Quanto si gioca» — partite di oggi, 7 e 30 giorni — è in admin-attivita.js.)
 
-import { ascoltaMazzo, leggiStatisticheDaFirebase, azzeraStatistiche, leggiStatisticheGlobali } from './sincronizzazione.js';
+import { ascoltaMazzo, leggiStatisticheDaFirebase, azzeraStatistiche } from './sincronizzazione.js';
+import { testoSicuro, numeroSicuro } from './testo-sicuro.js';
 let ultimeCarte = [];
 let ultimeStatistiche = {};
 
@@ -16,7 +18,6 @@ export function avviaSezioneStatistiche() {
   });
 
   caricaStatistiche();
-  caricaStatisticheGlobali();
 
   document.getElementById('statistiche-btn-azzera').addEventListener('click', async () => {
     if (!confirm('Azzerare tutte le statistiche di tutte le domande? Non si può annullare.')) return;
@@ -30,15 +31,24 @@ async function caricaStatistiche() {
   disegna();
 }
 
-
-async function caricaStatisticheGlobali() {
-  const globali = await leggiStatisticheGlobali();
-  const media = globali.partiteConcluse > 0 ? (globali.giocatoriTotali / globali.partiteConcluse).toFixed(1) : '—';
-  document.getElementById('statistiche-globali').innerHTML = `
-    <div class="riepilogo-numero"><strong>${globali.partiteConcluse}</strong><span>partite concluse</span></div>
-    <div class="riepilogo-numero"><strong>${globali.giocatoriTotali}</strong><span>giocatori in totale</span></div>
-    <div class="riepilogo-numero"><strong>${media}</strong><span>media a partita</span></div>
-  `;
+// I contatori stanno nel database e tutti i giocatori possono aumentarli: qui si leggono come numeri veri
+// (se qualcuno ci avesse scritto del testo, diventa 0) cosi' non finiscono mai nella pagina come HTML.
+function statisticheDiUnaDomanda(stat) {
+  if (!stat || typeof stat !== 'object') return null;
+  const opzioniSbagliate = {};
+  if (stat.opzioniSbagliate && typeof stat.opzioniSbagliate === 'object') {
+    Object.entries(stat.opzioniSbagliate).forEach(([indice, conteggio]) => {
+      if (conteggio === null || conteggio === undefined) return;   // i "buchi" di una lista letta dal database
+      opzioniSbagliate[indice] = numeroSicuro(conteggio);
+    });
+  }
+  return {
+    proposte: numeroSicuro(stat.proposte),
+    corrette: numeroSicuro(stat.corrette),
+    errate: numeroSicuro(stat.errate),
+    correzioniManuali: numeroSicuro(stat.correzioniManuali),
+    opzioniSbagliate: stat.opzioniSbagliate ? opzioniSbagliate : null
+  };
 }
 
 function disegna() {
@@ -48,7 +58,7 @@ function disegna() {
   const senzaStat = [];
 
   ultimeCarte.forEach(carta => {
-    const stat = ultimeStatistiche[carta._chiave];
+    const stat = statisticheDiUnaDomanda(ultimeStatistiche[carta._chiave]);
     if (stat && stat.proposte > 0) {
       conStat.push({ carta, stat });
     } else {
@@ -65,14 +75,14 @@ function disegna() {
     if (carta.tipo === 'scelta' && stat.opzioniSbagliate) {
       const righe = Object.entries(stat.opzioniSbagliate)
         .sort((a, b) => b[1] - a[1])
-        .map(([indice, conteggio]) => `<li>${carta.opzioni[indice] || '(opzione rimossa)'}: ${conteggio} volte</li>`)
+        .map(([indice, conteggio]) => `<li>${testoSicuro((carta.opzioni && carta.opzioni[indice]) || '(opzione rimossa)')}: ${conteggio} volte</li>`)
         .join('');
       dettaglioOpzioni = `<ul class="statistiche-opzioni">${righe}</ul>`;
     }
 
     return `
       <div class="statistiche-riga">
-        <div class="statistiche-domanda">${carta.domanda}</div>
+        <div class="statistiche-domanda">${testoSicuro(carta.domanda)}</div>
         <div class="statistiche-percentuale ${percentuale < 50 ? 'statistiche-basse' : ''}">${percentuale}% corrette</div>
         <div class="statistiche-dettaglio">${stat.proposte} proposte, ${stat.corrette} corrette, ${stat.errate} errate${stat.correzioniManuali ? `, ${stat.correzioniManuali} accettate manualmente` : ''}</div>
         ${dettaglioOpzioni}
@@ -82,7 +92,7 @@ function disegna() {
 
   const righeSenzaStat = senzaStat.map(carta => `
     <div class="statistiche-riga statistiche-mai-proposta">
-      <div class="statistiche-domanda">${carta.domanda}</div>
+      <div class="statistiche-domanda">${testoSicuro(carta.domanda)}</div>
       <div class="statistiche-percentuale">mai proposta</div>
     </div>
   `).join('');

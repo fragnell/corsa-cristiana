@@ -6,6 +6,8 @@
   <link rel="apple-touch-icon" href="img/icona-app-180.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#f0e2cc">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="img/favicon-64.png">
   <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="css/admin-salmo.css">
 </head>
@@ -16,6 +18,7 @@
     <button type="button" id="tab-btn-carte" class="admin-tab-btn admin-tab-attiva">📇 Carte</button>
     <button type="button" id="tab-btn-regole" class="admin-tab-btn">🔧 Regole</button>
     <button type="button" id="tab-btn-statistiche" class="admin-tab-btn">📊 Statistiche</button>
+    <button type="button" id="tab-btn-recensioni" class="admin-tab-btn">⭐ Recensioni</button>
   </div>
 
   <div id="tab-carte">
@@ -39,6 +42,7 @@
   <section id="sezione-conoscenza">
     <h2>Conoscenza (<span id="conoscenza-conteggio">0</span>)</h2>
     <button type="button" id="conoscenza-btn-nuova">➕ Nuova domanda</button>
+    <div id="conoscenza-filtri"></div>
     <div id="conoscenza-lista"></div>
 
     <div id="conoscenza-form" class="admin-form nascosta">
@@ -157,13 +161,6 @@
       <label>Malus risposta errata:
         <input type="number" id="regole-conoscenza-malus">
       </label>
-      <label>Sfida — bonus vincitore:
-        <input type="number" id="regole-conoscenza-sfida-bonus">
-      </label>
-      <label>Sfida — malus perdente:
-        <input type="number" id="regole-conoscenza-sfida-malus">
-      </label>
-      <p class="admin-nota">I due valori della Sfida sono pronti per quando costruiremo quella meccanica — per ora non hanno alcun effetto in partita.</p>
 
       <h3>Imprevisto</h3>
       <label>Malus (sempre negativo):
@@ -178,20 +175,24 @@
         <input type="number" id="regole-prova-malus">
       </label>
 
-      <h3>Comportamenti generali</h3>
-      <label class="admin-label-checkbox">
-        <input type="checkbox" id="regole-bonus-attiva-casella">
-        Un movimento-bonus (es. Conoscenza) attiva la casella su cui atterra
-      </label>
-      <label class="admin-label-checkbox">
-        <input type="checkbox" id="regole-salto-attiva-casella">
-        Un Salto attiva la casella di arrivo
-      </label>
-      <label class="admin-label-checkbox">
-        <input type="checkbox" id="regole-arrivo-libero">
-        Superare la casella finale basta per vincere (nessun rimbalzo indietro)
-      </label>
-      <p class="admin-nota">Questi tre interruttori vengono salvati, ma il motore oggi si comporta sempre come se fossero Bonus=NO, Salto=NO, Arrivo libero=SÌ — cambiarli qui non modifica ancora la partita vera. È un prossimo passo.</p>
+      <h3>⚡ Partita veloce</h3>
+      <div id="regole-veloce">
+        <p class="admin-nota">Si sceglie sul tabellone, prima di premere «Inizia partita» (Normale oppure Veloce). Nella partita veloce valgono questi quattro valori al posto di quelli normali qui sopra; tutto il resto (risposta sbagliata, prova fallita, dado, COLLABORIAMO!…) resta uguale. Di base accorcia la partita di circa un terzo.</p>
+        <label>Bonus risposta corretta (Conoscenza):
+          <input type="number" id="regole-veloce-bonus-conoscenza" min="0" max="30">
+        </label>
+        <label>Bonus prova superata:
+          <input type="number" id="regole-veloce-bonus-prova" min="0" max="30">
+        </label>
+        <label>Malus Imprevisto (sempre negativo):
+          <input type="number" id="regole-veloce-malus-imprevisto" min="-30" max="0">
+        </label>
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-veloce-salto-attiva-casella">
+          Un Salto attiva la casella di arrivo
+        </label>
+        <p class="admin-nota">Con la spunta, dopo un Salto scatta anche la casella su cui si arriva (di solito una domanda Conoscenza), come se ci si fosse arrivati con il dado. Vale solo per la partita veloce: nella partita normale il Salto sposta e basta, sempre.</p>
+      </div>
 
       <h3>Giocatori</h3>
       <label>Minimo:
@@ -200,6 +201,27 @@
       <label>Massimo:
         <input type="number" id="regole-giocatori-massimo" min="1">
       </label>
+
+      <h3>⭐ Recensioni a fine partita</h3>
+      <div id="regole-recensioni">
+        <p class="admin-nota">A fine partita il telefono può proporre delle stelline e un commento (cosa è piaciuto, cosa no, cosa proporre). Chi manda la sua recensione non viene più disturbato; chi preme «Non ora» la rivede alla partita dopo, fino a quante «prime partite» scrivi qui sotto. Le recensioni si leggono nella scheda «Recensioni». Valgono dalla prossima partita finita.</p>
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-recensioni-attiva">
+          Chiedi una recensione a fine partita
+        </label>
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-recensioni-solo-nuovi">
+          Chiedila solo a chi gioca da poco (le prime partite fatte con quel telefono)
+        </label>
+        <label>Quante sono «le prime partite»:
+          <input type="number" id="regole-recensioni-prime-partite" min="1" max="50">
+        </label>
+        <label class="admin-label-checkbox">
+          <input type="checkbox" id="regole-recensioni-con-nome">
+          Firma la recensione con il soprannome scelto in quella partita
+        </label>
+        <p class="admin-nota">Il telefono lo dice chiaramente a chi sta per inviare («Sarà firmata con il tuo soprannome…»). Oltre al soprannome si salvano solo voto, commento e tipo di partita. Togli la spunta per avere recensioni del tutto anonime.</p>
+      </div>
 
       <h3>COLLABORIAMO! (Salmo 133:1)</h3>
       <div id="regole-salmo">
@@ -312,14 +334,72 @@
   </div>
 
   <div id="tab-statistiche" class="nascosta">
+    <section id="sezione-attivita">
+      <h2>📊 Quanto si gioca</h2>
+      <p id="attivita-avviso" class="admin-avviso nascosta"></p>
+
+      <div class="attivita-barra">
+        <span id="attivita-aggiornato" class="attivita-aggiornato">Carico i numeri…</span>
+        <button type="button" id="attivita-btn-aggiorna">🔄 Aggiorna</button>
+      </div>
+
+      <p id="attivita-adesso" class="attivita-adesso"></p>
+      <div id="attivita-periodi" class="attivita-periodi"></div>
+      <p id="attivita-ultima" class="attivita-ultima"></p>
+
+      <h3>Giorno per giorno, ultimi 30 giorni</h3>
+      <div id="attivita-grafico"></div>
+      <details id="attivita-numeri" class="attivita-scheda-dettaglio">
+        <summary>Vedi i numeri giorno per giorno</summary>
+        <div id="attivita-tabella"></div>
+      </details>
+
+      <h3>Dall'inizio</h3>
+      <div id="attivita-totale" class="statistiche-riepilogo"></div>
+      <p id="attivita-totale-nota" class="admin-nota"></p>
+
+      <details id="attivita-spiegazione" class="attivita-scheda-dettaglio">
+        <summary>Come si contano le partite</summary>
+        <ul>
+          <li><strong>Partita</strong>: una partita davvero iniziata (c'è stato almeno un lancio di dado) a cui hanno giocato almeno 2 giocatori. Le lobby aperte e poi abbandonate non contano.</li>
+          <li><strong>Da solo</strong>: le partite con un solo giocatore, di solito prove. Sono indicate a parte e non entrano nelle partite. Se provi il gioco con due o più telefoni, invece, la partita conta come una vera: non c'è modo di distinguerla.</li>
+          <li><strong>Concluse</strong>: quelle in cui qualcuno ha vinto. Le altre sono state lasciate a metà.</li>
+          <li><strong>Giorni</strong>: ogni partita conta nel giorno in cui è stata aperta. «7 giorni» e «30 giorni» sono gli ultimi giorni, compreso oggi: non partono dal lunedì né dal primo del mese.</li>
+          <li><strong>Giocatori</strong>: si sommano partita per partita (chi gioca tre partite conta tre volte), perché il gioco non sa chi sia chi.</li>
+          <li>I numeri sono ricostruiti dalle partite salvate nel database, quindi valgono anche per il passato. Se un giorno cancelli vecchie partite da Firebase, spariscono anche da qui.</li>
+        </ul>
+      </details>
+    </section>
+
     <section id="sezione-statistiche">
-      <h2>📊 Statistiche Conoscenza</h2>
-      <div id="statistiche-globali" class="statistiche-riepilogo"></div>
+      <h2>🧠 Statistiche Conoscenza</h2>
       <p>Domande ordinate dalla percentuale di corrette più bassa (le più sospette) alla più alta. Quelle mai uscite in nessuna partita sono in fondo.</p>
       <div id="statistiche-lista"></div>
       <div class="admin-form-bottoni">
-        <button type="button" id="statistiche-btn-azzera">🗑️ Azzera tutte le statistiche</button>
+        <button type="button" id="statistiche-btn-azzera">🗑️ Azzera le statistiche delle domande</button>
       </div>
+    </section>
+  </div>
+
+  <div id="tab-recensioni" class="nascosta">
+    <section id="sezione-recensioni">
+      <h2>⭐ Recensioni dei giocatori</h2>
+      <p>Le lasciano i giocatori dal telefono, a fine partita: delle stelline e un commento (cosa è piaciuto, cosa no, cosa propongono). Se in Regole è accesa la spunta del soprannome, ognuna porta il soprannome che il giocatore aveva scelto in quella partita (e nient'altro: né cognome né codice partita); quelle arrivate prima, o con la spunta spenta, sono anonime. Arrivano qui da sole, senza ricaricare la pagina.</p>
+      <p id="recensioni-avviso" class="admin-avviso nascosta"></p>
+      <div id="recensioni-riepilogo"></div>
+      <div id="recensioni-filtri"></div>
+      <div id="recensioni-lista"></div>
+      <div class="admin-form-bottoni">
+        <button type="button" id="recensioni-btn-esporta">📤 Esporta tutte in Excel</button>
+      </div>
+      <p id="recensioni-risultato"></p>
+
+      <details id="recensioni-prova">
+        <summary>🧪 Come provare la richiesta sul telefono</summary>
+        <p>Di base ogni telefono vede la richiesta solo nelle sue prime partite, e smette appena manda una recensione. Per vederla ogni volta, anche su un telefono dove l'hai già vista, apri la pagina del telefono con questo indirizzo e poi entra in partita con il codice, come al solito:</p>
+        <input type="text" id="recensioni-prova-indirizzo" class="recensioni-indirizzo" readonly>
+        <p class="admin-nota">Con questo indirizzo la richiesta compare a ogni fine partita, senza contare niente. Le recensioni di prova arrivano davvero qui sopra: eliminale con il cestino 🗑️.</p>
+      </details>
     </section>
   </div>
 

@@ -12,6 +12,14 @@ import { leggiConfigDaFirebase, salvaConfigDaFirebase, eliminaConfigDaFirebase }
 let salmoAdmin = null;
 let salmoSalvato = null;   // l'ultima sezione "salmo" letta da Firebase
 
+// Le sezioni che questa scheda mostra e salva. Tutte le altre sezioni che si trovassero su
+// Firebase (per esempio "dado" o "timeout") restano come sono: salvando le regole non si cancellano.
+// "regole" e' nella lista anche se questa scheda non la scrive piu' (il Salto della partita normale non
+// si sceglie piu': non scatta mai): cosi' al primo salvataggio i suoi vecchi valori spariscono da Firebase.
+const SEZIONI_DELLA_SCHEDA = ['conoscenza', 'imprevisto', 'prova', 'regole', 'giocatori', 'veloce', 'recensioni', 'salmo'];
+let configSalvata = {};    // l'ultima configurazione letta da Firebase, tale e quale
+let valoriAttuali = unisciConfig(CONFIG, {});   // quella stessa, completata con i valori di base: serve se nella pagina manca un campo
+
 export async function avviaSezioneRegole() {
   try {
     salmoAdmin = await import('./admin-salmo.js');
@@ -31,27 +39,67 @@ export async function avviaSezioneRegole() {
   }
 }
 
+// ---------- piccoli aiuti per leggere e scrivere i campi ----------
+// I campi delle sezioni nuove si trattano con prudenza: se la pagina HTML e' una versione piu'
+// vecchia (o piu' nuova) del codice e un campo manca, non succede niente di grave.
+
+function scriviNumero(id, valore) {
+  const campo = document.getElementById(id);
+  if (campo) campo.value = valore;
+}
+
+function scriviSpunta(id, acceso) {
+  const campo = document.getElementById(id);
+  if (campo) campo.checked = !!acceso;
+}
+
+function leggiSpunta(id, predefinito) {
+  const campo = document.getElementById(id);
+  return campo ? campo.checked : predefinito;
+}
+
+// Legge un numero intero da un campo e controlla che stia tra minimo e massimo.
+// Restituisce { valore, errore }: se "errore" e' scritto, il numero non va bene.
+function leggiIntero(id, predefinito, etichetta, minimo, massimo) {
+  const campo = document.getElementById(id);
+  if (!campo) return { valore: predefinito, errore: null };
+  const testo = campo.value.trim();
+  const n = Number(testo);
+  if (testo === '' || !Number.isInteger(n) || n < minimo || n > massimo) {
+    return { valore: predefinito, errore: `${etichetta}: scrivi un numero intero da ${minimo} a ${massimo}.` };
+  }
+  return { valore: n, errore: null };
+}
+
+// ---------- dal Firebase al modulo ----------
+
 async function caricaValoriNelForm() {
   const override = await leggiConfigDaFirebase();
+  configSalvata = override || {};
   const attuale = unisciConfig(CONFIG, override);
+  valoriAttuali = attuale;
   salmoSalvato = (override && override.salmo) || null;
 
   document.getElementById('regole-conoscenza-bonus').value = attuale.conoscenza.bonusRispostaCorretta;
   document.getElementById('regole-conoscenza-malus').value = attuale.conoscenza.malusRispostaErrata;
-  document.getElementById('regole-conoscenza-sfida-bonus').value = attuale.conoscenza.sfidaBonusVincitore;
-  document.getElementById('regole-conoscenza-sfida-malus').value = attuale.conoscenza.sfidaMalusPerdente;
 
   document.getElementById('regole-imprevisto-malus').value = attuale.imprevisto.malus;
 
   document.getElementById('regole-prova-bonus').value = attuale.prova.bonusSuperata;
   document.getElementById('regole-prova-malus').value = attuale.prova.malusFallita;
 
-  document.getElementById('regole-bonus-attiva-casella').checked = attuale.regole.bonusAttivaCasella;
-  document.getElementById('regole-salto-attiva-casella').checked = attuale.regole.saltoAttivaCasella;
-  document.getElementById('regole-arrivo-libero').checked = attuale.regole.arrivoLibero;
+  scriviNumero('regole-veloce-bonus-conoscenza', attuale.veloce.bonusConoscenza);
+  scriviNumero('regole-veloce-bonus-prova', attuale.veloce.bonusProva);
+  scriviNumero('regole-veloce-malus-imprevisto', attuale.veloce.malusImprevisto);
+  scriviSpunta('regole-veloce-salto-attiva-casella', attuale.veloce.saltoAttivaCasella);
 
   document.getElementById('regole-giocatori-minimo').value = attuale.giocatori.minimo;
   document.getElementById('regole-giocatori-massimo').value = attuale.giocatori.massimo;
+
+  scriviSpunta('regole-recensioni-attiva', attuale.recensioni.attiva);
+  scriviSpunta('regole-recensioni-solo-nuovi', attuale.recensioni.soloNuovi);
+  scriviNumero('regole-recensioni-prime-partite', attuale.recensioni.primePartite);
+  scriviSpunta('regole-recensioni-con-nome', attuale.recensioni.conNome);
 
   if (salmoAdmin) {
     try {
@@ -62,15 +110,59 @@ async function caricaValoriNelForm() {
   }
 }
 
+// ---------- dal modulo al Firebase ----------
+
+// Le sezioni nuove (partita veloce, recensioni): lettura e controllo dei numeri.
+function leggiSezioniNuove() {
+  const errori = [];
+  const prendi = r => { if (r.errore) errori.push(r.errore); return r.valore; };
+
+  // Se nella pagina manca un campo (pagina vecchia rimasta in memoria nel browser) vale il valore di adesso,
+  // cosi' salvare non cambia di nascosto cio' che la pagina non mostra.
+  const v = valoriAttuali.veloce;
+  const veloce = {
+    bonusConoscenza: prendi(leggiIntero('regole-veloce-bonus-conoscenza', v.bonusConoscenza, 'Partita veloce, bonus risposta corretta', 0, 30)),
+    bonusProva: prendi(leggiIntero('regole-veloce-bonus-prova', v.bonusProva, 'Partita veloce, bonus prova superata', 0, 30)),
+    malusImprevisto: prendi(leggiIntero('regole-veloce-malus-imprevisto', v.malusImprevisto, 'Partita veloce, malus Imprevisto (zero o negativo)', -30, 0)),
+    saltoAttivaCasella: leggiSpunta('regole-veloce-salto-attiva-casella', v.saltoAttivaCasella)
+  };
+
+  const r = valoriAttuali.recensioni;
+  const recensioni = {
+    attiva: leggiSpunta('regole-recensioni-attiva', r.attiva),
+    soloNuovi: leggiSpunta('regole-recensioni-solo-nuovi', r.soloNuovi),
+    primePartite: prendi(leggiIntero('regole-recensioni-prime-partite', r.primePartite, 'Recensioni, quante sono le prime partite', 1, 50)),
+    conNome: leggiSpunta('regole-recensioni-con-nome', r.conNome)
+  };
+
+  return { veloce, recensioni, errori };
+}
+
+// Le sezioni che questa scheda non conosce, cosi' come sono su Firebase in questo momento.
+// Se non si riesce a rileggerle si usano quelle lette all'apertura della scheda.
+async function sezioniDaConservare() {
+  let esistente = configSalvata;
+  try {
+    esistente = await leggiConfigDaFirebase();
+  } catch (errore) {
+    console.warn("Regole: non riesco a rileggere la configurazione, uso quella letta all'apertura", errore);
+  }
+  const resto = {};
+  for (const [nome, valore] of Object.entries(esistente || {})) {
+    if (!SEZIONI_DELLA_SCHEDA.includes(nome)) resto[nome] = valore;
+  }
+  return resto;
+}
+
 async function salva() {
   const risultato = document.getElementById('regole-risultato');
+
+  const nuove = leggiSezioniNuove();
 
   const nuovaConfig = {
     conoscenza: {
       bonusRispostaCorretta: Number(document.getElementById('regole-conoscenza-bonus').value),
-      malusRispostaErrata: Number(document.getElementById('regole-conoscenza-malus').value),
-      sfidaBonusVincitore: Number(document.getElementById('regole-conoscenza-sfida-bonus').value),
-      sfidaMalusPerdente: Number(document.getElementById('regole-conoscenza-sfida-malus').value)
+      malusRispostaErrata: Number(document.getElementById('regole-conoscenza-malus').value)
     },
     imprevisto: {
       malus: Number(document.getElementById('regole-imprevisto-malus').value)
@@ -79,19 +171,21 @@ async function salva() {
       bonusSuperata: Number(document.getElementById('regole-prova-bonus').value),
       malusFallita: Number(document.getElementById('regole-prova-malus').value)
     },
-    regole: {
-      bonusAttivaCasella: document.getElementById('regole-bonus-attiva-casella').checked,
-      saltoAttivaCasella: document.getElementById('regole-salto-attiva-casella').checked,
-      arrivoLibero: document.getElementById('regole-arrivo-libero').checked
-    },
     giocatori: {
       minimo: Number(document.getElementById('regole-giocatori-minimo').value),
       massimo: Number(document.getElementById('regole-giocatori-massimo').value)
-    }
+    },
+    veloce: nuove.veloce,
+    recensioni: nuove.recensioni
   };
 
   if (nuovaConfig.giocatori.minimo < 1 || nuovaConfig.giocatori.massimo < nuovaConfig.giocatori.minimo) {
     risultato.textContent = '❌ Il minimo deve essere almeno 1, e il massimo non può essere inferiore al minimo.';
+    return;
+  }
+
+  if (nuove.errori.length > 0) {
+    risultato.textContent = '❌ Non ho salvato nulla. ' + nuove.errori.join(' ');
     return;
   }
 
@@ -116,12 +210,14 @@ async function salva() {
   }
 
   try {
-    await salvaConfigDaFirebase(nuovaConfig);
+    const daConservare = await sezioniDaConservare();
+    await salvaConfigDaFirebase({ ...daConservare, ...nuovaConfig });
   } catch (errore) {
     console.warn('Regole: salvataggio non riuscito', errore);
     risultato.textContent = '❌ Non sono riuscito a salvare. Controlla la connessione e di essere entrato con la tua email, poi riprova.';
     return;
   }
+  configSalvata = { ...configSalvata, ...nuovaConfig };
   salmoSalvato = nuovaConfig.salmo || null;
   risultato.textContent = '✅ Regole salvate. Valgono dalla prossima partita creata.';
 }

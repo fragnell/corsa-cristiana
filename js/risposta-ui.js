@@ -12,6 +12,7 @@
 
 import { chiediPassword } from './accesso.js';
 import { riproduciEffetto } from './audio-ui.js';
+import { testoSicuro, numeroSicuro } from './testo-sicuro.js';
 
 function normalizza(testo) {
   return testo
@@ -64,7 +65,7 @@ export function raccogliRisposta(carta) {
 
     if (carta.tipo === 'elenco') {
       area.innerHTML = `
-        <p>Scrivi una risposta alla volta e premi "+".<br>Servono almeno ${carta.minimoRichiesto} risposte diverse.</p>
+        <p>Scrivi una risposta alla volta e premi "+".<br>Servono almeno ${numeroSicuro(carta.minimoRichiesto)} risposte diverse.</p>
         <div id="risposta-elenco-lista"></div>
         <div class="risposta-riga">
           <input type="text" id="risposta-input" placeholder="Scrivi qui...">
@@ -76,7 +77,7 @@ export function raccogliRisposta(carta) {
       const lista = [];
       const listaEl = document.getElementById('risposta-elenco-lista');
       const input = document.getElementById('risposta-input');
-      const aggiorna = () => { listaEl.innerHTML = lista.map(r => `<div>• ${r}</div>`).join(''); };
+      const aggiorna = () => { listaEl.innerHTML = lista.map(r => `<div>• ${testoSicuro(r)}</div>`).join(''); };
       const aggiungi = () => {
         const valore = input.value.trim();
         if (valore) { lista.push(valore); input.value = ''; aggiorna(); }
@@ -171,7 +172,7 @@ export function mostraVerdetto(carta, corretta, risposteDate) {
         } else {
           rispostaGiusta = Array.isArray(carta.risposta) ? carta.risposta.join(', ') : carta.risposta;
         }
-        rigaRispostaGiusta = `<p class="verdetto-risposta-giusta">Risposta corretta: ${rispostaGiusta}</p>`;
+        rigaRispostaGiusta = `<p class="verdetto-risposta-giusta">Risposta corretta: ${testoSicuro(rispostaGiusta)}</p>`;
 
         // Ha senso solo per le domande dirette: una frase libera che può
         // essere giusta anche se detta diversamente da come ce l'aspettavamo.
@@ -182,7 +183,7 @@ export function mostraVerdetto(carta, corretta, risposteDate) {
 
       area.innerHTML = `
         <p class="verdetto-esito">${corretta ? '✅ Corretto!' : '❌ Non risulta corretto'}</p>
-        <p class="verdetto-dettaglio">Risposta data: ${risposteDate.join(', ') || '(vuota)'}</p>
+        <p class="verdetto-dettaglio">Risposta data: ${testoSicuro(risposteDate.join(', ') || '(vuota)')}</p>
         ${rigaRispostaGiusta}
         <p class="verdetto-countdown">Si chiude tra <span id="verdetto-conto">${secondiRimasti}</span>s</p>
         <button id="verdetto-ok">✅ OK</button>
@@ -221,7 +222,7 @@ export function mostraVerdetto(carta, corretta, risposteDate) {
     function mostraConferma() {
       const rispostaData = risposteDate[0];
       area.innerHTML = `
-        <p class="verdetto-esito">Accettare "${rispostaData}" come risposta corretta?</p>
+        <p class="verdetto-esito">Accettare "${testoSicuro(rispostaData)}" come risposta corretta?</p>
         <p class="verdetto-dettaglio">Verrà ricordata: la prossima volta questa domanda la riconoscerà subito come giusta.</p>
         <button id="verdetto-conferma-si">✅ Sì, accetta</button>
         <button id="verdetto-conferma-no">← Torna indietro</button>
