@@ -20,8 +20,7 @@
 // Non lancia MAI errori verso chi la usa. "ambiente" serve solo ai collaudi (AudioContext, memoria, orologio e
 // scaricamento del file finti).
 
-// BETA: chiave diversa da quella del gioco vero, cosi' i due non si scambiano la scelta.
-export const CHIAVE_SUONO = 'corsa-cristiana-beta-suono-avviso';
+export const CHIAVE_SUONO = 'corsa-cristiana-suono-avviso';
 
 // Le note di ogni avviso: frequenza in Hz e quando partono (secondi dall'inizio dell'avviso).
 export const DISEGNI_SUONO = {

@@ -18,6 +18,16 @@ export function tiraDado(config = CONFIG) {
   return totale;
 }
 
+// ---------- NUMERO SCRITTO SULLA CASELLA ----------
+
+// La casella di partenza si chiama "VIA!" (non ha un numero): tutte le altre mostrano il numero
+// che avrebbero se "VIA!" non contasse come casella 1 (la 2 diventa "1", la 63/ARRIVO diventa "62"...).
+// La posizione vera (quella usata per muoversi, saltare, vincere) resta sempre 1-63: cambia solo
+// la scritta che vede chi gioca.
+export function etichettaPosizione(numero) {
+  return numero === 1 ? 'VIA!' : String(numero - 1);
+}
+
 // ---------- FUNZIONI DI SUPPORTO (uso interno, non esportate) ----------
 
 function trovaCasella(percorso, numero) {

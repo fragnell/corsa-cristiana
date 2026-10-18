@@ -112,6 +112,8 @@ body {
 
 .casella-PARTENZA    { background: #8bd17c; }
 
+.casella-PARTENZA .numero { font-size: 0.5em; }
+
 .casella-PARTENZA .numero::after { content: ' 🚩'; }
 
 .pedine {

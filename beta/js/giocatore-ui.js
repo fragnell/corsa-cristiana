@@ -11,6 +11,7 @@ import { PALETTE, NOMI_COLORI } from './colori.js';
 import { mostraVerdettoSulTelefono, chiudiAvvisoSeAperto } from './verdetto-telefono-ui.js';
 import { codiceDalLink } from './link-partita.js';
 import { testoSicuro, coloreSicuro } from './testo-sicuro.js';
+import { etichettaPosizione } from './regole.js';
 
 import {
   verificaPartitaEsiste,
@@ -307,7 +308,7 @@ function aggiornaSchermo(stato) {
   const notifica = document.getElementById('notifica-evento');
   const giocatoreDiTurno = stato.giocatori[stato.turnoDi];
 
-  document.getElementById('mia-posizione').textContent = `Sei sulla casella ${stato.giocatori[mioId].posizione}`;
+  document.getElementById('mia-posizione').textContent = `Sei sulla casella ${etichettaPosizione(stato.giocatori[mioId].posizione)}`;
 
   // Targhetta "Partita veloce" (le partite di prima, o senza modalita', non hanno la targhetta)
   const elModalita = document.getElementById('mia-modalita');

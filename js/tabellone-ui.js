@@ -10,7 +10,7 @@
 
 import { CONFIG, unisciConfig, configPerModalita } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
-import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
+import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno, etichettaPosizione } from './regole.js';
 import { creaMazzo, pesca, creaMazzoARotazione, peschaARotazione } from './mazzi.js';
 import { leggiMemoriaRotazione, numeroNuovaPartita, segnaDomandaUscita } from './rotazione-domande.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
@@ -46,12 +46,11 @@ import {
 } from './sincronizzazione.js';
 
 const DURATA_SALTO_MS = 300;
-// BETA: chiave diversa da quella del gioco vero, cosi' i due non si scambiano la partita da riprendere.
-const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-beta-partita-attiva';
+const CHIAVE_PARTITA_ATTIVA = 'corsa-cristiana-partita-attiva';
 const DURATA_COUNTDOWN_RIPRESA_S = 15;
 // Quando la ripresa e' chiesta di proposito scrivendo il codice (vedi preparaRipresaDaCodice), la pagina si ricarica:
 // questo segno (valido solo per questa scheda) dice alla pagina nuova che la persona ha gia' confermato.
-const CHIAVE_RIPRESA_CONFERMATA = 'corsa-cristiana-beta-ripresa-confermata';
+const CHIAVE_RIPRESA_CONFERMATA = 'corsa-cristiana-ripresa-confermata';
 // Oltre questa eta' dall'ultima mossa pubblicata, una partita interrotta si
 // considera troppo vecchia per riproporla: non ha senso chiedere di
 // riprendere una partita di ieri sera. Punto unico da cambiare per
@@ -140,7 +139,7 @@ function disegnaTabellone(coordinate) {
     el.dataset.numero = cella.numero;
     el.style.gridRow = riga + 1;
     el.style.gridColumn = colonna + 1;
-    el.innerHTML = `<span class="numero">${cella.numero}</span><div class="pedine" id="pedine-${cella.numero}"></div>`;
+    el.innerHTML = `<span class="numero">${etichettaPosizione(cella.numero)}</span><div class="pedine" id="pedine-${cella.numero}"></div>`;
     contenitore.appendChild(el);
   });
 }
@@ -288,7 +287,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
   }
 
   if (r.evento.tipo === 'SALTO') {
-    const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${r.evento.destinazione}.` };
+    const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${etichettaPosizione(r.evento.destinazione)}.` };
     await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
   }
 

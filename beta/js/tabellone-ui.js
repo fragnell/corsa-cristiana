@@ -10,7 +10,7 @@
 
 import { CONFIG, unisciConfig, configPerModalita } from './config.js';
 import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
-import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno } from './regole.js';
+import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno, etichettaPosizione } from './regole.js';
 import { creaMazzo, pesca, creaMazzoARotazione, peschaARotazione } from './mazzi.js';
 import { leggiMemoriaRotazione, numeroNuovaPartita, segnaDomandaUscita } from './rotazione-domande.js';
 import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
@@ -140,7 +140,7 @@ function disegnaTabellone(coordinate) {
     el.dataset.numero = cella.numero;
     el.style.gridRow = riga + 1;
     el.style.gridColumn = colonna + 1;
-    el.innerHTML = `<span class="numero">${cella.numero}</span><div class="pedine" id="pedine-${cella.numero}"></div>`;
+    el.innerHTML = `<span class="numero">${etichettaPosizione(cella.numero)}</span><div class="pedine" id="pedine-${cella.numero}"></div>`;
     contenitore.appendChild(el);
   });
 }
@@ -288,7 +288,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
   }
 
   if (r.evento.tipo === 'SALTO') {
-    const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${r.evento.destinazione}.` };
+    const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${etichettaPosizione(r.evento.destinazione)}.` };
     await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
   }
 
