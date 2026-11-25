@@ -191,6 +191,11 @@ export async function mostraIntroduzione({ config, modalita = 'normale', conDoma
       scena.appendChild(crea('div', 'intro-icona', s.icona));
       scena.appendChild(crea('h2', 'intro-titolo', s.titolo));
       if (s.testo) scena.appendChild(testoAParole(s.testo));
+      if (s.citazione) {
+        // la citazione resta esattamente com'e': entra tutta insieme, dopo la frase introduttiva
+        const citazione = crea('blockquote', 'intro-citazione', `«${s.citazione}»`);
+        scena.appendChild(citazione);
+      }
       if (Array.isArray(s.elenco)) {
         const elenco = crea('ul', 'intro-elenco');
         s.elenco.forEach((voce, i) => {

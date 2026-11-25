@@ -6,7 +6,7 @@
 // si gioca la partita veloce, la spiegazione dice sempre il vero.
 //
 // Ogni scena:
-//   { id, icona, titolo, testo, riferimento?, elenco?: [{ icona, immagine?, titolo, testo }],
+//   { id, icona, titolo, testo, citazione?, riferimento?, elenco?: [{ icona, immagine?, titolo, testo }],
 //     animazione?: 'percorso' | 'dado' | 'mosaico', durataMs }
 // La scena "domanda" e' speciale: chiede se e' la prima volta che si gioca.
 //
@@ -14,19 +14,23 @@
 
 export const DURATA_MINIMA_MS = 6000;
 export const DURATA_MASSIMA_MS = 20000;
+// Una scena con una citazione lunga (da leggere con calma, magari ad alta voce) puo' restare di piu'.
+export const DURATA_MASSIMA_CITAZIONE_MS = 34000;
 // Se nessuno risponde alla domanda "E' la prima volta?", dopo tanto si parte senza spiegazione.
 export const ATTESA_DOMANDA_MS = 30000;
 
 // Quanto resta una scena: abbastanza per leggerla con calma ad alta voce.
 export function durataLettura(scena) {
-  let caratteri = String(scena.titolo || '').length + String(scena.testo || '').length + String(scena.riferimento || '').length;
+  let caratteri = String(scena.titolo || '').length + String(scena.testo || '').length + String(scena.riferimento || '').length
+    + String(scena.citazione || '').length;
   let extra = 0;
   for (const voce of scena.elenco || []) {
     caratteri += String(voce.titolo || '').length + String(voce.testo || '').length;
     extra += 900;   // ogni voce dell'elenco entra un po' dopo la precedente
   }
   const ms = 3000 + caratteri * 62 + extra;
-  return Math.round(Math.min(DURATA_MASSIMA_MS, Math.max(DURATA_MINIMA_MS, ms)));
+  const massimo = scena.citazione ? DURATA_MASSIMA_CITAZIONE_MS : DURATA_MASSIMA_MS;
+  return Math.round(Math.min(massimo, Math.max(DURATA_MINIMA_MS, ms)));
 }
 
 function conDurata(scena) {
@@ -48,30 +52,13 @@ function caselle(n) {
 export function scenePremessa() {
   return [
     {
-      id: 'benvenuto',
+      id: 'premessa',
       icona: '🏃',
       titolo: 'Prima di cominciare…',
-      testo: 'Una piccola premessa: conoscere più cose non significa necessariamente essere più spirituali.'
-    },
-    {
-      id: 'torre',
-      icona: '📖',
-      titolo: 'Conoscere non basta',
-      testo: 'Come ricorda La Torre di Guardia del febbraio 2018, conoscere la Bibbia non basta per sviluppare una mentalità spirituale.',
-      riferimento: 'La Torre di Guardia, febbraio 2018, p. 24, par. 7'
-    },
-    {
-      id: 'salomone',
-      icona: '👑',
-      titolo: 'Pensiamo a Salomone',
-      testo: 'Pur avendo una grande conoscenza di Geova, alla fine non rimase fedele a lui.',
-      riferimento: '1 Re 4:29, 30; 11:4-6'
-    },
-    {
-      id: 'fiducia',
-      icona: '🤲',
-      titolo: 'La vera corsa cristiana',
-      testo: 'Per portarla a termine non basta conoscere la Parola di Dio: dobbiamo fidarci pienamente di essa e metterla in pratica nella nostra vita.'
+      testo: 'Una piccola premessa: conoscere più cose non significa necessariamente essere più spirituali.',
+      // Citazione testuale: non cambiarla, nemmeno di una parola.
+      citazione: 'Conoscere la Bibbia non basta per diventare una persona dalla mentalità spirituale. Il re Salomone conosceva bene Geova, e le parole che pronunciò entrarono addirittura a far parte della Bibbia. Ma alla fine non fu una persona spirituale e non rimase fedele a Geova (1 Re 4:29, 30; 11:4-6)',
+      riferimento: 'La Torre di Guardia, febbraio 2018, p. 24, par. 7 — «Continuiamo a crescere spiritualmente»'
     },
     {
       id: 'scopo',

@@ -8,7 +8,7 @@ import { existsSync } from 'node:fs';
 import { CONFIG, configPerModalita } from './js/config.js';
 import {
   scenePremessa, scenaDomanda, sceneRegole, durataLettura,
-  DURATA_MINIMA_MS, DURATA_MASSIMA_MS, ATTESA_DOMANDA_MS
+  DURATA_MINIMA_MS, DURATA_MASSIMA_MS, DURATA_MASSIMA_CITAZIONE_MS, ATTESA_DOMANDA_MS
 } from './js/introduzione-testi.js';
 
 let provati = 0;
@@ -18,18 +18,19 @@ function prova(nome, fn) {
   try { fn(); } catch (e) { falliti.push({ nome, e }); console.log(`  FAIL  ${nome}\n        ${e.message}`); }
 }
 
-const tuttoIlTesto = scene => scene.map(s => [s.titolo, s.testo, s.riferimento, ...(s.elenco || []).map(v => `${v.titolo} ${v.testo}`)].join(' ')).join(' | ');
+const tuttoIlTesto = scene => scene.map(s => [s.titolo, s.testo, s.citazione, s.riferimento, ...(s.elenco || []).map(v => `${v.titolo} ${v.testo}`)].join(' ')).join(' | ');
 
-prova('premessa: ci sono tutti i punti, con i riferimenti giusti', () => {
+prova('premessa: una sola scena con la frase, la citazione testuale e il riferimento', () => {
   const scene = scenePremessa();
+  const premessa = scene[0];
+  assert.equal(premessa.testo, 'Una piccola premessa: conoscere più cose non significa necessariamente essere più spirituali.');
+  assert.equal(premessa.citazione, 'Conoscere la Bibbia non basta per diventare una persona dalla mentalità spirituale. Il re Salomone conosceva bene Geova, e le parole che pronunciò entrarono addirittura a far parte della Bibbia. Ma alla fine non fu una persona spirituale e non rimase fedele a Geova (1 Re 4:29, 30; 11:4-6)');
+  assert.ok(/febbraio 2018, p\. 24, par\. 7/.test(premessa.riferimento));
+  assert.ok(/Continuiamo a crescere spiritualmente/.test(premessa.riferimento));
+  assert.deepEqual(scene.map(s => s.id), ['premessa', 'scopo', 'non-gara']);
   const t = tuttoIlTesto(scene);
-  assert.ok(/non significa necessariamente essere più spirituali/.test(t));
-  assert.ok(/febbraio 2018, p\. 24, par\. 7/.test(t));
-  assert.ok(/Salomone/.test(t) && /1 Re 4:29, 30; 11:4-6/.test(t));
-  assert.ok(/fidarci pienamente/.test(t));
   assert.ok(/cose edificanti/.test(t));
   assert.ok(/Non è una gara a chi sa di più/.test(t));
-  assert.equal(new Set(scene.map(s => s.id)).size, scene.length, 'id ripetuti');
 });
 
 prova('la domanda: due scelte e un tempo d\'attesa', () => {
@@ -78,8 +79,10 @@ prova('configurazione vuota o strana: nessun errore, numeri di base', () => {
 
 prova('ogni scena dura il tempo di leggerla, entro i limiti', () => {
   for (const s of [...scenePremessa(), ...sceneRegole(CONFIG)]) {
-    assert.ok(s.durataMs >= DURATA_MINIMA_MS && s.durataMs <= DURATA_MASSIMA_MS, `${s.id}: ${s.durataMs}`);
+    const massimo = s.citazione ? DURATA_MASSIMA_CITAZIONE_MS : DURATA_MASSIMA_MS;
+    assert.ok(s.durataMs >= DURATA_MINIMA_MS && s.durataMs <= massimo, `${s.id}: ${s.durataMs}`);
   }
+  assert.ok(scenePremessa()[0].durataMs > DURATA_MASSIMA_MS, "la citazione lunga deve restare piu' delle altre");
   assert.ok(durataLettura({ titolo: 'a', testo: 'b'.repeat(200) }) > durataLettura({ titolo: 'a', testo: 'b' }));
 });
 

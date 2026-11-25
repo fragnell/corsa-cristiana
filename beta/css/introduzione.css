@@ -142,6 +142,27 @@
   animation: intro-sale-poco 0.8s 2.2s ease-out both;
 }
 
+/* una citazione testuale (la premessa): riquadro chiaro, entra dopo la frase introduttiva */
+.intro-citazione {
+  margin: 3.2vh auto 0;
+  max-width: 56rem;
+  padding: 2.2vh 2.4rem;
+  border-left: 6px solid #ffd66b;
+  border-radius: 6px 18px 18px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  text-align: left;
+  font-size: clamp(1.05rem, 3.4vh, 2.1rem);
+  line-height: 1.42;
+  font-style: italic;
+  color: #fffaf0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  animation: intro-sale-poco 1s 2.2s ease-out both;
+}
+
+.intro-citazione + .intro-riferimento {
+  animation-delay: 3.2s;
+}
+
 /* ---------- elenchi (lo scopo del gioco, le caselle) ---------- */
 
 .intro-elenco {
