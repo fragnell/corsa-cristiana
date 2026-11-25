@@ -23,7 +23,7 @@ function crea(tag, classe, testo) {
 }
 
 function creaScheda(r, copia) {
-  const scheda = crea('figure', 'recensione-home');
+  const scheda = crea('figure', r.commento ? 'recensione-home' : 'recensione-home recensione-home-solo-voto');
   if (copia) scheda.setAttribute('aria-hidden', 'true');   // la seconda copia serve solo a far girare il nastro
   scheda.appendChild(crea('div', 'recensione-home-stelle', stelline(r.stelle)));
   if (r.commento) scheda.appendChild(crea('blockquote', 'recensione-home-testo', `“${r.commento}”`));
