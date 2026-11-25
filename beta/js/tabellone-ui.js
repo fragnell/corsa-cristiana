@@ -732,6 +732,22 @@ function mostraBadgeModalita(modalita) {
   if (badge) badge.classList.toggle('nascosta', modalita !== 'veloce');
 }
 
+// La presentazione animata di inizio partita (js/introduzione.js): premessa, "E' la prima volta?" e,
+// se serve, le regole. Si carica a parte: se non si carica o si rompe, la partita parte lo stesso.
+// Non si mostra quando si riprende una partita interrotta.
+const LIMITE_INTRODUZIONE_MS = 15 * 60 * 1000;
+async function mostraIntroduzioneSicura(modalita) {
+  try {
+    const { mostraIntroduzione } = await import('./introduzione.js');
+    await Promise.race([
+      mostraIntroduzione({ config: configPartita, modalita }),
+      pausa(LIMITE_INTRODUZIONE_MS)
+    ]);
+  } catch (errore) {
+    console.warn('Introduzione non disponibile, si parte subito', errore);
+  }
+}
+
 async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
   // La partita veloce cambia solo pochi numeri (vedi "veloce" in config.js): da qui in poi tutto il
   // gioco usa la configurazione della modalita' scelta.
@@ -753,6 +769,9 @@ async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
   stato.modalita = modalitaPartita;      // i telefoni la leggono dallo stato (targhetta "Partita veloce")
   mostraBadgeModalita(stato.modalita);
   creaPedine();
+
+  // La presentazione di inizio partita (saltabile): il gioco aspetta che finisca.
+  await mostraIntroduzioneSicura(modalitaPartita);
 
   localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
   configuraAscoltatoriDiPartita();

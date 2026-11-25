@@ -926,3 +926,47 @@ button {
   border: 1px solid #999;
   border-radius: 6px;
 }
+
+/* --- Recensioni in evidenza nella pagina principale (js/admin-recensioni.js) --- */
+
+.recensione-azioni {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.recensione-btn-evidenza {
+  padding: 0.3rem 0.7rem;
+  border: 2px solid #e0b100;
+  border-radius: 999px;
+  background: #fff;
+  color: #7a5a00;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.recensione-btn-evidenza:hover { background: #fff6d6; }
+
+.recensione-btn-evidenza.accesa {
+  background: #f5b301;
+  border-color: #f5b301;
+  color: #3a2a00;
+}
+
+.recensione-btn-evidenza:disabled { opacity: 0.6; cursor: wait; }
+
+.recensione-firma {
+  font-size: 0.8rem;
+  color: #555;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.recensione-in-evidenza {
+  background: linear-gradient(90deg, rgba(245, 179, 1, 0.12), transparent 70%);
+}

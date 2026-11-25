@@ -8,7 +8,8 @@
 // rompe qualcosa qui, il resto dell'Admin non ne risente.
 // La logica (filtri, riepilogo, righe di Excel) e' in filtri-recensioni.js, provata con test-recensioni.mjs.
 
-import { ascoltaRecensioni, eliminaRecensione } from './sincronizzazione.js';
+import { ascoltaRecensioni, eliminaRecensione, ascoltaRecensioniInEvidenza, mettiRecensioneInEvidenza, togliRecensioneDaEvidenza } from './sincronizzazione.js';
+import { copiaPerEvidenza, MAX_IN_HOME } from './recensioni-evidenza.js';
 import {
   FILTRI_RECENSIONI_INIZIALI, filtraRecensioni, filtriAttivi, riassumi, contaRecensioni, righeExcel,
   votoDi, commentoDi, nomeDi, modalitaDi, versioneDi, dataDi, etichettaStelle, dataEOra
@@ -18,7 +19,12 @@ const PER_PAGINA = 30;
 
 let recensioni = [];        // tutte quelle arrivate, come le manda Firebase
 let caricate = false;       // false finche' non e' arrivata la prima risposta
-let filtri = { ...FILTRI_RECENSIONI_INIZIALI };
+// "evidenza" e' un filtro solo di questa scheda: 'tutte' | 'si' (solo quelle che scorrono in home)
+const FILTRI_INIZIALI = Object.freeze({ ...FILTRI_RECENSIONI_INIZIALI, evidenza: 'tutte' });
+let filtri = { ...FILTRI_INIZIALI };
+// Le recensioni messe in evidenza nella pagina principale: { <chiave>: copia } (vedi recensioni-evidenza.js)
+let evidenza = {};
+const inEvidenza = recensione => !!(recensione && evidenza[recensione._chiave]);
 let visibili = PER_PAGINA;
 
 // I pezzi della pagina (si trovano una volta sola, all'avvio)
@@ -58,6 +64,12 @@ const GRUPPI = [
       { valore: 'tutte', etichetta: 'Tutte', conteggio: c => c.totale },
       { valore: 'beta', etichetta: 'Beta', conteggio: c => c.versione.beta },
       { valore: 'ufficiale', etichetta: 'Ufficiale', conteggio: c => c.versione.ufficiale }
+    ]
+  },
+  {
+    chiave: 'evidenza', titolo: 'In home', voci: [
+      { valore: 'tutte', etichetta: 'Tutte', conteggio: c => c.totale },
+      { valore: 'si', etichetta: '⭐ Solo quelle in home', conteggio: () => recensioni.filter(inEvidenza).length }
     ]
   }
 ];
@@ -123,6 +135,8 @@ function disegnaRiepilogo() {
   aggiungiNumero(r.media === null ? '—' : `⭐ ${comeNumero(r.media)}`, 'media su 5');
   aggiungiNumero(String(r.totale), r.totale === 1 ? 'recensione' : 'recensioni');
   aggiungiNumero(String(r.conCommento), 'con commento');
+  const quanteInHome = recensioni.filter(inEvidenza).length;
+  aggiungiNumero(`⭐ ${quanteInHome}`, 'in home');
   elRiepilogo.appendChild(numeri);
 
   if (r.votate > 0) {
@@ -215,7 +229,7 @@ function cambiaFiltro(chiave, valore) {
 }
 
 function azzeraFiltri() {
-  filtri = { ...FILTRI_RECENSIONI_INIZIALI };
+  filtri = { ...FILTRI_INIZIALI };
   visibili = PER_PAGINA;
   disegna();
 }
@@ -232,7 +246,7 @@ function aggiornaBarra(trovate) {
   }
   if (barra.campoTesto.value !== filtri.testo) barra.campoTesto.value = filtri.testo;
   barra.selectOrdine.value = filtri.ordine;
-  barra.bottoneAzzera.hidden = filtriAttivi(filtri) === 0 && filtri.ordine === FILTRI_RECENSIONI_INIZIALI.ordine;
+  barra.bottoneAzzera.hidden = filtriAttivi(filtri) === 0 && filtri.ordine === FILTRI_RECENSIONI_INIZIALI.ordine && filtri.evidenza === 'tutte';
 
   const mostrate = Math.min(trovate, visibili);
   let testo = filtriAttivi(filtri) > 0
@@ -274,18 +288,68 @@ function creaRiga(recensione) {
 
   riga.appendChild(corpo);
 
+  const azioni = creaElemento('div', 'recensione-azioni');
+  const scelta = inEvidenza(recensione);
+  if (scelta) riga.classList.add('recensione-in-evidenza');
+  const stella = creaElemento('button', 'recensione-btn-evidenza' + (scelta ? ' accesa' : ''), scelta ? '⭐ In home' : '☆ Mostra in home');
+  stella.type = 'button';
+  stella.setAttribute('aria-pressed', String(scelta));
+  stella.title = scelta
+    ? 'Questa recensione scorre nella pagina principale. Clicca per toglierla.'
+    : 'Falla scorrere nella pagina principale, sotto «Alcune recensioni».';
+  stella.addEventListener('click', () => cambiaEvidenza(recensione, !scelta, true, stella));
+  azioni.appendChild(stella);
+  if (scelta && nome) {
+    const etichetta = creaElemento('label', 'recensione-firma');
+    const casella = document.createElement('input');
+    casella.type = 'checkbox';
+    casella.checked = !!evidenza[recensione._chiave].nome;
+    casella.addEventListener('change', () => cambiaEvidenza(recensione, true, casella.checked, casella));
+    etichetta.appendChild(casella);
+    etichetta.appendChild(document.createTextNode(' con il soprannome'));
+    azioni.appendChild(etichetta);
+  }
+
   const elimina = creaElemento('button', 'admin-btn-elimina', '🗑️');
   elimina.type = 'button';
   elimina.title = 'Elimina questa recensione';
   elimina.addEventListener('click', () => chiediEliminazione(recensione));
-  riga.appendChild(elimina);
+  azioni.appendChild(elimina);
+  riga.appendChild(azioni);
 
   return riga;
+}
+
+// Mette (o toglie) una recensione nella pagina principale. "conNome": la copia porta anche il soprannome.
+async function cambiaEvidenza(recensione, accendi, conNome, controllo) {
+  if (accendi && !inEvidenza(recensione) && Object.keys(evidenza).length >= MAX_IN_HOME) {
+    mostraAvviso(`ℹ️ In home ne scorrono al massimo ${MAX_IN_HOME}: per aggiungerne un'altra, togline prima una (filtro «In home»).`);
+    return;
+  }
+  if (controllo) controllo.disabled = true;
+  try {
+    if (accendi) await mettiRecensioneInEvidenza(recensione._chiave, copiaPerEvidenza(recensione, conNome));
+    else await togliRecensioneDaEvidenza(recensione._chiave);
+    mostraAvviso('');
+  } catch (errore) {
+    console.warn('Recensioni: evidenza non aggiornata', errore);
+    mostraAvviso(dicoErroreEvidenza(errore));
+    if (controllo) controllo.disabled = false;
+  }
+}
+
+function dicoErroreEvidenza(errore) {
+  const testo = String((errore && (errore.code || errore.message)) || errore || '');
+  if (/permission[_ -]?denied/i.test(testo)) {
+    return "🔒 Firebase non mi lascia scrivere le recensioni in evidenza: nelle regole del database manca il blocco «recensioniInEvidenza» (te l'ha spiegato Claude), oppure non hai fatto il login.";
+  }
+  return '❌ Non sono riuscito a cambiare la recensione in home. Controlla la connessione e riprova.';
 }
 
 async function chiediEliminazione(recensione) {
   if (!confirm('Eliminare questa recensione? Non si può annullare.')) return;
   try {
+    if (inEvidenza(recensione)) await togliRecensioneDaEvidenza(recensione._chiave);
     await eliminaRecensione(recensione._chiave);
     mostraAvviso('');
   } catch (errore) {
@@ -299,7 +363,7 @@ async function chiediEliminazione(recensione) {
 function disegna() {
   disegnaRiepilogo();
 
-  const trovate = filtraRecensioni(recensioni, filtri);
+  const trovate = filtraRecensioni(recensioni, filtri).filter(r => filtri.evidenza !== 'si' || inEvidenza(r));
   const mostrate = trovate.slice(0, visibili);
 
   elLista.innerHTML = '';
@@ -375,6 +439,10 @@ export function avviaSezioneRecensioni() {
   }
 
   disegna();
+  ascoltaRecensioniInEvidenza(
+    oggetto => { evidenza = oggetto && typeof oggetto === 'object' ? oggetto : {}; disegna(); },
+    errore => { console.warn('Recensioni: lettura di quelle in evidenza non riuscita', errore); }
+  );
   ascoltaRecensioni(
     lista => {
       recensioni = lista;
