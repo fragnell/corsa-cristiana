@@ -17,6 +17,7 @@ import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProva
 import { testoSpostamento } from './carta-logica.js';
 import { annuncia } from './annuncio-ui.js';
 import { avviaDimensioneTesto } from './dimensione-testo.js';
+import { mostraCelebrazione } from './vittoria-ui.js';
 import { esci } from './accesso.js';
 import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica, fermaEffetti } from './audio-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
@@ -524,20 +525,29 @@ function mostraVittoria() {
   // da qui: e' l'unico punto in cui una partita risulta davvero conclusa.
   registraPartitaConclusa(stato.giocatori.length);
 
-  const vincitore = stato.giocatori[stato.vincitore];
-  document.getElementById('vittoria-titolo').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
   document.getElementById('vittoria-bottoni').classList.remove('nascosta');
   document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
-  document.getElementById('vittoria-overlay').classList.remove('nascosta');
+  document.getElementById('vittoria-overlay').classList.remove('vittoria-con-statistiche');
+  // La festa a tutto schermo (js/vittoria-ui.js): pedina con la corona, nome in oro, coriandoli,
+  // fuochi d'artificio, versetto e podio. Se qualcosa va storto, almeno il nome del vincitore c'e'.
+  try {
+    mostraCelebrazione({
+      giocatori: stato.giocatori,
+      vincitoreId: stato.vincitore,
+      coloreDi: g => PALETTE[g.colore] || coloreSicuro(g.colore)
+    });
+  } catch (errore) {
+    console.warn('Festa di fine partita non riuscita', errore);
+    const scena = document.getElementById('vittoria-scena');
+    if (scena) scena.textContent = `🏆 Ha vinto ${stato.giocatori[stato.vincitore].nome}!`;
+    document.getElementById('vittoria-overlay').classList.remove('nascosta');
+  }
 
   fermaMusica();
   fermaEffetti();
   riproduciEffetto('vittoria');
   if (schermoAcceso) { try { schermoAcceso.spegni(); } catch (errore) { /* pazienza */ } }   // partita finita: lo schermo torna a spegnersi da solo
 
-  const video = document.getElementById('vittoria-video');
-  video.currentTime = 0;
-  video.play().catch(() => {});
 }
 
 function disegnaClassificaConoscenza() {
@@ -591,12 +601,14 @@ document.getElementById('vittoria-btn-chiudi').addEventListener('click', () => {
 
 document.getElementById('vittoria-btn-statistiche').addEventListener('click', () => {
   disegnaClassificaConoscenza();
+  document.getElementById('vittoria-overlay').classList.add('vittoria-con-statistiche');
   document.getElementById('vittoria-bottoni').classList.add('nascosta');
   document.getElementById('vittoria-statistiche-vista').classList.remove('nascosta');
 });
 
 document.getElementById('vittoria-btn-indietro').addEventListener('click', () => {
   document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
+  document.getElementById('vittoria-overlay').classList.remove('vittoria-con-statistiche');
   document.getElementById('vittoria-bottoni').classList.remove('nascosta');
 });
 
