@@ -58,20 +58,10 @@ const CHIAVE_RIPRESA_CONFERMATA = 'corsa-cristiana-beta-ripresa-confermata';
 // aggiustare la soglia.
 const LIMITE_RIPRESA_MS = 20 * 60 * 1000; // 20 minuti
 
-const TIPI_LEGENDA = [
-  { tipo: 'CONOSCENZA', etichetta: 'Conoscenza' },
-  { tipo: 'IMPREVISTO', etichetta: 'Imprevisto' },
-  { tipo: 'SALTO', etichetta: 'Salto' },
-  { tipo: 'FERMO', etichetta: 'Fermo' },
-  { tipo: 'PROVA', etichetta: 'Prova' }
-];
-
-function disegnaLegenda() {
-  const contenitore = document.getElementById('legenda-lista');
-  contenitore.innerHTML = TIPI_LEGENDA.map(t =>
-    `<div class="legenda-riga"><span class="legenda-pallino casella-${t.tipo}"></span>${t.etichetta}</div>`
-  ).join('');
-}
+// La spirale del percorso: due giri lungo i bordi della tavola (6 righe x 14 colonne = 64 posti per
+// 63 caselle). Al centro restano libere 2 righe x 10 colonne, dove va il riquadro del turno.
+const RIGHE_TABELLONE = 6;
+const COLONNE_TABELLONE = 14;
 
 let percorso = [];
 let configPartita = CONFIG;
@@ -143,6 +133,40 @@ function disegnaTabellone(coordinate) {
     el.innerHTML = `<span class="numero">${etichettaPosizione(cella.numero)}</span><div class="pedine" id="pedine-${cella.numero}"></div>`;
     contenitore.appendChild(el);
   });
+  // il riquadro del turno sta dentro la griglia, nello spazio libero al centro della spirale (vedi tabellone.css)
+  const pannelloTurno = document.getElementById('pannello-turno');
+  if (pannelloTurno) contenitore.appendChild(pannelloTurno);
+}
+
+// Il riquadro del turno, al centro del tabellone: la pedina di chi gioca, "Tocca a ...", cosa deve
+// fare e una nota piccola. Il nome arriva dai telefoni: entra sempre come testo semplice.
+function mostraTurno(giocatore, azione, nota) {
+  const info = document.getElementById('turno-info');
+  if (!info) return;
+  info.textContent = '';
+  const pedina = document.createElement('div');
+  pedina.className = 'turno-pedina';
+  pedina.style.backgroundColor = PALETTE[giocatore.colore] || coloreSicuro(giocatore.colore);
+  pedina.textContent = (giocatore.nome || '?')[0];
+  const testi = document.createElement('div');
+  testi.className = 'turno-testi';
+  const chi = document.createElement('div');
+  chi.className = 'turno-chi';
+  chi.append('Tocca a ');
+  const nome = document.createElement('strong');
+  nome.textContent = giocatore.nome;
+  chi.appendChild(nome);
+  const cosa = document.createElement('div');
+  cosa.className = 'turno-azione';
+  cosa.textContent = azione;
+  testi.append(chi, cosa);
+  if (nota) {
+    const piccola = document.createElement('div');
+    piccola.className = 'turno-nota';
+    piccola.textContent = nota;
+    testi.appendChild(piccola);
+  }
+  info.append(pedina, testi);
 }
 
 function creaPedine() {
@@ -227,18 +251,15 @@ async function salmoDopoPassaggioDiTurno() {
   }
 }
 
+// Chi ha una prova in sospeso ha una ⏳ sulla pedina (il testo della prova si legge sui telefoni).
 function aggiornaProveInSospeso() {
-  const contenitore = document.getElementById('prove-in-sospeso');
-  const inAttesa = stato.giocatori.filter(g => g.provaInSospeso);
-
-  if (inAttesa.length === 0) {
-    contenitore.innerHTML = '';
-    return;
-  }
-
-  contenitore.innerHTML = inAttesa.map(g =>
-    `<div class="prova-sospesa-riga">${testoSicuro(g.nome)}</div>`
-  ).join('');
+  stato.giocatori.forEach(g => {
+    const pedina = pedineDom.get(g.id);
+    if (!pedina) return;
+    const inSospeso = !!g.provaInSospeso;
+    pedina.classList.toggle('pedina-in-sospeso', inSospeso);
+    pedina.title = inSospeso ? `${g.nome} — prova in sospeso` : g.nome;
+  });
 }
 
 async function risolviProvaVincoloDiTurno(giocatore) {
@@ -432,17 +453,17 @@ async function giocaTurno() {
     giocatore = giocatoreDiTurno(stato);
   }
 
-  const infoTurno = document.getElementById('turno-info');
-
   const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
-  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...` +
-    (sembraDisconnesso ? ' ⚠️ Il suo dispositivo sembra disconnesso.' : ' (se non risponde entro un minuto, si procede comunque)');
+  const secondiDado = Math.round(configPartita.timeout.dadoMs / 1000);
+  mostraTurno(giocatore, '🎲 Tira il dado dal telefono',
+    sembraDisconnesso ? '⚠️ Il suo telefono sembra disconnesso.' : `Se non risponde entro ${secondiDado} secondi, si procede comunque.`);
   await aspettaIntenzioneDado(codicePartita, giocatore.id, configPartita.timeout.dadoMs);
   stato.turnoInCorso = true;
 
   const posizionePrima = giocatore.posizione;
   const dado = tiraDado(configPartita);
   await animaDado(dado);
+  mostraTurno(giocatore, `🎲 Ha fatto ${dado}!`, '');
 
   const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
   await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
@@ -757,9 +778,8 @@ async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
 
-  const coordinate = generaSpirale(6, 11);
+  const coordinate = generaSpirale(RIGHE_TABELLONE, COLONNE_TABELLONE);
   disegnaTabellone(coordinate);
-  disegnaLegenda();
 
   document.getElementById('codice-partita-gioco').textContent = codicePartita;
 
@@ -812,9 +832,8 @@ async function riprendiPartitaEsistente(statoEsistente) {
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
 
-  const coordinate = generaSpirale(6, 11);
+  const coordinate = generaSpirale(RIGHE_TABELLONE, COLONNE_TABELLONE);
   disegnaTabellone(coordinate);
-  disegnaLegenda();
 
   document.getElementById('codice-partita-gioco').textContent = codicePartita;
 

@@ -80,24 +80,16 @@
 
   <div id="vista-gioco" class="nascosta">
     <div id="scena">
+      <!-- Il percorso a spirale occupa tutta la tavola; al centro (dentro la spirale) va il
+           riquadro del turno: js/tabellone-ui.js lo sposta li' quando disegna le caselle.
+           Le prove in sospeso non hanno piu' un riquadro: si vedono come ⏳ sulla pedina
+           e, per esteso, sui telefoni. -->
       <div id="tabellone"></div>
 
-      <div id="pannello-sospeso" class="pannello-laterale">
-        <div class="pannello-titolo">In sospeso</div>
-        <div id="prove-in-sospeso"></div>
-      </div>
-
-      <div id="pannello-legenda" class="pannello-laterale">
-        <div class="pannello-titolo">Legenda</div>
-        <div id="legenda-lista"></div>
-      </div>
-
-      <div id="pannello-turno" class="pannello-laterale">
-        <div class="pannello-titolo">Turno</div>
+      <div id="pannello-turno">
         <div id="turno-info"></div>
+        <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span><span id="modalita-badge" class="nascosta"> · ⚡ Partita veloce</span></div>
       </div>
-
-      <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span><span id="modalita-badge" class="nascosta"> · ⚡ Partita veloce</span></div>
     </div>
 
     

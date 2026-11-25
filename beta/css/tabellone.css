@@ -24,24 +24,39 @@ body {
   width: min(100vw, calc(100vh * 16 / 9));
   aspect-ratio: 16 / 9;
   margin: 0 auto;
-  background-image: url('../img/sfondo-tabellone.jpg');
+  /* la tavola di legno allargata fino al bordo destro: niente piu' colonna dei riquadri laterali */
+  background-image: url('../img/sfondo-tabellone-ampio.jpg');
   background-size: cover;
   background-position: center;
-  font-size: 1.3vw;
+  /* tutto in proporzione alla scena (non alla finestra): se lo schermo e' piu' largo di 16:9
+     la scena si stringe e i testi con lei */
+  font-size: calc(min(100vw, 100vh * 16 / 9) * 0.013);
+}
+
+/* durante la partita la scena riempie esattamente lo schermo: niente margini ne' barre di scorrimento */
+body:has(#vista-gioco:not(.nascosta)) {
+  padding: 0;
+  overflow: hidden;
+}
+
+#vista-gioco:not(.nascosta) {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
 }
 
 /* --- il tabellone vero, posizionato dentro il pannello di legno --- */
 
 #tabellone {
   position: absolute;
-  left: 10.5%;
-  top: 22%;
-  width: 60%;
-  height: 59%;
+  left: 6.6%;
+  top: 19.6%;
+  width: 89.6%;
+  height: 65%;
   display: grid;
-  grid-template-columns: repeat(11, 1fr);
+  grid-template-columns: repeat(14, 1fr);
   grid-template-rows: repeat(6, 1fr);
-  gap: 0.3em;
+  gap: 0.35em;
 }
 
 .casella {
@@ -58,7 +73,7 @@ body {
 
 .casella .numero {
   font-weight: bold;
-  font-size: 0.65em;
+  font-size: 0.8em;
   color: #000000;
 }
 
@@ -123,88 +138,109 @@ body {
   margin-top: auto;
 }
 
+.pedine {
+  justify-content: center;
+}
+
 .pedina {
-  width: 1.2em;
-  height: 1.2em;
+  position: relative;
+  width: 1.3em;
+  height: 1.3em;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7em;
+  font-size: 0.95em;
   color: white;
   font-weight: bold;
   border: 2px solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.08em 0.2em rgba(0, 0, 0, 0.35);
 }
 
-/* --- i tre riquadri laterali (già disegnati nell'immagine: qui va solo
-   il contenuto vero, posizionato nella parte chiara sotto/accanto
-   all'icona già presente nello sfondo) --- */
+/* tante pedine sulla stessa casella (per esempio tutte sul VIA!): piu' piccole, cosi' ci stanno */
+.pedine:has(.pedina:nth-child(5)) .pedina { font-size: 0.75em; }
+.pedine:has(.pedina:nth-child(9)) .pedina { font-size: 0.6em; }
 
-.pannello-laterale {
+/* chi ha una prova in sospeso: una clessidra sulla pedina (il testo della prova e' sui telefoni) */
+.pedina-in-sospeso::after {
+  content: '⏳';
   position: absolute;
-  /* prima left:82%/width:14%: spostato tutto il gruppo (sospeso, legenda,
-     turno) un po' piu' a sinistra, margine destro invariato (77+19 = 96) */
-  left: 77%;
-  width: 19%;
-  overflow: hidden;
+  top: -0.55em;
+  right: -0.7em;
   font-size: 0.9em;
-  color: #4a3b2a;
+  line-height: 1;
+  padding: 0.08em;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0.05em 0.2em rgba(0, 0, 0, 0.45);
 }
 
-.pannello-titolo {
-  font-weight: bold;
-  font-size: 1.1em;
-  margin-bottom: 0.3em;
-}
-
-#pannello-sospeso {
-  top: 23%;
-  height: 22%;
-  padding: 0.3em 0.6em;
-}
-
-#pannello-legenda {
-  top: 53%;
-  height: 40%;
-  padding: 0.2em 0.6em;
-}
+/* --- il riquadro del turno, al centro della spirale ---
+   Sta dentro la griglia del tabellone (js/tabellone-ui.js ce lo sposta quando disegna le caselle),
+   nello spazio libero: righe 3-4, colonne 3-12. */
 
 #pannello-turno {
-  top: 74%;
-  height: 18%;
-  padding: 0.2em 0.6em;
-}
-
-#legenda-lista {
-  /* due colonne invece di una lista lunga 5 righe: cosi' servono solo 3
-     righe di altezza invece di 5, a parita' di dimensione delle icone */
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.2em 0.5em;
-  /* prima 0.7em: moltiplicato per lo 0.9em di .pannello-laterale diventava
-     0.63em effettivo, il doppio rimpicciolimento che rendeva tutto minuscolo.
-     Poi 0.95em, ridotto ~10% su richiesta di Francesco */
-  font-size: 0.85em;
-}
-
-.legenda-riga {
+  grid-area: 3 / 3 / 5 / 13;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.4em;
-}
-
-.legenda-pallino {
-  /* prima 0.9em (e per giunta dentro il font-size gia' raddoppiato sopra) */
-  width: 1.7em;
-  height: 1.7em;
-  border-radius: 0.35em;
-  flex-shrink: 0;
+  margin: 0.25em 0.4em;
+  padding: 0.6em 1.4em;
+  background: rgba(252, 247, 236, 0.96);
+  border: 0.18em solid #8a5a2b;
+  border-radius: 0.9em;
+  box-shadow: 0 0.3em 0.9em rgba(40, 20, 5, 0.45), inset 0 0 0 0.12em rgba(255, 255, 255, 0.6);
+  color: #3e2a14;
+  overflow: hidden;
 }
 
 #turno-info {
-  font-size: 0.75em;
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  min-width: 0;
+}
+
+.turno-pedina {
+  flex: 0 0 auto;
+  width: 2.6em;
+  height: 2.6em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.6em;
   font-weight: bold;
-  line-height: 1.3;
+  border: 0.12em solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.12em 0.35em rgba(0, 0, 0, 0.35);
+  text-shadow: 0 0.05em 0.15em rgba(0, 0, 0, 0.4);
+}
+
+.turno-testi { min-width: 0; }
+
+.turno-chi {
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: 2em;
+  line-height: 1.1;
+}
+
+.turno-chi strong {
+  color: #1a3a5c;
+  overflow-wrap: anywhere;
+}
+
+.turno-azione {
+  margin-top: 0.15em;
+  font-size: 1.35em;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.turno-nota {
+  margin-top: 0.25em;
+  font-size: 0.85em;
+  color: #7a6650;
 }
 
 .casella.evidenziata {
@@ -837,12 +873,6 @@ body {
 
 /* --- prove vincolo: in sospeso, e la richiesta di conferma --- */
 
-.prova-sospesa-riga {
-  font-size: 0.85em;
-  line-height: 1.3;
-  margin-bottom: 0.4em;
-}
-
 .prova-vincolo-titolo {
   font-size: 1.2rem;
   font-weight: bold;
@@ -854,17 +884,17 @@ body {
 }
 
 
+/* il codice della partita (per rientrare), in un angolo del riquadro del turno */
 #codice-partita-badge {
   position: absolute;
-  bottom: 1%;
-  left: 6%;
-  background: rgba(255, 255, 255, 0.75);
-  padding: 0.3em 0.7em;
+  top: 0.5em;
+  right: 0.8em;
+  background: rgba(138, 90, 43, 0.12);
+  padding: 0.25em 0.7em;
   border-radius: 0.5em;
-  font-size: 0.7em;
+  font-size: 0.8em;
   color: #4a3b2a;
   font-weight: bold;
-  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.2);
 }
 
 

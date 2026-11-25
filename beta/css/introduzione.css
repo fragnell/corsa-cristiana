@@ -24,7 +24,7 @@
 .intro-sfondo {
   position: absolute;
   inset: -6%;
-  background: linear-gradient(180deg, rgba(16, 30, 48, 0.78), rgba(28, 18, 8, 0.86)), url('../img/sfondo-tabellone.jpg') center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(16, 30, 48, 0.78), rgba(28, 18, 8, 0.86)), url('../img/sfondo-tabellone-ampio.jpg') center / cover no-repeat;
   filter: blur(3px) saturate(1.1);
   animation: intro-ken-burns 38s ease-in-out infinite alternate;
 }
