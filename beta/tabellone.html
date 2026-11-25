@@ -116,13 +116,23 @@
   </div>
 
    <div id="carta-overlay" class="carta-overlay nascosta">
+      <!-- La carta (js/carta-ui.js): in alto il tipo, di chi e' e il tempo per rispondere; poi
+           l'esito (quando c'e'); al centro il testo, che si adatta da solo allo spazio; in fondo i bottoni. -->
       <div id="carta" class="carta">
         <div id="carta-retro" class="carta-retro"></div>
-        <div class="carta-fronte">
-          <div id="carta-tipo" class="carta-tipo"></div>
-          <div id="carta-testo" class="carta-testo"></div>
-          <div id="carta-riferimento" class="carta-riferimento"></div>
-          <div id="carta-opzioni" class="carta-opzioni"></div>
+        <div id="carta-fronte" class="carta-fronte">
+          <div class="carta-testa">
+            <span id="carta-tipo" class="carta-tipo"></span>
+            <span id="carta-chi" class="carta-chi"></span>
+            <span id="carta-tempo" class="carta-tempo"></span>
+          </div>
+          <div id="carta-esito" class="carta-esito nascosta" role="status" aria-live="polite"></div>
+          <div id="carta-corpo" class="carta-corpo">
+            <div id="carta-testo" class="carta-testo"></div>
+            <div id="carta-riferimento" class="carta-riferimento"></div>
+            <div id="carta-opzioni" class="carta-opzioni"></div>
+            <div id="carta-risposte" class="carta-risposte"></div>
+          </div>
           <div id="carta-bottoni" class="carta-bottoni"></div>
         </div>
       </div>

@@ -261,17 +261,26 @@ body:has(#vista-gioco:not(.nascosta)) {
   50%      { transform: scale(1.2); z-index: 10; box-shadow: 0 0 0.6em rgba(0,0,0,0.5); }
 }
 
-/* --- la carta pescata --- */
+/* --- la carta pescata (js/carta-ui.js) ---
+   Tutto in proporzione allo schermo: --su e' l'1% della larghezza della scena (come il tabellone),
+   --scala-testo e' il livello del pulsante A- / A+ (1 = normale). La dimensione del testo del corpo
+   (--carta-testo) la sceglie carta-ui.js: la piu' grande per cui tutto ci sta. */
+
+:root {
+  --su: calc(min(100vw, 100vh * 16 / 9) / 100);
+  --scala-testo: 1;
+  --sut: calc(var(--su) * var(--scala-testo));
+}
 
 .carta-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
-  perspective: 1200px;
+  perspective: 1800px;
 }
 
 .carta-overlay.nascosta {
@@ -279,10 +288,8 @@ body:has(#vista-gioco:not(.nascosta)) {
 }
 
 .carta {
-  width: 480px;
-  max-width: 90vw;
-  min-height: 500px;
-  max-height: 85vh;
+  width: min(calc(var(--su) * 66), 96vw);
+  height: min(calc(var(--su) * 47), 92vh);
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s;
@@ -297,26 +304,20 @@ body:has(#vista-gioco:not(.nascosta)) {
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
-  border-radius: 14px;
+  border-radius: calc(var(--su) * 1.2);
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  text-align: center;
 }
 
 .carta-retro {
   background-color: #f0e2cc; /* ripiego, se per qualche motivo il tipo non e' impostato */
-  background-size: 55%;
+  background-size: 42%;
   background-position: center;
   background-repeat: no-repeat;
+  box-shadow: 0 1.5vh 4vh rgba(0, 0, 0, 0.45);
 }
 
-/* Stessi colori e stesse icone delle caselle sul tabellone (vedi
-   .casella-CONOSCENZA ecc. piu' sotto), cosi' il retro della carta
-   anticipa visivamente la casella su cui si e' atterrati. */
+/* Stessi colori e stesse icone delle caselle sul tabellone, cosi' il retro della carta anticipa
+   visivamente la casella su cui si e' atterrati. */
 .carta-retro-CONOSCENZA { background-color: #f0e2cc; background-image: url('../img/icona-conoscenza.png'); }
 .carta-retro-IMPREVISTO { background-color: #ffd28a; background-image: url('../img/icona-imprevisto.png'); }
 .carta-retro-PROVA { background-color: #ffb3c6; background-image: url('../img/icona-prova.png'); }
@@ -324,73 +325,277 @@ body:has(#vista-gioco:not(.nascosta)) {
 .carta-retro-FERMO { background-color: #f2a0a0; background-image: url('../img/icona-fermo.png'); }
 
 .carta-fronte {
-  background: white;
-  border: 3px solid #333;
+  --carta-colore: #8a5a2b;
+  --carta-testo: calc(var(--sut) * 3);
   transform: rotateY(180deg);
-  gap: 1rem;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--su) * 0.8);
+  padding: calc(var(--su) * 1.4) calc(var(--su) * 2.2);
+  background: #fffdf7;
+  border: calc(var(--su) * 0.35) solid var(--carta-colore);
+  box-shadow: 0 1.5vh 4vh rgba(0, 0, 0, 0.45);
+  color: #2b1d0e;
+  text-align: center;
+  overflow: hidden;
+}
+
+.carta-fronte-CONOSCENZA { --carta-colore: #b08a5a; }
+.carta-fronte-IMPREVISTO { --carta-colore: #e39b2d; }
+.carta-fronte-PROVA      { --carta-colore: #d9668a; }
+.carta-fronte-SALTO      { --carta-colore: #3fa45b; }
+.carta-fronte-FERMO      { --carta-colore: #c85a5a; }
+.carta-fronte-JUNIOR     { --carta-colore: #3fa45b; }
+.carta-fronte.carta-fronte-giusta    { --carta-colore: #2e9e4f; }
+.carta-fronte.carta-fronte-sbagliata { --carta-colore: #d0453b; }
+
+/* in alto: tipo di carta, di chi e', tempo */
+.carta-testa {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  font-size: calc(var(--sut) * 1.45);
+  line-height: 1.2;
 }
 
 .carta-tipo {
+  padding: 0.2em 0.7em;
+  border-radius: 999px;
+  background: var(--carta-colore);
+  color: #fff;
   font-weight: bold;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
-  color: #666;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.carta-chi {
+  flex: 1;
+  min-width: 0;
+  color: #4a3b2a;
+  overflow-wrap: anywhere;
+}
+
+.carta-chi strong { color: #1a3a5c; }
+
+.carta-chi-pallino {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.35em;
+  border-radius: 50%;
+  border: 0.1em solid rgba(0, 0, 0, 0.3);
+  vertical-align: -0.05em;
+}
+
+.carta-tempo {
+  font-size: 1.25em;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #2b6cb0;
+}
+
+.carta-tempo-urgente {
+  color: #c0392b;
+  animation: carta-tempo-batte 1s ease-in-out infinite;
+}
+
+@keyframes carta-tempo-batte {
+  50% { transform: scale(1.15); }
+}
+
+/* l'esito della domanda, sopra il testo */
+.carta-esito {
+  flex: 0 0 auto;
+  padding: 0.25em 0.6em;
+  border-radius: calc(var(--su) * 0.8);
+  font-size: calc(var(--sut) * 2.6);
+  font-weight: bold;
+  line-height: 1.15;
+  color: #fff;
+  animation: carta-esito-entra 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.carta-esito.nascosta { display: none; }
+.carta-esito-giusto { background: #2e9e4f; }
+.carta-esito-sbagliato { background: #d0453b; }
+
+@keyframes carta-esito-entra {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: none; }
+}
+
+/* il corpo: la sua dimensione la sceglie carta-ui.js (--carta-testo) */
+.carta-corpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35em;
+  font-size: var(--carta-testo);
+  overflow: hidden;
+}
+
+/* se nemmeno il testo piu' piccolo basta (caso rarissimo), si scorre invece di tagliare */
+.carta-corpo.carta-corpo-scorre {
+  justify-content: flex-start;
+  overflow-y: auto;
 }
 
 .carta-testo {
-  font-size: 1.95rem;
-  line-height: 1.4;
+  font-size: 1em;
+  line-height: 1.3;
+  font-weight: 600;
   white-space: pre-line;
-}
-
-.carta-testo.carta-testo-lungo {
-  font-size: 1.1rem;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .carta-riferimento {
+  font-size: 0.58em;
   font-style: italic;
-  color: #555;
+  color: #6b5a45;
 }
 
+.carta-riferimento:empty,
+.carta-opzioni:empty,
+.carta-risposte:empty { display: none; }
+
+/* scelta multipla: riquadri grandi, due colonne, come in un quiz */
 .carta-opzioni {
   width: 100%;
+  font-size: 0.72em;
 }
 
 .carta-opzioni-lista {
-  list-style-type: upper-alpha;
+  list-style: none;
+  counter-reset: opzione;
+  margin: 0.2em 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4em 0.6em;
   text-align: left;
-  display: inline-block;
-  margin: 0;
-  padding-left: 1.6em;
-  font-size: 1.2rem;
-  line-height: 1.5;
 }
 
-.carta-opzioni-lista li {
-  margin-bottom: 0.3rem;
+.carta-opzione {
+  counter-increment: opzione;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.35em 0.6em;
+  border-radius: 0.5em;
+  background: #f4ecdd;
+  border: 0.08em solid #e0d2b8;
+  line-height: 1.2;
 }
 
-.carta-opzioni-lista li:last-child {
-  margin-bottom: 0;
+.carta-opzione::before {
+  content: counter(opzione, upper-alpha);
+  flex: 0 0 auto;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #8a5a2b;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.85em;
 }
 
-.carta-bottoni {
+.carta-opzione-giusta {
+  background: #d7f3df;
+  border-color: #2e9e4f;
+  box-shadow: 0 0 0 0.12em #2e9e4f;
+  font-weight: bold;
+}
+
+.carta-opzione-giusta::before { content: '✓'; background: #2e9e4f; }
+
+.carta-opzione-sbagliata {
+  background: #fbe0dd;
+  border-color: #d0453b;
+  text-decoration: line-through;
+  text-decoration-thickness: 0.06em;
+}
+
+.carta-opzione-sbagliata::before { content: '✗'; background: #d0453b; }
+
+/* l'esito di una risposta scritta */
+.carta-risposte {
+  font-size: 0.72em;
+  line-height: 1.3;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  width: 100%;
-  margin-top: auto;
+  gap: 0.2em;
 }
 
-.carta-bottoni button {
-  font-size: 1rem;
-  padding: 0.6rem;
-  cursor: pointer;
-  border-radius: 6px;
-  border: 1px solid #999;
+.carta-risposta-data { color: #4a3b2a; }
+
+.carta-risposta-giusta {
+  padding: 0.15em 0.6em;
+  border-radius: 0.4em;
+  background: #fff3c4;
+  color: #6b4a00;
 }
+
+/* in fondo: bottoni e note */
+.carta-bottoni {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--su) * 0.5);
+  width: 100%;
+}
+
+.carta-bottoni:empty { display: none; }
+
+.carta-bottoni-riga {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: calc(var(--su) * 0.8);
+  width: 100%;
+}
+
+.carta-bottone {
+  flex: 0 1 auto;
+  min-width: calc(var(--su) * 14);
+  padding: 0.45em 1.2em;
+  font-family: inherit;
+  font-size: calc(var(--sut) * 1.35);
+  font-weight: bold;
+  line-height: 1.2;
+  border-radius: 0.6em;
+  border: 0.1em solid #b9a888;
+  background: #fff;
+  color: #2b1d0e;
+  cursor: pointer;
+  box-shadow: 0 0.15em 0.35em rgba(0, 0, 0, 0.15);
+}
+
+.carta-bottone:hover { background: #f7efe0; }
+.carta-bottone:focus-visible { outline: 0.15em solid #2b6cb0; outline-offset: 0.1em; }
+
+.carta-domanda-gruppo {
+  margin: 0;
+  font-size: calc(var(--sut) * 1.6);
+  font-weight: bold;
+}
+
+.carta-nota {
+  margin: 0;
+  font-size: calc(var(--sut) * 0.95);
+  color: #8a7a66;
+}
+
 
 /* --- pannelli flottanti: risposta, verdetto, tocca-a-te --- */
 
@@ -442,29 +647,6 @@ body:has(#vista-gioco:not(.nascosta)) {
   max-height: 120px;
   overflow-y: auto;
   margin: 0.5rem 0;
-}
-
-.verdetto-esito {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.verdetto-dettaglio {
-  color: #555;
-  font-size: 0.9rem;
-}
-
-.verdetto-countdown {
-  color: #888;
-  font-size: 0.85rem;
-}
-
-.verdetto-risposta-giusta {
-  font-weight: bold;
-  color: #b8860b;
-  background: #fff8e1;
-  padding: 0.4rem;
-  border-radius: 6px;
 }
 
 /* --- "tocca a te" e il dado --- */
@@ -873,17 +1055,6 @@ body:has(#vista-gioco:not(.nascosta)) {
 
 /* --- prove vincolo: in sospeso, e la richiesta di conferma --- */
 
-.prova-vincolo-titolo {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.prova-vincolo-countdown {
-  color: #888;
-  font-size: 0.85rem;
-}
-
-
 /* il codice della partita (per rientrare), in un angolo del riquadro del turno */
 #codice-partita-badge {
   position: absolute;
@@ -1121,28 +1292,6 @@ body:has(#vista-gioco:not(.nascosta)) {
 }
 
 
-.carta-btn-cambia {
-  font-size: 0.85rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  border: 1px solid #999;
-  background: #f5f5f5;
-  color: #555;
-  cursor: pointer;
-}
-
-.carta-cambia-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.carta-cambia-countdown {
-  font-size: 0.85rem;
-  color: #888;
-  font-variant-numeric: tabular-nums;
-}
-
 .classifica-cliccabile {
   cursor: pointer;
   user-select: none;
@@ -1279,4 +1428,131 @@ body:has(#vista-gioco:not(.nascosta)) {
   color: white;
   border-color: #2e7d32;
   font-weight: bold;
+}
+
+/* "Cambia domanda" sotto la carta Conoscenza (per i primi secondi) */
+.carta-cambia-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: calc(var(--sut) * 1.05);
+}
+
+.carta-btn-cambia {
+  font: inherit;
+  padding: 0.35em 0.9em;
+  border-radius: 0.5em;
+  border: 0.08em solid #b9a888;
+  background: #f5efe3;
+  color: #4a3b2a;
+  cursor: pointer;
+}
+
+.carta-cambia-countdown {
+  color: #8a7a66;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- annuncio grande al centro: "Anna avanza di 3 caselle" (js/annuncio-ui.js) --- */
+
+.annuncio-grande {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 190;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  max-width: 90vw;
+  padding: 0.45em 1.1em;
+  border-radius: 0.6em;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: calc(var(--sut) * 3);
+  font-weight: bold;
+  line-height: 1.15;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.45);
+  border: calc(var(--su) * 0.3) solid rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  animation: annuncio-entra 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.annuncio-avanti   { background: #2e9e4f; }
+.annuncio-indietro { background: #d0453b; }
+.annuncio-fermo    { background: #7a6650; }
+.annuncio-info     { background: #2b6cb0; }
+
+.annuncio-via {
+  animation: annuncio-esce 0.45s ease-in both;
+}
+
+@keyframes annuncio-entra {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes annuncio-esce {
+  to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+/* --- il dado, in proporzione allo schermo (il cubo e' disegnato a 100px: si ingrandisce tutto insieme) --- */
+
+.dado-wrap {
+  transform: scale(var(--scala-dado, 1.8));
+}
+
+/* --- l'ordine di gioco sorteggiato, in proporzione allo schermo --- */
+
+#annuncio-ordine {
+  top: 21%;                     /* sotto il titolo "Corsa Cristiana", non piu' sopra */
+  font-size: calc(var(--sut) * 1.5);
+}
+
+/* il riquadro del turno segue anche lui il pulsante A- / A+ */
+#pannello-turno {
+  font-size: calc(var(--su) * 1.3 * var(--scala-testo));
+}
+
+/* --- pulsanti A- / A+ (dimensione del testo sul tabellone, js/dimensione-testo.js) --- */
+
+.dimensione-testo {
+  position: fixed;
+  right: 4.2rem;
+  bottom: 1rem;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font: bold 0.95rem/1 sans-serif;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+
+.dimensione-testo:hover,
+.dimensione-testo:focus-within { opacity: 1; }
+
+.dimensione-testo button {
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  border: 1px solid #b9a888;
+  background: #fff;
+  color: #3e2a14;
+  font: bold 1rem/1 sans-serif;
+  cursor: pointer;
+}
+
+.dimensione-testo button:disabled { opacity: 0.35; cursor: default; }
+
+.dimensione-testo-valore {
+  min-width: 3.2rem;
+  text-align: center;
+  color: #3e2a14;
+  font-variant-numeric: tabular-nums;
 }

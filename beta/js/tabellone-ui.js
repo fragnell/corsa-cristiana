@@ -13,7 +13,10 @@ import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno, etichettaPosizione } from './regole.js';
 import { creaMazzo, pesca, creaMazzoARotazione, peschaARotazione } from './mazzi.js';
 import { leggiMemoriaRotazione, numeroNuovaPartita, segnaDomandaUscita } from './rotazione-domande.js';
-import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
+import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S, impostaProtagonista, avviaTempoRisposta } from './carta-ui.js';
+import { testoSpostamento } from './carta-logica.js';
+import { annuncia } from './annuncio-ui.js';
+import { avviaDimensioneTesto } from './dimensione-testo.js';
 import { esci } from './accesso.js';
 import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica, fermaEffetti } from './audio-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
@@ -187,6 +190,20 @@ function spostaPedinaSuCasella(giocatoreId, numeroCasella) {
   if (pedina && contenitore) contenitore.appendChild(pedina);
 }
 
+// Sposta la pedina e intanto annuncia in grande quanto si e' mossa ("Anna avanza di 3 caselle").
+// Se la pedina non si muove, l'annuncio dice dove resta (solo se "anchePerFermo").
+async function muoviEAnnuncia(giocatore, da, a, { anchePerFermo = false } = {}) {
+  if (da === a && !anchePerFermo) return;
+  const { testo, verso } = testoSpostamento(giocatore.nome, da, a, etichettaPosizione);
+  const finito = annuncia(testo, verso);
+  if (da !== a) {
+    await pausa(200);
+    await animaSpostamento(giocatore.id, da, a);
+  }
+  mostraTurno(giocatore, testo, '');
+  await finito;
+}
+
 function facciaBalzare(giocatoreId) {
   const pedina = pedineDom.get(giocatoreId);
   if (!pedina) return;
@@ -266,6 +283,7 @@ async function risolviProvaVincoloDiTurno(giocatore) {
   const provaInSospeso = stato.giocatori[giocatore.id].provaInSospeso;
   const posizionePrima = stato.giocatori[giocatore.id].posizione;
 
+  impostaProtagonista({ nome: giocatore.nome, colore: PALETTE[giocatore.colore] || coloreSicuro(giocatore.colore) });
   const superata = await chiediEsitoProvaVincolo(giocatore.nome, provaInSospeso);
 
   stato = risolviProvaInSospeso(stato, giocatore.id);
@@ -274,10 +292,7 @@ async function risolviProvaVincoloDiTurno(giocatore) {
   aggiornaProveInSospeso();
 
   const posizioneDopo = stato.giocatori[giocatore.id].posizione;
-  if (posizioneDopo !== posizionePrima) {
-    await pausa(200);
-    await animaSpostamento(giocatore.id, posizionePrima, posizioneDopo);
-  }
+  await muoviEAnnuncia(giocatore, posizionePrima, posizioneDopo, { anchePerFermo: true });
 
   await pubblicaStato(codicePartita, stato);
 }
@@ -287,11 +302,10 @@ async function risolviProvaVincoloDiTurno(giocatore) {
 // "posizioneAtterrata" e' la casella su cui la pedina si trova sullo schermo in questo momento.
 // Restituisce il risultato finale ({ stato, evento }) nello stesso formato del motore.
 async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
+  // Prima si mostra la carta (Imprevisto, Salto...), poi la pedina si sposta: cosi' si legge il
+  // perche' e subito dopo si vede, con l'annuncio grande, quanto ci si e' mossi.
   const posizioneDopoEffetto = stato.giocatori[giocatore.id].posizione;
-  if (posizioneDopoEffetto !== posizioneAtterrata && r.evento.tipo !== 'IN_ATTESA') {
-    await pausa(200);
-    await animaSpostamento(giocatore.id, posizioneAtterrata, posizioneDopoEffetto);
-  }
+  const spostamentoDaEffetto = posizioneDopoEffetto !== posizioneAtterrata && r.evento.tipo !== 'IN_ATTESA';
 
   if (r.evento.tipo === 'IMPREVISTO') {
     const pescata = pesca(mazzoImprevisto);
@@ -312,6 +326,8 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
     const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${etichettaPosizione(r.evento.destinazione)}.` };
     await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
   }
+
+  if (spostamentoDaEffetto) await muoviEAnnuncia(giocatore, posizioneAtterrata, posizioneDopoEffetto);
 
   if (r.evento.tipo === 'IN_ATTESA') {
     const posizionePrimaEsito = stato.giocatori[giocatore.id].posizione;
@@ -358,6 +374,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
         if (carta.opzioni) richiesta.opzioni = carta.opzioni;
         stato.richiestaConoscenza = richiesta;
+        avviaTempoRisposta(richiesta.scadenza);
         // Ricordiamo anche dentro lo stato (quindi su Firebase) quali
         // domande Conoscenza sono già uscite in questa partita: così,
         // se il tabellone si riavvia, questa memoria non si perde.
@@ -368,7 +385,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
         ultimeRisposteDate = risposteDate;
 
         stato.richiestaConoscenza = null;
-        nascondiCarta();
+        // la carta resta aperta: l'esito compare sopra la domanda (vedi mostraVerdetto)
 
         corretta = valutaRisposta(carta, risposteDate);
 
@@ -423,6 +440,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
         await mostraCartaEAspettaScelta('PROVA', carta, [{ etichetta: 'Continua', valore: null }], true);
         stato = impostaProvaInSospeso(stato, giocatore.id, carta);
         aggiornaProveInSospeso();
+        annuncia(`${giocatore.nome}: prova in sospeso fino al prossimo turno ⏳`, 'info');
         r = { stato, evento: { tipo: 'PROVA_VINCOLO' } };
       } else {
         const superata = await mostraCartaEAspettaScelta('PROVA', carta, [
@@ -435,9 +453,8 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
     stato = r.stato;
 
     const posizioneDopoEsito = stato.giocatori[giocatore.id].posizione;
-    if (posizioneDopoEsito !== posizionePrimaEsito) {
-      await pausa(200);
-      await animaSpostamento(giocatore.id, posizionePrimaEsito, posizioneDopoEsito);
+    if (r.evento.tipo !== 'PROVA_VINCOLO') {
+      await muoviEAnnuncia(giocatore, posizionePrimaEsito, posizioneDopoEsito, { anchePerFermo: true });
     }
   }
 
@@ -453,6 +470,7 @@ async function giocaTurno() {
     giocatore = giocatoreDiTurno(stato);
   }
 
+  impostaProtagonista({ nome: giocatore.nome, colore: PALETTE[giocatore.colore] || coloreSicuro(giocatore.colore) });
   const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
   const secondiDado = Math.round(configPartita.timeout.dadoMs / 1000);
   mostraTurno(giocatore, '🎲 Tira il dado dal telefono',
@@ -979,6 +997,7 @@ Promise.all([import('./avviso-connessione.js'), import('./connessione.js')])
   .catch(errore => console.warn('L\'avviso di connessione non e\' disponibile', errore));
 
 avvia();
+try { avviaDimensioneTesto(); } catch (errore) { console.warn('Pulsante A-/A+ non disponibile', errore); }
 avviaMusica(); // primo tentativo, appena si apre la pagina — funziona solo per chi ha già familiarità col sito
 
 const bottoneAudio = document.getElementById('btn-audio-toggle');

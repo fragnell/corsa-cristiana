@@ -13,6 +13,8 @@
 import { chiediPassword } from './accesso.js';
 import { riproduciEffetto } from './audio-ui.js';
 import { testoSicuro, numeroSicuro } from './testo-sicuro.js';
+import { mostraEsitoSullaCarta, nascondiCarta, adattaCarta } from './carta-ui.js';
+import { rispostaGiustaDaMostrare } from './carta-logica.js';
 
 function normalizza(testo) {
   return testo
@@ -154,90 +156,80 @@ const DURATA_COUNTDOWN_S = 10;
 // da ricordare per le prossime volte.
 export function mostraVerdetto(carta, corretta, risposteDate) {
   return new Promise(risolvi => {
-    const area = document.getElementById('verdetto-area');
+    // L'esito compare sulla carta della domanda, che resta aperta (vedi mostraEsitoSullaCarta):
+    // fascia verde o rossa, risposta data e, se serve, quella giusta. Qui ci sono i bottoni.
+    let concluso = false;
+    let timer = null;
+    const concludi = risultato => {
+      if (concluso) return;
+      concluso = true;
+      if (timer) clearInterval(timer);
+      nascondiCarta();
+      risolvi(risultato);
+    };
+
+    function bottone(testo, alClic) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'carta-bottone';
+      b.textContent = testo;
+      b.addEventListener('click', alClic);
+      return b;
+    }
 
     function mostraVistaPrincipale() {
-      area.classList.remove('nascosta');
       riproduciEffetto(corretta ? 'corretto' : 'sbagliato');
+      const bottoni = mostraEsitoSullaCarta({
+        carta, corretta, risposteDate,
+        rispostaGiusta: corretta ? '' : rispostaGiustaDaMostrare(carta)
+      });
       let secondiRimasti = DURATA_COUNTDOWN_S;
-
-      let rigaRispostaGiusta = '';
-      let bottoneAccetta = '';
-      if (!corretta) {
-        let rispostaGiusta;
-        if (carta.tipo === 'elenco') {
-          rispostaGiusta = carta.rispostePossibili.join(', ');
-        } else if (carta.tipo === 'scelta') {
-          rispostaGiusta = carta.rispostaCorretta;
-        } else {
-          rispostaGiusta = Array.isArray(carta.risposta) ? carta.risposta.join(', ') : carta.risposta;
-        }
-        rigaRispostaGiusta = `<p class="verdetto-risposta-giusta">Risposta corretta: ${testoSicuro(rispostaGiusta)}</p>`;
-
-        // Ha senso solo per le domande dirette: una frase libera che può
-        // essere giusta anche se detta diversamente da come ce l'aspettavamo.
-        if (carta.tipo === 'diretta') {
-          bottoneAccetta = `<button id="verdetto-accetta">➕ Accetta risposta</button>`;
-        }
+      const riga = document.createElement('div');
+      riga.className = 'carta-bottoni-riga';
+      riga.appendChild(bottone('✅ OK', () => concludi({ accettata: true, corretta })));
+      riga.appendChild(bottone('✏️ Correggi', () => concludi({ accettata: false, corretta })));
+      // "Accetta" ha senso solo per le domande dirette: una frase libera che può essere giusta anche
+      // se detta diversamente da come ce l'aspettavamo.
+      if (!corretta && carta.tipo === 'diretta') {
+        riga.appendChild(bottone('➕ Accetta risposta', () => { clearInterval(timer); mostraConferma(); }));
       }
+      const conto = document.createElement('p');
+      conto.className = 'carta-nota';
+      const scrivi = () => { conto.textContent = `Si chiude tra ${secondiRimasti}s`; };
+      scrivi();
+      bottoni.append(riga, conto);
+      adattaCarta();
 
-      area.innerHTML = `
-        <p class="verdetto-esito">${corretta ? '✅ Corretto!' : '❌ Non risulta corretto'}</p>
-        <p class="verdetto-dettaglio">Risposta data: ${testoSicuro(risposteDate.join(', ') || '(vuota)')}</p>
-        ${rigaRispostaGiusta}
-        <p class="verdetto-countdown">Si chiude tra <span id="verdetto-conto">${secondiRimasti}</span>s</p>
-        <button id="verdetto-ok">✅ OK</button>
-        <button id="verdetto-correggi">✏️ Correggi</button>
-        ${bottoneAccetta}
-      `;
-
-      let concluso = false;
-      const concludi = risultato => {
-        if (concluso) return;
-        concluso = true;
-        clearInterval(timer);
-        area.classList.add('nascosta');
-        risolvi(risultato);
-      };
-
-      const timer = setInterval(() => {
+      if (timer) clearInterval(timer);
+      timer = setInterval(() => {
         secondiRimasti--;
-        const conto = document.getElementById('verdetto-conto');
-        if (conto) conto.textContent = secondiRimasti;
+        scrivi();
         if (secondiRimasti <= 0) concludi({ accettata: true, corretta });
       }, 1000);
-
-      document.getElementById('verdetto-ok').addEventListener('click', () => concludi({ accettata: true, corretta }));
-      document.getElementById('verdetto-correggi').addEventListener('click', () => concludi({ accettata: false, corretta }));
-
-      const bottoneAccettaEl = document.getElementById('verdetto-accetta');
-      if (bottoneAccettaEl) {
-        bottoneAccettaEl.addEventListener('click', () => {
-          clearInterval(timer);
-          mostraConferma();
-        });
-      }
     }
 
     function mostraConferma() {
       const rispostaData = risposteDate[0];
-      area.innerHTML = `
-        <p class="verdetto-esito">Accettare "${testoSicuro(rispostaData)}" come risposta corretta?</p>
-        <p class="verdetto-dettaglio">Verrà ricordata: la prossima volta questa domanda la riconoscerà subito come giusta.</p>
-        <button id="verdetto-conferma-si">✅ Sì, accetta</button>
-        <button id="verdetto-conferma-no">← Torna indietro</button>
-      `;
-      document.getElementById('verdetto-conferma-si').addEventListener('click', async () => {
-        const autorizzato = await chiediPassword('Solo chi gestisce le domande può confermarlo.\nInserisci la password:');
+      const bottoni = document.getElementById('carta-bottoni');
+      bottoni.textContent = '';
+      const domanda = document.createElement('p');
+      domanda.className = 'carta-domanda-gruppo';
+      domanda.textContent = `Accettare «${rispostaData}» come risposta corretta? Verrà ricordata per le prossime volte.`;
+      const riga = document.createElement('div');
+      riga.className = 'carta-bottoni-riga';
+      riga.appendChild(bottone('✅ Sì, accetta', async () => {
+        const autorizzato = await chiediPassword(`Solo chi gestisce le domande può confermarlo.
+Inserisci la password:`);
         if (!autorizzato) {
           alert('Password non corretta: la risposta non è stata accettata.');
           mostraVistaPrincipale();
           return;
         }
-        area.classList.add('nascosta');
-        risolvi({ accettata: true, corretta: true, nuovaRispostaDaAggiungere: rispostaData });
-      });
-      document.getElementById('verdetto-conferma-no').addEventListener('click', mostraVistaPrincipale);
+        concludi({ accettata: true, corretta: true, nuovaRispostaDaAggiungere: rispostaData });
+      }));
+      riga.appendChild(bottone('← Torna indietro', mostraVistaPrincipale));
+      bottoni.append(domanda, riga);
+      adattaCarta();
     }
 
     mostraVistaPrincipale();
