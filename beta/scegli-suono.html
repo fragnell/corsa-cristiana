@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Corsa Cristiana — Scegli il suono</title>
+  <!-- Pagina provvisoria della BETA: serve solo a scegliere il suono dell'avviso del telefono
+       ("tocca a te" / "rispondi"). Si ascoltano i suoni dal telefono stesso; scelto il suono, la pagina si toglie. -->
+  <style>
+    :root {
+      --sfondo: #f6f0e4;
+      --carta: #fffdf7;
+      --testo: #2b1d0e;
+      --tenue: #6b5a45;
+      --bordo: #e0d2b8;
+      --verde: #2e7d32;
+      --oro: #f5b301;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1.5rem 1rem 2.5rem;
+      font-family: 'Nunito', system-ui, sans-serif;
+      background: var(--sfondo);
+      color: var(--testo);
+    }
+    main { max-width: 32rem; margin: 0 auto; }
+    h1 { margin: 0 0 0.4rem; font-size: 1.6rem; color: #1a3a5c; }
+    p { margin: 0 0 1rem; line-height: 1.45; color: var(--tenue); }
+    .suono {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      width: 100%;
+      margin: 0 0 0.7rem;
+      padding: 0.9rem 1rem;
+      border: 2px solid var(--bordo);
+      border-radius: 16px;
+      background: var(--carta);
+      color: var(--testo);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(60, 40, 10, 0.08);
+    }
+    .suono:active { transform: scale(0.98); }
+    .suono-icona {
+      flex: 0 0 auto;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f4ecdd;
+      font-size: 1.5rem;
+    }
+    .suono-nome { display: block; font-weight: 800; font-size: 1.1rem; }
+    .suono-descrizione { display: block; font-size: 0.9rem; color: var(--tenue); }
+    .suono-in-uso { border-color: var(--verde); background: #eef8ef; }
+    .suono-etichetta {
+      margin-left: auto;
+      flex: 0 0 auto;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      background: var(--verde);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+    .suono-suona .suono-icona { background: var(--oro); }
+    .vecchio { opacity: 0.85; }
+    .nota { margin-top: 1.4rem; font-size: 0.9rem; }
+    a { color: #1a3a5c; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🔔 Scegli il suono dell'avviso</h1>
+    <p>È il suono che fa il telefono quando tocca a te tirare il dado o rispondere a una domanda.
+      Tocca un riquadro per ascoltarlo (alza il volume e togli il silenzioso), poi dimmi quale preferisci.</p>
+
+    <div id="elenco"></div>
+
+    <p class="nota">Il suono segnato <strong>in uso</strong> è quello che la beta usa già adesso.
+      <a href="index.html">← Torna al gioco</a></p>
+  </main>
+
+  <script>
+    // Elenco dei suoni da provare. "inUso": quello che js/suono-avviso.js usa adesso (FILE_SUONO).
+    const SUONI = [
+      { file: 'audio/avviso-marimba.mp3', icona: '🎵', nome: '1 · Marimba', descrizione: 'Quattro note di legno che salgono, allegre', inUso: true },
+      { file: 'audio/avviso-pizzicato.mp3', icona: '🎸', nome: '2 · Pizzicato', descrizione: 'Due corde pizzicate, la seconda più acuta' },
+      { file: 'audio/avviso-bolle.mp3', icona: '🫧', nome: '3 · Bolle', descrizione: 'Due «plop» giocosi, brevissimo' },
+      { file: 'audio/avviso-arpa.mp3', icona: '🪕', nome: '4 · Arpa', descrizione: 'Una piccola cascata di cinque note' },
+      { file: 'audio/allert-giocatore.mp3', icona: '🛗', nome: 'Quello di prima', descrizione: 'Per confronto (il «din-don» da ascensore)', vecchio: true }
+    ];
+
+    const elenco = document.getElementById('elenco');
+    let inCorso = null;
+
+    SUONI.forEach(s => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'suono' + (s.inUso ? ' suono-in-uso' : '') + (s.vecchio ? ' vecchio' : '');
+      const icona = document.createElement('span');
+      icona.className = 'suono-icona';
+      icona.textContent = s.icona;
+      const testi = document.createElement('span');
+      const nome = document.createElement('span');
+      nome.className = 'suono-nome';
+      nome.textContent = s.nome;
+      const descrizione = document.createElement('span');
+      descrizione.className = 'suono-descrizione';
+      descrizione.textContent = s.descrizione;
+      testi.append(nome, descrizione);
+      b.append(icona, testi);
+      if (s.inUso) {
+        const etichetta = document.createElement('span');
+        etichetta.className = 'suono-etichetta';
+        etichetta.textContent = 'in uso';
+        b.appendChild(etichetta);
+      }
+      const audio = new Audio(s.file);
+      audio.preload = 'auto';
+      b.addEventListener('click', () => {
+        if (inCorso) { inCorso.audio.pause(); inCorso.bottone.classList.remove('suono-suona'); }
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+        b.classList.add('suono-suona');
+        inCorso = { audio, bottone: b };
+        audio.onended = () => b.classList.remove('suono-suona');
+      });
+      elenco.appendChild(b);
+    });
+  </script>
+</body>
+</html>

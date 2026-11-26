@@ -69,7 +69,7 @@ function avviaRecensione(stato) {
     .catch(errore => console.warn('La recensione di fine partita non e\' disponibile', errore));
 }
 
-// Il suono dell'avviso (il file audio/allert-giocatore.mp3, breve, quando tocca a te o devi rispondere). Il modulo si
+// Il suono dell'avviso (il file audio/avviso-marimba.mp3, breve, quando tocca a te o devi rispondere). Il modulo si
 // carica "a parte" appena si apre la pagina: cosi' sblocca l'audio e scarica il file gia' ai primi tocchi (cerca
 // partita, entra...) e, quando serve, e' pronto.
 // Se non si carica, o si rompe, il telefono funziona come sempre (restano il lampeggio e la vibrazione).

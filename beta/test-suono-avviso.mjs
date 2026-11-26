@@ -317,7 +317,7 @@ await prova('se nel frattempo la persona spegne il suono, l\'avviso in attesa no
 globalThis.fetch = undefined;
 
 await prova('il file del suono esiste nel sito, ha un indirizzo come gli altri audio ed e\' leggero', () => {
-  assert.equal(FILE_SUONO, 'audio/allert-giocatore.mp3');
+  assert.equal(FILE_SUONO, 'audio/avviso-marimba.mp3');
   const percorso = fileURLToPath(new URL(`./${FILE_SUONO}`, import.meta.url));
   assert.ok(existsSync(percorso), `manca il file ${FILE_SUONO}`);
   assert.ok(statSync(percorso).size < 200 * 1024, `il file pesa ${Math.round(statSync(percorso).size / 1024)} KB: il telefono lo scarica, deve restare piccolo`);

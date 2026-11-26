@@ -4,7 +4,9 @@
 // vibrazione non c'e' su tutti i telefoni (su iPhone non esiste, e alcuni Android non la concedono alle pagine
 // web), il suono si.
 //
-// Il suono e' il file audio/allert-giocatore.mp3, scelto da Francesco. Il telefono lo scarica UNA volta (sono 77 KB),
+// Il suono e' il file audio/avviso-marimba.mp3: quattro note di legno che salgono, brevi e allegre (creato apposta
+// per il gioco, al posto del vecchio "din-don" da ascensore; le alternative si ascoltano in scegli-suono.html).
+// Il telefono lo scarica UNA volta (sono 12 KB),
 // appena la persona tocca la pagina per la prima volta, e poi lo suona dalla memoria: niente di nuovo da scaricare a
 // ogni avviso. Se il file non c'e', non si scarica o non si riesce a leggere, il telefono "disegna" da solo un breve
 // «din» (Web Audio) al suo posto: l'avviso c'e' sempre.
@@ -40,7 +42,7 @@ const CODA_S = 0.05;                 // le note si fermano appena dopo essere sv
 export const ATTESA_MASSIMA_MS = 1500;
 
 // Il file del suono, con l'indirizzo che si usa per tutti gli audio del sito (relativo alla pagina).
-export const FILE_SUONO = 'audio/allert-giocatore.mp3';
+export const FILE_SUONO = 'audio/avviso-marimba.mp3';
 export const VOLUME_FILE = 1;                    // il file si suona com'e': il volume l'ha deciso chi l'ha scelto
 // Se il file non si scarica (campo debole...), non si ritenta a ogni tocco ma al massimo una volta ogni tanto.
 export const PAUSA_TRA_TENTATIVI_MS = 20000;
