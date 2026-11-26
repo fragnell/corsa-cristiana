@@ -1,0 +1,11 @@
+Strumenti per creare i suoni di Corsa Cristiana (sintesi pura in Python, nessun campione esterno).
+
+  sintesi.py        il "laboratorio": note di marimba, campanelli, pizzicato, ottoni, legno, riverbero...
+  crea_effetti.py   i suoni del tabellone: 8 effetti x 5 versioni  -> python crea_effetti.py <cartella_wav> [effetto]
+  crea_suoni.py     i suoni dell'avviso sul telefono (marimba, pizzicato, bolle, arpa)
+  codifica.sh       uniforma il volume percepito (-14 LUFS) e converte in MP3 (serve ffmpeg)
+                    -> bash codifica.sh <file.wav> <file.mp3>
+
+Esempio: rigenerare tutto il dado
+  python crea_effetti.py ./wav dado
+  for f in ./wav/dado-*.wav; do bash codifica.sh "$f" "../../beta/audio/scelta/$(basename "${f%.wav}").mp3"; done

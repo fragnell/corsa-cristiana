@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex">
-  <title>Corsa Cristiana — Scegli il suono</title>
-  <!-- Pagina provvisoria della BETA: serve solo a scegliere il suono dell'avviso del telefono
-       ("tocca a te" / "rispondi"). Si ascoltano i suoni dal telefono stesso; scelto il suono, la pagina si toglie. -->
+  <title>Corsa Cristiana — Scegli i suoni</title>
+  <!-- Pagina provvisoria della BETA: serve a scegliere i suoni del gioco. Per ogni suono: quello "in uso"
+       (proposto e gia' attivo nella beta), 4 alternative e "quello di prima". Le scelte restano su questo
+       dispositivo; in fondo "Copia le mie scelte" prepara il testo da mandare. Finita la scelta, la pagina si toglie. -->
   <style>
     :root {
       --sfondo: #f6f0e4;
@@ -15,124 +16,340 @@
       --tenue: #6b5a45;
       --bordo: #e0d2b8;
       --verde: #2e7d32;
+      --blu: #1a3a5c;
       --oro: #f5b301;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 1.5rem 1rem 2.5rem;
+      padding: 1.5rem 1rem 7rem;
       font-family: 'Nunito', system-ui, sans-serif;
       background: var(--sfondo);
       color: var(--testo);
     }
-    main { max-width: 32rem; margin: 0 auto; }
-    h1 { margin: 0 0 0.4rem; font-size: 1.6rem; color: #1a3a5c; }
-    p { margin: 0 0 1rem; line-height: 1.45; color: var(--tenue); }
-    .suono {
+    main { max-width: 46rem; margin: 0 auto; }
+    h1 { margin: 0 0 0.4rem; font-size: 1.7rem; color: var(--blu); }
+    .intro { margin: 0 0 1.4rem; line-height: 1.45; color: var(--tenue); }
+    section {
+      margin: 0 0 1.4rem;
+      padding: 1rem;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--bordo);
+    }
+    section h2 { margin: 0; font-size: 1.25rem; color: var(--blu); }
+    .quando { margin: 0.15rem 0 0.8rem; font-size: 0.92rem; color: var(--tenue); }
+    .gia-scelto { color: var(--verde); font-weight: 800; }
+    .opzione {
+      display: flex;
+      align-items: stretch;
+      gap: 0.6rem;
+      margin: 0 0 0.55rem;
+    }
+    .suona {
+      flex: 1;
+      min-width: 0;
       display: flex;
       align-items: center;
-      gap: 0.9rem;
-      width: 100%;
-      margin: 0 0 0.7rem;
-      padding: 0.9rem 1rem;
+      gap: 0.8rem;
+      padding: 0.7rem 0.9rem;
       border: 2px solid var(--bordo);
-      border-radius: 16px;
+      border-radius: 14px;
       background: var(--carta);
       color: var(--testo);
       font: inherit;
       text-align: left;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(60, 40, 10, 0.08);
+      box-shadow: 0 2px 6px rgba(60, 40, 10, 0.07);
     }
-    .suono:active { transform: scale(0.98); }
-    .suono-icona {
+    .suona:active { transform: scale(0.985); }
+    .icona {
       flex: 0 0 auto;
-      width: 3rem;
-      height: 3rem;
+      width: 2.6rem;
+      height: 2.6rem;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f4ecdd;
-      font-size: 1.5rem;
+      font-size: 1.15rem;
     }
-    .suono-nome { display: block; font-weight: 800; font-size: 1.1rem; }
-    .suono-descrizione { display: block; font-size: 0.9rem; color: var(--tenue); }
-    .suono-in-uso { border-color: var(--verde); background: #eef8ef; }
-    .suono-etichetta {
+    .in-riproduzione .icona { background: var(--oro); }
+    .nome { display: block; font-weight: 800; }
+    .descrizione { display: block; font-size: 0.88rem; color: var(--tenue); }
+    .etichetta {
       margin-left: auto;
       flex: 0 0 auto;
-      padding: 0.15rem 0.6rem;
+      padding: 0.12rem 0.55rem;
       border-radius: 999px;
       background: var(--verde);
       color: #fff;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 800;
+      white-space: nowrap;
     }
-    .suono-suona .suono-icona { background: var(--oro); }
-    .vecchio { opacity: 0.85; }
-    .nota { margin-top: 1.4rem; font-size: 0.9rem; }
-    a { color: #1a3a5c; }
+    .opzione-in-uso .suona { border-color: #9fcfa3; }
+    .opzione-vecchia .suona { opacity: 0.8; }
+    .scegli {
+      flex: 0 0 auto;
+      width: 6.4rem;
+      padding: 0.4rem;
+      border: 2px solid var(--bordo);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--tenue);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+    .scegli[aria-pressed="true"] {
+      border-color: var(--verde);
+      background: var(--verde);
+      color: #fff;
+    }
+    .riepilogo {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 0.8rem 1rem;
+      background: rgba(255, 253, 247, 0.97);
+      border-top: 1px solid var(--bordo);
+      box-shadow: 0 -4px 14px rgba(60, 40, 10, 0.12);
+    }
+    .riepilogo-dentro {
+      max-width: 46rem;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .conteggio { flex: 1; min-width: 12rem; font-weight: 700; }
+    .copia {
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 999px;
+      background: var(--blu);
+      color: #fff;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    #testo-scelte {
+      display: none;
+      width: 100%;
+      min-height: 9rem;
+      margin-top: 0.6rem;
+      font: 0.85rem/1.4 ui-monospace, monospace;
+    }
+    #testo-scelte.visibile { display: block; }
+    a { color: var(--blu); }
+    @media (max-width: 520px) {
+      .opzione { flex-direction: column; gap: 0.3rem; }
+      .scegli { width: 100%; padding: 0.5rem; }
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>🔔 Scegli il suono dell'avviso</h1>
-    <p>È il suono che fa il telefono quando tocca a te tirare il dado o rispondere a una domanda.
-      Tocca un riquadro per ascoltarlo (alza il volume e togli il silenzioso), poi dimmi quale preferisci.</p>
-
-    <div id="elenco"></div>
-
-    <p class="nota">Il suono segnato <strong>in uso</strong> è quello che la beta usa già adesso.
-      <a href="index.html">← Torna al gioco</a></p>
+    <h1>🔊 Scegli i suoni del gioco</h1>
+    <p class="intro">Per ogni suono c'è quello <strong>in uso</strong> (già attivo nella beta), quattro alternative e
+      <strong>quello di prima</strong> per confronto. Tocca un riquadro per ascoltarlo, poi premi <strong>«Scelgo questo»</strong>
+      su quello che preferisci. I suoni del tabellone ascoltali dal PC o dalla TV, quelli che userete davvero.
+      Quando hai finito, in fondo premi <strong>«Copia le mie scelte»</strong> e incollale a Claude.</p>
+    <div id="sezioni"></div>
+    <p class="intro"><a href="index.html">← Torna al gioco</a></p>
   </main>
 
+  <div class="riepilogo">
+    <div class="riepilogo-dentro">
+      <span id="conteggio" class="conteggio"></span>
+      <button type="button" id="copia" class="copia">📋 Copia le mie scelte</button>
+      <textarea id="testo-scelte" readonly aria-label="Le tue scelte"></textarea>
+    </div>
+  </div>
+
   <script>
-    // Elenco dei suoni da provare. "inUso": quello che js/suono-avviso.js usa adesso (FILE_SUONO).
-    const SUONI = [
-      { file: 'audio/avviso-marimba.mp3', icona: '🎵', nome: '1 · Marimba', descrizione: 'Quattro note di legno che salgono, allegre', inUso: true },
-      { file: 'audio/avviso-pizzicato.mp3', icona: '🎸', nome: '2 · Pizzicato', descrizione: 'Due corde pizzicate, la seconda più acuta' },
-      { file: 'audio/avviso-bolle.mp3', icona: '🫧', nome: '3 · Bolle', descrizione: 'Due «plop» giocosi, brevissimo' },
-      { file: 'audio/avviso-arpa.mp3', icona: '🪕', nome: '4 · Arpa', descrizione: 'Una piccola cascata di cinque note' },
-      { file: 'audio/allert-giocatore.mp3', icona: '🛗', nome: 'Quello di prima', descrizione: 'Per confronto (il «din-don» da ascensore)', vecchio: true }
+    // I suoni da scegliere. "inUso": quello attivo adesso nella beta (js/audio-ui.js e js/suono-avviso.js).
+    const SEZIONI = [
+      { chiave: 'dado', titolo: '🎲 Lancio del dado', quando: 'Mentre il dado rotola sul tabellone (dura al massimo 1,6 secondi).', opzioni: [
+        { file: 'audio/scelta/dado-1.mp3', icona: '🎲', nome: 'Dadi sul tavolo di legno', descrizione: 'Due dadi che rimbalzano e rotolano', inUso: true },
+        { file: 'audio/scelta/dado-2.mp3', icona: '🥤', nome: 'Bicchiere scosso', descrizione: 'I dadi agitati in un bicchiere, poi lanciati' },
+        { file: 'audio/scelta/dado-3.mp3', icona: '🥁', nome: 'Rullo di tamburo', descrizione: 'Un rullo che cresce e un colpo finale' },
+        { file: 'audio/scelta/dado-4.mp3', icona: '🎵', nome: 'Marimba che gira', descrizione: 'Note che salgono e scendono, poi si fermano' },
+        { file: 'audio/scelta/dado-5.mp3', icona: '🎡', nome: 'Ruota a scatti', descrizione: 'Scatti che rallentano, poi un campanellino' },
+        { file: 'audio/effetto-dado.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'conoscenza', titolo: '📖 Carta pescata', quando: 'Quando esce una domanda Conoscenza o una Prova.', opzioni: [
+        { file: 'audio/scelta/conoscenza-1.mp3', icona: '🃏', nome: 'Carta e campanellino', descrizione: 'Un fruscio di carta e due note leggere', inUso: true },
+        { file: 'audio/scelta/conoscenza-2.mp3', icona: '📖', nome: 'Pagina di un libro', descrizione: 'Il fruscio di una pagina girata' },
+        { file: 'audio/scelta/conoscenza-3.mp3', icona: '✨', nome: 'Arpa magica', descrizione: 'Un breve glissato d\'arpa con scintille' },
+        { file: 'audio/scelta/conoscenza-4.mp3', icona: '❓', nome: 'Domanda da quiz', descrizione: 'Tre note veloci, come in un quiz' },
+        { file: 'audio/scelta/conoscenza-5.mp3', icona: '🫧', nome: 'Pop morbido', descrizione: 'Un «pop» e due note rotonde' },
+        { file: 'audio/effetto-conoscenza.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'corretto', titolo: '✅ Risposta giusta', quando: 'Quando sulla carta compare «Corretto!».', opzioni: [
+        { file: 'audio/scelta/corretto-1.mp3', icona: '🎵', nome: 'Marimba felice', descrizione: 'Un accordo allegro con scintille', inUso: true },
+        { file: 'audio/scelta/corretto-2.mp3', icona: '🎺', nome: 'Fanfara breve', descrizione: 'Ta-ta-taaa con le trombe' },
+        { file: 'audio/scelta/corretto-3.mp3', icona: '✨', nome: 'Scintille', descrizione: 'Una cascata di campanellini' },
+        { file: 'audio/scelta/corretto-4.mp3', icona: '🪙', nome: 'Moneta', descrizione: 'Il «pling» dei videogiochi' },
+        { file: 'audio/scelta/corretto-5.mp3', icona: '🎸', nome: 'Ukulele', descrizione: 'Due pennate allegre' },
+        { file: 'audio/effetto-corretto.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'sbagliato', titolo: '❌ Risposta sbagliata', quando: 'Quando sulla carta compare «Sbagliato». Meglio un suono gentile: giocano anche i bambini.', opzioni: [
+        { file: 'audio/scelta/sbagliato-1.mp3', icona: '🎵', nome: 'Oh-oh', descrizione: 'Due note morbide che scendono', inUso: true },
+        { file: 'audio/scelta/sbagliato-2.mp3', icona: '🎺', nome: 'Trombetta triste', descrizione: 'Wa-wa-wa-waaa, spiritosa' },
+        { file: 'audio/scelta/sbagliato-3.mp3', icona: '🪵', nome: 'Toc sordo', descrizione: 'Un colpo di legno, breve' },
+        { file: 'audio/scelta/sbagliato-4.mp3', icona: '🎻', nome: 'Pizzicato giù', descrizione: 'Tre corde che scendono' },
+        { file: 'audio/scelta/sbagliato-5.mp3', icona: '🎈', nome: 'Palloncino', descrizione: 'Una nota che si sgonfia' },
+        { file: 'audio/effetto-sbagliato.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'imprevisto', titolo: '⚠️ Imprevisto', quando: 'Quando esce una carta Imprevisto.', opzioni: [
+        { file: 'audio/scelta/imprevisto-1.mp3', icona: '📉', nome: 'Fischio e tonfo', descrizione: 'Un fischio che scende e un tonfo', inUso: true },
+        { file: 'audio/scelta/imprevisto-2.mp3', icona: '🥁', nome: 'Timpani drammatici', descrizione: 'Un rullo di timpani e un colpo' },
+        { file: 'audio/scelta/imprevisto-3.mp3', icona: '😮', nome: 'Accordo a sorpresa', descrizione: 'Un accordo che «non torna»' },
+        { file: 'audio/scelta/imprevisto-4.mp3', icona: '🌀', nome: 'Molla che scende', descrizione: 'Un «boing» verso il basso' },
+        { file: 'audio/scelta/imprevisto-5.mp3', icona: '🛝', nome: 'Scivolone', descrizione: 'Note che scivolano giù' },
+        { file: 'audio/effetto-imprevisto.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'salto', titolo: '🚀 Salto', quando: 'Quando esce una carta Salto.', opzioni: [
+        { file: 'audio/scelta/salto-1.mp3', icona: '📈', nome: 'Fischio e scintilla', descrizione: 'Un fischio che sale e scintille', inUso: true },
+        { file: 'audio/scelta/salto-2.mp3', icona: '🌀', nome: 'Molla che salta', descrizione: 'Un «boing» verso l\'alto' },
+        { file: 'audio/scelta/salto-3.mp3', icona: '💨', nome: 'Colpo di vento', descrizione: 'Uno slancio d\'aria e due note' },
+        { file: 'audio/scelta/salto-4.mp3', icona: '🎵', nome: 'Scala di marimba', descrizione: 'Una scala velocissima che sale' },
+        { file: 'audio/scelta/salto-5.mp3', icona: '🪕', nome: 'Arpa in salita', descrizione: 'Un grande glissato d\'arpa' },
+        { file: 'audio/effetto-salto.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'fermo', titolo: '😔 Scoraggiamento', quando: 'Quando esce una carta Scoraggiamento (fermo un turno).', opzioni: [
+        { file: 'audio/scelta/fermo-1.mp3', icona: '🎵', nome: 'Sospiro di marimba', descrizione: 'Tre note lente che scendono', inUso: true },
+        { file: 'audio/scelta/fermo-2.mp3', icona: '🕰️', nome: 'Orologio che si ferma', descrizione: 'Tic-tac che rallenta' },
+        { file: 'audio/scelta/fermo-3.mp3', icona: '〰️', nome: 'Nota lunga e calma', descrizione: 'Un suono che invita alla pausa' },
+        { file: 'audio/scelta/fermo-4.mp3', icona: '🎈', nome: 'Sgonfiarsi', descrizione: 'Una nota lenta che scende' },
+        { file: 'audio/scelta/fermo-5.mp3', icona: '🎶', nome: 'Carillon che rallenta', descrizione: 'Un carillon che si scarica' },
+        { file: 'audio/effetto-fermo.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'vittoria', titolo: '🏆 Vittoria', quando: 'Con la festa di fine partita.', opzioni: [
+        { file: 'audio/scelta/vittoria-1.mp3', icona: '🎉', nome: 'Festa', descrizione: 'Marimba, campanelli e timpani', inUso: true },
+        { file: 'audio/scelta/vittoria-2.mp3', icona: '🎺', nome: 'Fanfara di ottoni', descrizione: 'Trombe e timpani' },
+        { file: 'audio/scelta/vittoria-3.mp3', icona: '🎆', nome: 'Fuochi d\'artificio', descrizione: 'Fischi, scoppi e un accordo' },
+        { file: 'audio/scelta/vittoria-4.mp3', icona: '🎶', nome: 'Carillon della vittoria', descrizione: 'Una melodia di carillon' },
+        { file: 'audio/scelta/vittoria-5.mp3', icona: '🪕', nome: 'Arpa e campane', descrizione: 'Arpa che sale e campane' },
+        { file: 'audio/effetto-vittoria.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Per confronto', vecchio: true }
+      ] },
+      { chiave: 'avviso', titolo: '🔔 Avviso sul telefono', quando: 'Sul telefono, quando tocca a te o devi rispondere.', giaScelto: 'Marimba', opzioni: [
+        { file: 'audio/avviso-marimba.mp3', icona: '🎵', nome: 'Marimba', descrizione: 'Quattro note di legno che salgono', inUso: true },
+        { file: 'audio/avviso-pizzicato.mp3', icona: '🎸', nome: 'Pizzicato', descrizione: 'Due corde pizzicate' },
+        { file: 'audio/avviso-bolle.mp3', icona: '🫧', nome: 'Bolle', descrizione: 'Due «plop» giocosi' },
+        { file: 'audio/avviso-arpa.mp3', icona: '🪕', nome: 'Arpa', descrizione: 'Una piccola cascata di note' },
+        { file: 'audio/allert-giocatore.mp3', icona: '⏪', nome: 'Quello di prima', descrizione: 'Il «din-don» da ascensore', vecchio: true }
+      ] }
     ];
 
-    const elenco = document.getElementById('elenco');
-    let inCorso = null;
+    // Le scelte restano su questo dispositivo (comode se si chiude la pagina a meta').
+    const CHIAVE = 'corsa-cristiana-beta-scelta-suoni';
+    let scelte = {};
+    try { scelte = JSON.parse(localStorage.getItem(CHIAVE) || '{}') || {}; } catch (e) { scelte = {}; }
+    const salva = () => { try { localStorage.setItem(CHIAVE, JSON.stringify(scelte)); } catch (e) { /* pazienza */ } };
 
-    SUONI.forEach(s => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'suono' + (s.inUso ? ' suono-in-uso' : '') + (s.vecchio ? ' vecchio' : '');
-      const icona = document.createElement('span');
-      icona.className = 'suono-icona';
-      icona.textContent = s.icona;
-      const testi = document.createElement('span');
-      const nome = document.createElement('span');
-      nome.className = 'suono-nome';
-      nome.textContent = s.nome;
-      const descrizione = document.createElement('span');
-      descrizione.className = 'suono-descrizione';
-      descrizione.textContent = s.descrizione;
-      testi.append(nome, descrizione);
-      b.append(icona, testi);
-      if (s.inUso) {
-        const etichetta = document.createElement('span');
-        etichetta.className = 'suono-etichetta';
-        etichetta.textContent = 'in uso';
-        b.appendChild(etichetta);
+    let inCorso = null;
+    const contenitore = document.getElementById('sezioni');
+
+    function crea(tag, classe, testo) {
+      const el = document.createElement(tag);
+      if (classe) el.className = classe;
+      if (testo !== undefined) el.textContent = testo;
+      return el;
+    }
+
+    SEZIONI.forEach(sezione => {
+      const blocco = crea('section');
+      blocco.appendChild(crea('h2', '', sezione.titolo));
+      const quando = crea('p', 'quando', sezione.quando);
+      if (sezione.giaScelto) {
+        quando.append(' ');
+        quando.appendChild(crea('span', 'gia-scelto', `Già scelto: ${sezione.giaScelto} ✓`));
       }
-      const audio = new Audio(s.file);
-      audio.preload = 'auto';
-      b.addEventListener('click', () => {
-        if (inCorso) { inCorso.audio.pause(); inCorso.bottone.classList.remove('suono-suona'); }
-        audio.currentTime = 0;
-        audio.play().catch(() => {});
-        b.classList.add('suono-suona');
-        inCorso = { audio, bottone: b };
-        audio.onended = () => b.classList.remove('suono-suona');
+      blocco.appendChild(quando);
+
+      const bottoniScelta = [];
+      sezione.opzioni.forEach((o, i) => {
+        const riga = crea('div', 'opzione' + (o.inUso ? ' opzione-in-uso' : '') + (o.vecchio ? ' opzione-vecchia' : ''));
+        const suona = crea('button', 'suona');
+        suona.type = 'button';
+        suona.appendChild(crea('span', 'icona', o.icona));
+        const testi = crea('span');
+        testi.append(crea('span', 'nome', `${o.vecchio ? '' : (i + 1) + ' · '}${o.nome}`), crea('span', 'descrizione', o.descrizione));
+        suona.appendChild(testi);
+        if (o.inUso) suona.appendChild(crea('span', 'etichetta', 'in uso'));
+        const audio = new Audio(o.file);
+        audio.preload = 'none';
+        suona.addEventListener('click', () => {
+          if (inCorso) { inCorso.audio.pause(); inCorso.bottone.classList.remove('in-riproduzione'); }
+          audio.currentTime = 0;
+          audio.play().catch(() => {});
+          suona.classList.add('in-riproduzione');
+          inCorso = { audio, bottone: suona };
+          audio.onended = () => suona.classList.remove('in-riproduzione');
+        });
+
+        const scegli = crea('button', 'scegli', 'Scelgo questo');
+        scegli.type = 'button';
+        scegli.addEventListener('click', () => {
+          scelte[sezione.chiave] = i;
+          salva();
+          aggiornaSezione();
+          aggiornaRiepilogo();
+        });
+        bottoniScelta.push(scegli);
+        riga.append(suona, scegli);
+        blocco.appendChild(riga);
       });
-      elenco.appendChild(b);
+
+      function aggiornaSezione() {
+        bottoniScelta.forEach((b, i) => {
+          const scelto = scelte[sezione.chiave] === i;
+          b.setAttribute('aria-pressed', String(scelto));
+          b.textContent = scelto ? '✓ Scelto' : 'Scelgo questo';
+        });
+      }
+      aggiornaSezione();
+      contenitore.appendChild(blocco);
+    });
+
+    function testoScelte() {
+      return 'Le mie scelte dei suoni:\n' + SEZIONI.map(s => {
+        const i = scelte[s.chiave];
+        if (i === undefined) return `- ${s.titolo}: (nessuna scelta, va bene quello in uso)`;
+        const o = s.opzioni[i];
+        return `- ${s.titolo}: ${o.vecchio ? 'quello di prima' : (i + 1) + ' · ' + o.nome}`;
+      }).join('\n');
+    }
+
+    function aggiornaRiepilogo() {
+      const fatte = SEZIONI.filter(s => scelte[s.chiave] !== undefined).length;
+      document.getElementById('conteggio').textContent = `Scelte fatte: ${fatte} su ${SEZIONI.length}`;
+      const area = document.getElementById('testo-scelte');
+      if (area.classList.contains('visibile')) area.value = testoScelte();
+    }
+    aggiornaRiepilogo();
+
+    document.getElementById('copia').addEventListener('click', async () => {
+      const testo = testoScelte();
+      const area = document.getElementById('testo-scelte');
+      const bottone = document.getElementById('copia');
+      try {
+        await navigator.clipboard.writeText(testo);
+        bottone.textContent = '✅ Copiato! Ora incollalo a Claude';
+        setTimeout(() => { bottone.textContent = '📋 Copia le mie scelte'; }, 2500);
+      } catch (e) {
+        // niente appunti (alcuni browser): si mostra il testo da copiare a mano
+        area.value = testo;
+        area.classList.add('visibile');
+        area.select();
+      }
     });
   </script>
 </body>
