@@ -5,7 +5,7 @@
 // web), il suono si.
 //
 // Il suono e' il file audio/avviso-marimba.mp3: quattro note di legno che salgono, brevi e allegre (creato apposta
-// per il gioco, al posto del vecchio "din-don" da ascensore; le alternative si ascoltano in scegli-suono.html).
+// per il gioco e scelto da Francesco, al posto del vecchio "din-don" da ascensore; vedi strumenti/suoni/).
 // Il telefono lo scarica UNA volta (sono 12 KB),
 // appena la persona tocca la pagina per la prima volta, e poi lo suona dalla memoria: niente di nuovo da scaricare a
 // ogni avviso. Se il file non c'e', non si scarica o non si riesce a leggere, il telefono "disegna" da solo un breve

@@ -19,17 +19,17 @@
 
 const CHIAVE_PREFERENZA = 'corsa-cristiana-audio-attivo';
 
-// BETA: i suoni nuovi, creati apposta per il gioco (strumenti/suoni/), tutti allo stesso volume percepito.
-// Sono le proposte "in uso" della pagina scegli-suono.html: quando sono scelti quelli definitivi, si aggiorna qui.
+// Nella BETA tre di questi file sono stati rifatti (scelti da Francesco tra le proposte create in strumenti/suoni/):
+// sbagliato = "trombetta triste", imprevisto = "accordo a sorpresa", fermo = "sgonfiarsi". Gli altri sono quelli di sempre.
 const EFFETTI = {
-  dado: 'audio/scelta/dado-1.mp3',
-  imprevisto: 'audio/scelta/imprevisto-1.mp3',
-  salto: 'audio/scelta/salto-1.mp3',
-  fermo: 'audio/scelta/fermo-1.mp3',
-  conoscenza: 'audio/scelta/conoscenza-1.mp3',
-  vittoria: 'audio/scelta/vittoria-1.mp3',
-  corretto: 'audio/scelta/corretto-1.mp3',
-  sbagliato: 'audio/scelta/sbagliato-1.mp3'
+  dado: 'audio/effetto-dado.mp3',
+  imprevisto: 'audio/effetto-imprevisto.mp3',
+  salto: 'audio/effetto-salto.mp3',
+  fermo: 'audio/effetto-fermo.mp3',
+  conoscenza: 'audio/effetto-conoscenza.mp3',
+  vittoria: 'audio/effetto-vittoria.mp3',
+  corretto: 'audio/effetto-corretto.mp3',
+  sbagliato: 'audio/effetto-sbagliato.mp3'
 };
 
 const VOLUME_MUSICA = 0.4;

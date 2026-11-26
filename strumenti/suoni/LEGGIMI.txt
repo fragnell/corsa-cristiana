@@ -6,6 +6,13 @@ Strumenti per creare i suoni di Corsa Cristiana (sintesi pura in Python, nessun 
   codifica.sh       uniforma il volume percepito (-14 LUFS) e converte in MP3 (serve ffmpeg)
                     -> bash codifica.sh <file.wav> <file.mp3>
 
-Esempio: rigenerare tutto il dado
-  python crea_effetti.py ./wav dado
-  for f in ./wav/dado-*.wav; do bash codifica.sh "$f" "../../beta/audio/scelta/$(basename "${f%.wav}").mp3"; done
+Suoni scelti e in uso nella beta (novembre 2026):
+  avviso sul telefono  = crea_suoni.py "marimba"        -> beta/audio/avviso-marimba.mp3
+  risposta sbagliata   = crea_effetti.py sbagliato-2     -> beta/audio/effetto-sbagliato.mp3  ("trombetta triste")
+  imprevisto           = crea_effetti.py imprevisto-3    -> beta/audio/effetto-imprevisto.mp3 ("accordo a sorpresa")
+  scoraggiamento       = crea_effetti.py fermo-4         -> beta/audio/effetto-fermo.mp3      ("sgonfiarsi")
+  Gli altri effetti (dado, carta, giusta, salto, vittoria) sono rimasti quelli di prima.
+
+Esempio: rigenerare l'imprevisto
+  python crea_effetti.py ./wav imprevisto
+  bash codifica.sh ./wav/imprevisto-3.wav ../../beta/audio/effetto-imprevisto.mp3
