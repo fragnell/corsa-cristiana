@@ -21,6 +21,9 @@ const CHIAVE_PREFERENZA = 'corsa-cristiana-audio-attivo';
 
 // Nella BETA tre di questi file sono stati rifatti (scelti da Francesco tra le proposte create in strumenti/suoni/):
 // sbagliato = "trombetta triste", imprevisto = "accordo a sorpresa", fermo = "sgonfiarsi". Gli altri sono quelli di sempre.
+// Tutti (tranne la carta "conoscenza") hanno lo stesso volume nel loro momento piu' forte (circa -11 LUFS) e non
+// superano mai -1 dB di picco: cambia solo il volume, non il suono. La carta e' rimasta com'era: il suo colpo
+// finale e' gia' al massimo e alzarla avrebbe voluto dire schiacciarlo.
 const EFFETTI = {
   dado: 'audio/effetto-dado.mp3',
   imprevisto: 'audio/effetto-imprevisto.mp3',
