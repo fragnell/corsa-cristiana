@@ -160,11 +160,15 @@ export function pulisciNome(nome) {
 
 // La riga sotto il modulo, che dice con chiarezza cosa viene salvato. Con un soprannome lo scrive per intero
 // (chi legge vede esattamente cosa partira'); senza, dice che la recensione e' anonima.
+// L'amministratore puo' scegliere alcune recensioni da far scorrere nella pagina principale
+// (vedi recensioni-evidenza.js): chi scrive deve saperlo prima di inviare.
+const PUO_COMPARIRE_IN_HOME = 'Alcune recensioni potrebbero comparire nella pagina principale del gioco.';
+
 export function testoRiservatezza(nome) {
   const soprannome = pulisciNome(nome);
   return soprannome
-    ? `Sarà firmata con il tuo soprannome «${soprannome}». Salviamo solo quello, il voto, il commento e il tipo di partita.`
-    : 'È anonima: salviamo solo il voto, il commento e il tipo di partita, non il tuo nome.';
+    ? `Sarà firmata con il tuo soprannome «${soprannome}». Salviamo solo quello, il voto, il commento e il tipo di partita. ${PUO_COMPARIRE_IN_HOME}`
+    : `È anonima: salviamo solo il voto, il commento e il tipo di partita, non il tuo nome. ${PUO_COMPARIRE_IN_HOME}`;
 }
 
 // ---------- da quale versione del gioco arriva ----------

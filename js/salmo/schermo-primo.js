@@ -7,7 +7,7 @@
 // sugli altri telefoni.
 
 import { crea, svuota, avviaConto, pausa, memoriaLeggi, memoriaScrivi } from './dom.js';
-import { disegnaMosaico } from './mosaico-ui.js';
+import { creaMosaicoProtetto } from './protezione.js';
 import { comeElenco } from './sessione.js';
 import { telefono as TESTI, CHIUDI } from './testi.js';
 import { leggiSegreto, inviaPronto, inviaSbirciata, leggiRisposte } from './rete-salmo.js';
@@ -30,6 +30,7 @@ export function creaSchermoPrimo({ codicePartita, mioId, corpo, alChiudere }) {
   let fermaConto = null;
   let timerSbirciata = null;
   let chiaveUltima = null;
+  let fermaProtezione = null;       // il mosaico "a torcia" visibile adesso (vedi protezione.js)
 
   const chiaveSbirciata = () => `salmo-sbirciata-${sid}`;
 
@@ -38,6 +39,21 @@ export function creaSchermoPrimo({ codicePartita, mioId, corpo, alChiudere }) {
     fermaConto = null;
     if (timerSbirciata) clearTimeout(timerSbirciata);
     timerSbirciata = null;
+    if (fermaProtezione) fermaProtezione();
+    fermaProtezione = null;
+  }
+
+  // Il mosaico non si mostra mai intero: solo "a torcia", sotto il dito (vedi protezione.js).
+  function mettiMosaico(griglia, s, dati, aiuto) {
+    if (fermaProtezione) fermaProtezione();
+    const protetto = creaMosaicoProtetto({ tessere, righe: s.righe, colonne: s.colonne, nome: dati && dati.primo, aiuto });
+    fermaProtezione = protetto.ferma;
+    griglia.appendChild(protetto.nodo);
+  }
+  function togliMosaico(griglia) {
+    if (fermaProtezione) fermaProtezione();
+    fermaProtezione = null;
+    svuota(griglia);
   }
 
   // ---------- caricare l'immagine (con qualche tentativo) ----------
@@ -128,6 +144,7 @@ export function creaSchermoPrimo({ codicePartita, mioId, corpo, alChiudere }) {
     const col = crea('div', 'salmo-colonna');
     col.appendChild(crea('h2', 'salmo-fase-titolo', t.titolo));
     col.appendChild(crea('p', 'salmo-testo', t.testo));
+    col.appendChild(crea('p', 'salmo-patto', t.patto));
     const bottone = crea('button', 'salmo-bottone', pronto ? '✅' : t.bottone);
     bottone.type = 'button';
     bottone.disabled = pronto || caricamento !== 'ok';
@@ -152,15 +169,15 @@ export function creaSchermoPrimo({ codicePartita, mioId, corpo, alChiudere }) {
     col.appendChild(crea('h2', 'salmo-fase-titolo', t.titolo));
     const conto = crea('div', 'salmo-conto-prova');
     col.appendChild(conto);
-    const griglia = crea('div', 'salmo-griglia');
+    const griglia = crea('div', 'salmo-griglia-protetta');
     col.appendChild(griglia);
     corpo.appendChild(col);
 
     const mostra = () => {
       if (caricamento === 'ok' && tessere && oraServer() < s.scadenza) {
-        if (!griglia.firstChild) disegnaMosaico(griglia, tessere, s.righe, s.colonne);
+        if (!griglia.firstChild) mettiMosaico(griglia, s, dati, t.aiuto);
       } else {
-        svuota(griglia);
+        togliMosaico(griglia);
       }
     };
     mostra();
@@ -181,8 +198,8 @@ export function creaSchermoPrimo({ codicePartita, mioId, corpo, alChiudere }) {
     const sbirciando = sbirciandoFinoA > oraServer() && caricamento === 'ok' && tessere;
     if (sbirciando) {
       col.appendChild(crea('p', 'salmo-stato', t.sbirciando));
-      const griglia = crea('div', 'salmo-griglia');
-      disegnaMosaico(griglia, tessere, s.righe, s.colonne);
+      const griglia = crea('div', 'salmo-griglia-protetta');
+      mettiMosaico(griglia, s, dati, t.aiuto);
       col.appendChild(griglia);
       const contoSbirciata = crea('p', 'salmo-conto-piccolo');
       col.appendChild(contoSbirciata);

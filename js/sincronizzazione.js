@@ -441,3 +441,29 @@ export function ascoltaRecensioni(callback, alErrore) {
 export function eliminaRecensione(chiave) {
   return remove(ref(db, `recensioni/${chiave}`));
 }
+
+// --- Recensioni in evidenza (pagina principale) ---
+// Una COPIA ridotta delle recensioni scelte dall'amministratore (vedi js/recensioni-evidenza.js), in
+// "recensioniInEvidenza/<chiave>": la puo' leggere chiunque (la pagina principale), ma solo
+// l'amministratore puo' scriverla. Anche questo lo decidono le regole di Firebase.
+
+export function ascoltaRecensioniInEvidenza(callback, alErrore) {
+  return onValue(ref(db, 'recensioniInEvidenza'), (istantanea) => {
+    callback(istantanea.val() || {});
+  }, (errore) => {
+    if (alErrore) alErrore(errore);
+  });
+}
+
+export async function leggiRecensioniInEvidenza() {
+  const istantanea = await get(ref(db, 'recensioniInEvidenza'));
+  return istantanea.val() || {};
+}
+
+export function mettiRecensioneInEvidenza(chiave, copia) {
+  return set(ref(db, `recensioniInEvidenza/${chiave}`), copia);
+}
+
+export function togliRecensioneDaEvidenza(chiave) {
+  return remove(ref(db, `recensioniInEvidenza/${chiave}`));
+}

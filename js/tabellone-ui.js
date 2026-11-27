@@ -13,7 +13,11 @@ import { creaStatoIniziale, giocatoreDiTurno, partitaFinita } from './stato.js';
 import { tiraDado, muoviGiocatore, risolviCasellaDiArrivo, saltoAttivaArrivo, applicaRispostaConoscenza, applicaEsitoProva, impostaProvaInSospeso, risolviProvaInSospeso, passaTurno, etichettaPosizione } from './regole.js';
 import { creaMazzo, pesca, creaMazzoARotazione, peschaARotazione } from './mazzi.js';
 import { leggiMemoriaRotazione, numeroNuovaPartita, segnaDomandaUscita } from './rotazione-domande.js';
-import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S } from './carta-ui.js';
+import { mostraCarta, nascondiCarta, mostraCartaEAspettaScelta, chiediEsitoProvaVincolo, chiediConfermaJunior, DURATA_FINESTRA_CAMBIA_S, impostaProtagonista, avviaTempoRisposta } from './carta-ui.js';
+import { testoSpostamento } from './carta-logica.js';
+import { annuncia } from './annuncio-ui.js';
+import { avviaDimensioneTesto } from './dimensione-testo.js';
+import { mostraCelebrazione } from './vittoria-ui.js';
 import { esci } from './accesso.js';
 import { avviaMusica, alternaAudio, audioAttivo, riproduciEffetto, fermaMusica, fermaEffetti } from './audio-ui.js';
 import { valutaRisposta, mostraVerdetto } from './risposta-ui.js';
@@ -57,20 +61,10 @@ const CHIAVE_RIPRESA_CONFERMATA = 'corsa-cristiana-ripresa-confermata';
 // aggiustare la soglia.
 const LIMITE_RIPRESA_MS = 20 * 60 * 1000; // 20 minuti
 
-const TIPI_LEGENDA = [
-  { tipo: 'CONOSCENZA', etichetta: 'Conoscenza' },
-  { tipo: 'IMPREVISTO', etichetta: 'Imprevisto' },
-  { tipo: 'SALTO', etichetta: 'Salto' },
-  { tipo: 'FERMO', etichetta: 'Fermo' },
-  { tipo: 'PROVA', etichetta: 'Prova' }
-];
-
-function disegnaLegenda() {
-  const contenitore = document.getElementById('legenda-lista');
-  contenitore.innerHTML = TIPI_LEGENDA.map(t =>
-    `<div class="legenda-riga"><span class="legenda-pallino casella-${t.tipo}"></span>${t.etichetta}</div>`
-  ).join('');
-}
+// La spirale del percorso: due giri lungo i bordi della tavola (6 righe x 14 colonne = 64 posti per
+// 63 caselle). Al centro restano libere 2 righe x 10 colonne, dove va il riquadro del turno.
+const RIGHE_TABELLONE = 6;
+const COLONNE_TABELLONE = 14;
 
 let percorso = [];
 let configPartita = CONFIG;
@@ -142,6 +136,40 @@ function disegnaTabellone(coordinate) {
     el.innerHTML = `<span class="numero">${etichettaPosizione(cella.numero)}</span><div class="pedine" id="pedine-${cella.numero}"></div>`;
     contenitore.appendChild(el);
   });
+  // il riquadro del turno sta dentro la griglia, nello spazio libero al centro della spirale (vedi tabellone.css)
+  const pannelloTurno = document.getElementById('pannello-turno');
+  if (pannelloTurno) contenitore.appendChild(pannelloTurno);
+}
+
+// Il riquadro del turno, al centro del tabellone: la pedina di chi gioca, "Tocca a ...", cosa deve
+// fare e una nota piccola. Il nome arriva dai telefoni: entra sempre come testo semplice.
+function mostraTurno(giocatore, azione, nota) {
+  const info = document.getElementById('turno-info');
+  if (!info) return;
+  info.textContent = '';
+  const pedina = document.createElement('div');
+  pedina.className = 'turno-pedina';
+  pedina.style.backgroundColor = PALETTE[giocatore.colore] || coloreSicuro(giocatore.colore);
+  pedina.textContent = (giocatore.nome || '?')[0];
+  const testi = document.createElement('div');
+  testi.className = 'turno-testi';
+  const chi = document.createElement('div');
+  chi.className = 'turno-chi';
+  chi.append('Tocca a ');
+  const nome = document.createElement('strong');
+  nome.textContent = giocatore.nome;
+  chi.appendChild(nome);
+  const cosa = document.createElement('div');
+  cosa.className = 'turno-azione';
+  cosa.textContent = azione;
+  testi.append(chi, cosa);
+  if (nota) {
+    const piccola = document.createElement('div');
+    piccola.className = 'turno-nota';
+    piccola.textContent = nota;
+    testi.appendChild(piccola);
+  }
+  info.append(pedina, testi);
 }
 
 function creaPedine() {
@@ -160,6 +188,20 @@ function spostaPedinaSuCasella(giocatoreId, numeroCasella) {
   const pedina = pedineDom.get(giocatoreId);
   const contenitore = document.getElementById(`pedine-${numeroCasella}`);
   if (pedina && contenitore) contenitore.appendChild(pedina);
+}
+
+// Sposta la pedina e intanto annuncia in grande quanto si e' mossa ("Anna avanza di 3 caselle").
+// Se la pedina non si muove, l'annuncio dice dove resta (solo se "anchePerFermo").
+async function muoviEAnnuncia(giocatore, da, a, { anchePerFermo = false } = {}) {
+  if (da === a && !anchePerFermo) return;
+  const { testo, verso } = testoSpostamento(giocatore.nome, da, a, etichettaPosizione);
+  const finito = annuncia(testo, verso);
+  if (da !== a) {
+    await pausa(200);
+    await animaSpostamento(giocatore.id, da, a);
+  }
+  mostraTurno(giocatore, testo, '');
+  await finito;
 }
 
 function facciaBalzare(giocatoreId) {
@@ -226,24 +268,22 @@ async function salmoDopoPassaggioDiTurno() {
   }
 }
 
+// Chi ha una prova in sospeso ha una ⏳ sulla pedina (il testo della prova si legge sui telefoni).
 function aggiornaProveInSospeso() {
-  const contenitore = document.getElementById('prove-in-sospeso');
-  const inAttesa = stato.giocatori.filter(g => g.provaInSospeso);
-
-  if (inAttesa.length === 0) {
-    contenitore.innerHTML = '';
-    return;
-  }
-
-  contenitore.innerHTML = inAttesa.map(g =>
-    `<div class="prova-sospesa-riga">${testoSicuro(g.nome)}</div>`
-  ).join('');
+  stato.giocatori.forEach(g => {
+    const pedina = pedineDom.get(g.id);
+    if (!pedina) return;
+    const inSospeso = !!g.provaInSospeso;
+    pedina.classList.toggle('pedina-in-sospeso', inSospeso);
+    pedina.title = inSospeso ? `${g.nome} — prova in sospeso` : g.nome;
+  });
 }
 
 async function risolviProvaVincoloDiTurno(giocatore) {
   const provaInSospeso = stato.giocatori[giocatore.id].provaInSospeso;
   const posizionePrima = stato.giocatori[giocatore.id].posizione;
 
+  impostaProtagonista({ nome: giocatore.nome, colore: PALETTE[giocatore.colore] || coloreSicuro(giocatore.colore) });
   const superata = await chiediEsitoProvaVincolo(giocatore.nome, provaInSospeso);
 
   stato = risolviProvaInSospeso(stato, giocatore.id);
@@ -252,10 +292,7 @@ async function risolviProvaVincoloDiTurno(giocatore) {
   aggiornaProveInSospeso();
 
   const posizioneDopo = stato.giocatori[giocatore.id].posizione;
-  if (posizioneDopo !== posizionePrima) {
-    await pausa(200);
-    await animaSpostamento(giocatore.id, posizionePrima, posizioneDopo);
-  }
+  await muoviEAnnuncia(giocatore, posizionePrima, posizioneDopo, { anchePerFermo: true });
 
   await pubblicaStato(codicePartita, stato);
 }
@@ -265,11 +302,10 @@ async function risolviProvaVincoloDiTurno(giocatore) {
 // "posizioneAtterrata" e' la casella su cui la pedina si trova sullo schermo in questo momento.
 // Restituisce il risultato finale ({ stato, evento }) nello stesso formato del motore.
 async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
+  // Prima si mostra la carta (Imprevisto, Salto...), poi la pedina si sposta: cosi' si legge il
+  // perche' e subito dopo si vede, con l'annuncio grande, quanto ci si e' mossi.
   const posizioneDopoEffetto = stato.giocatori[giocatore.id].posizione;
-  if (posizioneDopoEffetto !== posizioneAtterrata && r.evento.tipo !== 'IN_ATTESA') {
-    await pausa(200);
-    await animaSpostamento(giocatore.id, posizioneAtterrata, posizioneDopoEffetto);
-  }
+  const spostamentoDaEffetto = posizioneDopoEffetto !== posizioneAtterrata && r.evento.tipo !== 'IN_ATTESA';
 
   if (r.evento.tipo === 'IMPREVISTO') {
     const pescata = pesca(mazzoImprevisto);
@@ -290,6 +326,8 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
     const cartaSalto = { testo: `${r.evento.nomeEvento}! Una carica in più nella tua corsa cristiana: salti direttamente alla casella ${etichettaPosizione(r.evento.destinazione)}.` };
     await mostraCartaEAspettaScelta('SALTO', cartaSalto, [{ etichetta: 'Continua', valore: null }], true);
   }
+
+  if (spostamentoDaEffetto) await muoviEAnnuncia(giocatore, posizioneAtterrata, posizioneDopoEffetto);
 
   if (r.evento.tipo === 'IN_ATTESA') {
     const posizionePrimaEsito = stato.giocatori[giocatore.id].posizione;
@@ -336,6 +374,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
         if (carta.minimoRichiesto) richiesta.minimoRichiesto = carta.minimoRichiesto;
         if (carta.opzioni) richiesta.opzioni = carta.opzioni;
         stato.richiestaConoscenza = richiesta;
+        avviaTempoRisposta(richiesta.scadenza);
         // Ricordiamo anche dentro lo stato (quindi su Firebase) quali
         // domande Conoscenza sono già uscite in questa partita: così,
         // se il tabellone si riavvia, questa memoria non si perde.
@@ -346,7 +385,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
         ultimeRisposteDate = risposteDate;
 
         stato.richiestaConoscenza = null;
-        nascondiCarta();
+        // la carta resta aperta: l'esito compare sopra la domanda (vedi mostraVerdetto)
 
         corretta = valutaRisposta(carta, risposteDate);
 
@@ -401,6 +440,7 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
         await mostraCartaEAspettaScelta('PROVA', carta, [{ etichetta: 'Continua', valore: null }], true);
         stato = impostaProvaInSospeso(stato, giocatore.id, carta);
         aggiornaProveInSospeso();
+        annuncia(`${giocatore.nome}: prova in sospeso fino al prossimo turno ⏳`, 'info');
         r = { stato, evento: { tipo: 'PROVA_VINCOLO' } };
       } else {
         const superata = await mostraCartaEAspettaScelta('PROVA', carta, [
@@ -413,9 +453,8 @@ async function gestisciEffettoCasella(giocatore, r, posizioneAtterrata) {
     stato = r.stato;
 
     const posizioneDopoEsito = stato.giocatori[giocatore.id].posizione;
-    if (posizioneDopoEsito !== posizionePrimaEsito) {
-      await pausa(200);
-      await animaSpostamento(giocatore.id, posizionePrimaEsito, posizioneDopoEsito);
+    if (r.evento.tipo !== 'PROVA_VINCOLO') {
+      await muoviEAnnuncia(giocatore, posizionePrimaEsito, posizioneDopoEsito, { anchePerFermo: true });
     }
   }
 
@@ -431,17 +470,18 @@ async function giocaTurno() {
     giocatore = giocatoreDiTurno(stato);
   }
 
-  const infoTurno = document.getElementById('turno-info');
-
+  impostaProtagonista({ nome: giocatore.nome, colore: PALETTE[giocatore.colore] || coloreSicuro(giocatore.colore) });
   const sembraDisconnesso = presenzaGiocatori[giocatore.id] === false;
-  infoTurno.textContent = `In attesa che ${giocatore.nome} tiri il dado dal telefono...` +
-    (sembraDisconnesso ? ' ⚠️ Il suo dispositivo sembra disconnesso.' : ' (se non risponde entro un minuto, si procede comunque)');
+  const secondiDado = Math.round(configPartita.timeout.dadoMs / 1000);
+  mostraTurno(giocatore, '🎲 Tira il dado dal telefono',
+    sembraDisconnesso ? '⚠️ Il suo telefono sembra disconnesso.' : `Se non risponde entro ${secondiDado} secondi, si procede comunque.`);
   await aspettaIntenzioneDado(codicePartita, giocatore.id, configPartita.timeout.dadoMs);
   stato.turnoInCorso = true;
 
   const posizionePrima = giocatore.posizione;
   const dado = tiraDado(configPartita);
   await animaDado(dado);
+  mostraTurno(giocatore, `🎲 Ha fatto ${dado}!`, '');
 
   const posizioneAtterrata = Math.min(posizionePrima + dado, percorso.length);
   await animaSpostamento(giocatore.id, posizionePrima, posizioneAtterrata);
@@ -484,20 +524,29 @@ function mostraVittoria() {
   // da qui: e' l'unico punto in cui una partita risulta davvero conclusa.
   registraPartitaConclusa(stato.giocatori.length);
 
-  const vincitore = stato.giocatori[stato.vincitore];
-  document.getElementById('vittoria-titolo').textContent = `🏆 Ha vinto ${vincitore.nome}!`;
   document.getElementById('vittoria-bottoni').classList.remove('nascosta');
   document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
-  document.getElementById('vittoria-overlay').classList.remove('nascosta');
+  document.getElementById('vittoria-overlay').classList.remove('vittoria-con-statistiche');
+  // La festa a tutto schermo (js/vittoria-ui.js): pedina con la corona, nome in oro, coriandoli,
+  // fuochi d'artificio, versetto e podio. Se qualcosa va storto, almeno il nome del vincitore c'e'.
+  try {
+    mostraCelebrazione({
+      giocatori: stato.giocatori,
+      vincitoreId: stato.vincitore,
+      coloreDi: g => PALETTE[g.colore] || coloreSicuro(g.colore)
+    });
+  } catch (errore) {
+    console.warn('Festa di fine partita non riuscita', errore);
+    const scena = document.getElementById('vittoria-scena');
+    if (scena) scena.textContent = `🏆 Ha vinto ${stato.giocatori[stato.vincitore].nome}!`;
+    document.getElementById('vittoria-overlay').classList.remove('nascosta');
+  }
 
   fermaMusica();
   fermaEffetti();
   riproduciEffetto('vittoria');
   if (schermoAcceso) { try { schermoAcceso.spegni(); } catch (errore) { /* pazienza */ } }   // partita finita: lo schermo torna a spegnersi da solo
 
-  const video = document.getElementById('vittoria-video');
-  video.currentTime = 0;
-  video.play().catch(() => {});
 }
 
 function disegnaClassificaConoscenza() {
@@ -551,12 +600,14 @@ document.getElementById('vittoria-btn-chiudi').addEventListener('click', () => {
 
 document.getElementById('vittoria-btn-statistiche').addEventListener('click', () => {
   disegnaClassificaConoscenza();
+  document.getElementById('vittoria-overlay').classList.add('vittoria-con-statistiche');
   document.getElementById('vittoria-bottoni').classList.add('nascosta');
   document.getElementById('vittoria-statistiche-vista').classList.remove('nascosta');
 });
 
 document.getElementById('vittoria-btn-indietro').addEventListener('click', () => {
   document.getElementById('vittoria-statistiche-vista').classList.add('nascosta');
+  document.getElementById('vittoria-overlay').classList.remove('vittoria-con-statistiche');
   document.getElementById('vittoria-bottoni').classList.remove('nascosta');
 });
 
@@ -731,6 +782,22 @@ function mostraBadgeModalita(modalita) {
   if (badge) badge.classList.toggle('nascosta', modalita !== 'veloce');
 }
 
+// La presentazione animata di inizio partita (js/introduzione.js): premessa, "E' la prima volta?" e,
+// se serve, le regole. Si carica a parte: se non si carica o si rompe, la partita parte lo stesso.
+// Non si mostra quando si riprende una partita interrotta.
+const LIMITE_INTRODUZIONE_MS = 15 * 60 * 1000;
+async function mostraIntroduzioneSicura(modalita) {
+  try {
+    const { mostraIntroduzione } = await import('./introduzione.js');
+    await Promise.race([
+      mostraIntroduzione({ config: configPartita, modalita }),
+      pausa(LIMITE_INTRODUZIONE_MS)
+    ]);
+  } catch (errore) {
+    console.warn('Introduzione non disponibile, si parte subito', errore);
+  }
+}
+
 async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
   // La partita veloce cambia solo pochi numeri (vedi "veloce" in config.js): da qui in poi tutto il
   // gioco usa la configurazione della modalita' scelta.
@@ -740,9 +807,8 @@ async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
 
-  const coordinate = generaSpirale(6, 11);
+  const coordinate = generaSpirale(RIGHE_TABELLONE, COLONNE_TABELLONE);
   disegnaTabellone(coordinate);
-  disegnaLegenda();
 
   document.getElementById('codice-partita-gioco').textContent = codicePartita;
 
@@ -752,6 +818,9 @@ async function iniziaPartitaVera(giocatoriInfo, modalita = 'normale') {
   stato.modalita = modalitaPartita;      // i telefoni la leggono dallo stato (targhetta "Partita veloce")
   mostraBadgeModalita(stato.modalita);
   creaPedine();
+
+  // La presentazione di inizio partita (saltabile): il gioco aspetta che finisca.
+  await mostraIntroduzioneSicura(modalitaPartita);
 
   localStorage.setItem(CHIAVE_PARTITA_ATTIVA, codicePartita);
   configuraAscoltatoriDiPartita();
@@ -792,9 +861,8 @@ async function riprendiPartitaEsistente(statoEsistente) {
   document.getElementById('vista-lobby').classList.add('nascosta');
   document.getElementById('vista-gioco').classList.remove('nascosta');
 
-  const coordinate = generaSpirale(6, 11);
+  const coordinate = generaSpirale(RIGHE_TABELLONE, COLONNE_TABELLONE);
   disegnaTabellone(coordinate);
-  disegnaLegenda();
 
   document.getElementById('codice-partita-gioco').textContent = codicePartita;
 
@@ -940,6 +1008,7 @@ Promise.all([import('./avviso-connessione.js'), import('./connessione.js')])
   .catch(errore => console.warn('L\'avviso di connessione non e\' disponibile', errore));
 
 avvia();
+try { avviaDimensioneTesto(); } catch (errore) { console.warn('Pulsante A-/A+ non disponibile', errore); }
 avviaMusica(); // primo tentativo, appena si apre la pagina — funziona solo per chi ha già familiarità col sito
 
 const bottoneAudio = document.getElementById('btn-audio-toggle');

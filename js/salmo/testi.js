@@ -60,7 +60,7 @@ export const tabellone = {
   anteprima(p) {
     return {
       titolo: `${p.primo} sta memorizzando l'immagine…`,
-      sotto: `${p.ultimo}, non guardare lo schermo di ${p.primo}!`
+      sotto: `${p.ultimo}, non guardare lo schermo di ${p.primo}! 📵 Niente foto né screenshot: vale solo la memoria.`
     };
   },
 
@@ -122,6 +122,7 @@ export const telefono = {
       return {
         titolo: `Tocca a te aiutare ${p.ultimo}!`,
         testo: `Tra poco vedrai per ${secondi(p.anteprimaMs)} un'immagine fatta di ${p.riquadri} riquadri. Memorizzala bene, poi descrivila a voce a ${p.ultimo}: dovrà rimetterla in ordine sul suo telefono.`,
+        patto: '📵 Niente screenshot né foto: l\'immagine si vede solo a pezzetti, sotto il tuo dito. Contano solo la memoria e la voce!',
         bottone: 'Sono pronto',
         caricamento: 'Preparo l\'immagine…',
         errore: 'Non riesco a caricare l\'immagine. Riprova tra poco.',
@@ -129,7 +130,11 @@ export const telefono = {
       };
     },
     anteprima(p) {
-      return { titolo: 'Memorizza l\'immagine!', conto: s => `Ancora ${s}s` };
+      return {
+        titolo: 'Memorizza l\'immagine!',
+        conto: s => `Ancora ${s}s`,
+        aiuto: '👆 Tieni il dito sull\'immagine e muovilo: vedi il pezzetto appena sopra il dito. 📵 Niente screenshot!'
+      };
     },
     prova(p) {
       return {
@@ -137,6 +142,7 @@ export const telefono = {
         testo: 'Parla chiaro e aiutalo riquadro per riquadro. Non mostrargli il telefono!',
         sbircia: `👀 Sbircia di nuovo (${secondi(p.sbirciataMs)}, una volta sola)`,
         sbirciando: 'Guarda bene!',
+        aiuto: '👆 Muovi il dito sull\'immagine per rivederla.',
         sbirciataFinita: 'Hai già usato la sbirciata.',
         conto: s => `⏱️ ${s}s`
       };

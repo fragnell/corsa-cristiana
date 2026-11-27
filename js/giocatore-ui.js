@@ -7,6 +7,7 @@
 // registrazione, rientri direttamente dove eri rimasto.
 
 import { raccogliRisposta } from './risposta-ui.js';
+import { proveSospeseDegliAltri } from './prove-sospese.js';
 import { PALETTE, NOMI_COLORI } from './colori.js';
 import { mostraVerdettoSulTelefono, chiudiAvvisoSeAperto } from './verdetto-telefono-ui.js';
 import { codiceDalLink } from './link-partita.js';
@@ -68,7 +69,7 @@ function avviaRecensione(stato) {
     .catch(errore => console.warn('La recensione di fine partita non e\' disponibile', errore));
 }
 
-// Il suono dell'avviso (il file audio/allert-giocatore.mp3, breve, quando tocca a te o devi rispondere). Il modulo si
+// Il suono dell'avviso (il file audio/avviso-marimba.mp3, breve, quando tocca a te o devi rispondere). Il modulo si
 // carica "a parte" appena si apre la pagina: cosi' sblocca l'audio e scarica il file gia' ai primi tocchi (cerca
 // partita, entra...) e, quando serve, e' pronto.
 // Se non si carica, o si rompe, il telefono funziona come sempre (restano il lampeggio e la vibrazione).
@@ -283,6 +284,30 @@ function entraInAttesa() {
   });
 }
 
+// "⏳ In sospeso": le prove ancora aperte degli altri giocatori, da tenere d'occhio. Compare solo se
+// ce n'e' almeno una. I nomi e i testi entrano come testo semplice, mai come HTML.
+function mostraProveDegliAltri(stato) {
+  const contenitore = document.getElementById('altre-prove-sospese');
+  if (!contenitore) return;
+  const prove = proveSospeseDegliAltri(stato, mioId);
+  contenitore.textContent = '';
+  contenitore.classList.toggle('nascosta', prove.length === 0);
+  if (prove.length === 0) return;
+  const titolo = document.createElement('div');
+  titolo.className = 'altre-prove-titolo';
+  titolo.textContent = '⏳ In sospeso — tenete d\'occhio:';
+  contenitore.appendChild(titolo);
+  prove.forEach(({ nome, testo }) => {
+    const riga = document.createElement('div');
+    riga.className = 'altre-prove-riga';
+    const chi = document.createElement('strong');
+    chi.textContent = nome;
+    riga.appendChild(chi);
+    if (testo) riga.appendChild(document.createTextNode(`: ${testo}`));
+    contenitore.appendChild(riga);
+  });
+}
+
 function aggiornaSchermo(stato) {
   // COLLABORIAMO!: se c'e' una prova in corso, la sua schermata copre tutto.
   ultimoStatoRicevuto = stato;
@@ -322,6 +347,8 @@ function aggiornaSchermo(stato) {
   } else {
     elProvaSospesa.classList.add('nascosta');
   }
+
+  mostraProveDegliAltri(stato);
 
   if (stato.vincitore != null) {
     const vincitore = stato.giocatori[stato.vincitore];

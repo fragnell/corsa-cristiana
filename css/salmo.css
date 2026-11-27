@@ -558,3 +558,111 @@ button.salmo-tessera {
   letter-spacing: 0.04em;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
+
+/* ---------- l'immagine "a torcia" del primo (js/salmo/protezione.js) ----------
+   Il mosaico vero resta coperto: si vede solo il cerchio illuminato sopra il
+   dito. Uno screenshot cattura quel cerchio, non l'immagine intera. */
+
+.salmo-griglia-protetta {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.salmo-protetta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  /* spazio sotto il mosaico: il dito puo' stare qui per illuminare l'ultima riga */
+  padding-bottom: 4.5rem;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  cursor: crosshair;
+}
+
+.salmo-protetta-scena {
+  position: relative;
+}
+
+.salmo-protetta-copertura .salmo-tessera-segnaposto {
+  filter: saturate(0.25) brightness(0.8);
+}
+
+.salmo-protetta-vera {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+  -webkit-mask-image: radial-gradient(circle var(--torcia-r, 40px) at var(--torcia-x, -999px) var(--torcia-y, -999px), #000 0, #000 68%, transparent 100%);
+  mask-image: radial-gradient(circle var(--torcia-r, 40px) at var(--torcia-x, -999px) var(--torcia-y, -999px), #000 0, #000 68%, transparent 100%);
+}
+
+.salmo-protetta-accesa .salmo-protetta-vera {
+  visibility: visible;
+}
+
+/* la "firma" con il nome di chi guarda, stampata sopra l'immagine */
+.salmo-protetta-firma {
+  position: absolute;
+  inset: -30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  transform: rotate(-24deg);
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.salmo-protetta-firma span {
+  white-space: pre;
+  font: 800 0.8rem/1 'Nunito', sans-serif;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
+}
+
+.salmo-protetta-aiuto {
+  margin: 0.7rem 0 0;
+  max-width: 26rem;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.salmo-protetta-blocco {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  border-radius: 12px;
+  background: rgba(40, 20, 10, 0.72);
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.salmo-protetta-blocco.nascosta {
+  display: none;
+}
+
+.salmo-patto {
+  margin: 0.2rem 0 0.9rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(192, 57, 43, 0.12);
+  border: 2px dashed rgba(192, 57, 43, 0.55);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+@media print {
+  .salmo-protetta { display: none !important; }
+}

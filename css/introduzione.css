@@ -1,0 +1,448 @@
+/* introduzione.css */
+/* La presentazione animata di inizio partita (js/introduzione.js). Pensata per la TV: testo grande,
+   tanto contrasto, movimenti lenti. Si adatta anche a schermi piccoli (pagina "Come si gioca"). */
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #fffaf0;
+  font-family: 'Nunito', system-ui, sans-serif;
+  background: #1b2a3a;
+  animation: intro-entra 0.7s ease-out both;
+}
+
+.intro-uscita { animation: intro-esce 0.6s ease-in both; pointer-events: none; }
+
+@keyframes intro-entra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes intro-esce { from { opacity: 1; } to { opacity: 0; transform: scale(1.03); } }
+
+/* lo sfondo del tabellone, sfocato e scuro, che si muove piano (effetto "Ken Burns") */
+.intro-sfondo {
+  position: absolute;
+  inset: -6%;
+  background: linear-gradient(180deg, rgba(16, 30, 48, 0.78), rgba(28, 18, 8, 0.86)), url('../img/sfondo-tabellone-ampio.jpg') center / cover no-repeat;
+  filter: blur(3px) saturate(1.1);
+  animation: intro-ken-burns 38s ease-in-out infinite alternate;
+}
+
+@keyframes intro-ken-burns {
+  from { transform: scale(1) translate(0, 0); }
+  to { transform: scale(1.12) translate(-2%, -1.5%); }
+}
+
+/* lucine che salgono lente */
+.intro-luci { position: absolute; inset: 0; pointer-events: none; }
+
+.intro-luce {
+  position: absolute;
+  bottom: -2rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 228, 150, 0.95), rgba(255, 228, 150, 0));
+  animation: intro-sale 12s linear infinite;
+}
+
+@keyframes intro-sale {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translateY(-110vh) scale(1.4); opacity: 0; }
+}
+
+.intro-in-pausa .intro-sfondo,
+.intro-in-pausa .intro-luce,
+.intro-in-pausa .intro-anim * { animation-play-state: paused; }
+
+/* ---------- la scena ---------- */
+
+.intro-palco {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3vh 6vw 1vh;
+  min-height: 0;
+}
+
+.intro-scena {
+  max-width: min(64rem, 92vw);
+  text-align: center;
+  animation: intro-scena-entra 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes intro-scena-entra {
+  from { opacity: 0; transform: translateY(2.5vh) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.intro-icona {
+  font-size: clamp(3rem, 11vh, 7.5rem);
+  line-height: 1;
+  margin-bottom: 2vh;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
+  animation: intro-icona 1s cubic-bezier(0.3, 1.6, 0.5, 1) both, intro-galleggia 4s ease-in-out 1s infinite;
+}
+
+@keyframes intro-icona {
+  from { opacity: 0; transform: scale(0.3) rotate(-14deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes intro-galleggia {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.2vh); }
+}
+
+.intro-titolo {
+  margin: 0 0 2.4vh;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 6.2vh, 4.2rem);
+  line-height: 1.1;
+  color: #ffd66b;
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
+  animation: intro-sale-poco 0.8s 0.15s ease-out both;
+}
+
+@keyframes intro-sale-poco {
+  from { opacity: 0; transform: translateY(1.5vh); }
+  to { opacity: 1; transform: none; }
+}
+
+.intro-testo {
+  margin: 0 auto;
+  max-width: 54rem;
+  font-size: clamp(1.15rem, 4.1vh, 2.6rem);
+  line-height: 1.38;
+  font-weight: 600;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+.intro-parola {
+  display: inline-block;
+  animation: intro-parola 0.55s ease-out both;
+}
+
+@keyframes intro-parola {
+  from { opacity: 0; transform: translateY(0.4em); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+.intro-riferimento {
+  margin: 2.6vh 0 0;
+  font-size: clamp(0.95rem, 2.7vh, 1.6rem);
+  font-style: italic;
+  color: #cfe3ff;
+  opacity: 0;
+  animation: intro-sale-poco 0.8s 2.2s ease-out both;
+}
+
+/* una citazione testuale (la premessa): riquadro chiaro, entra dopo la frase introduttiva */
+.intro-citazione {
+  margin: 3.2vh auto 0;
+  max-width: 56rem;
+  padding: 2.2vh 2.4rem;
+  border-left: 6px solid #ffd66b;
+  border-radius: 6px 18px 18px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  text-align: left;
+  font-size: clamp(1.05rem, 3.4vh, 2.1rem);
+  line-height: 1.42;
+  font-style: italic;
+  color: #fffaf0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  animation: intro-sale-poco 1s 2.2s ease-out both;
+}
+
+.intro-citazione + .intro-riferimento {
+  animation-delay: 3.2s;
+}
+
+/* ---------- elenchi (lo scopo del gioco, le caselle) ---------- */
+
+.intro-elenco {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  max-width: 52rem;
+  text-align: left;
+}
+
+.intro-voce-elenco {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.1vh 1.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: clamp(1rem, 3.3vh, 2.05rem);
+  line-height: 1.25;
+  animation: intro-voce 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes intro-voce {
+  from { opacity: 0; transform: translateX(-3vw); }
+  to { opacity: 1; transform: none; }
+}
+
+.intro-voce-elenco strong { color: #ffd66b; }
+
+.intro-voce-icona {
+  flex: 0 0 auto;
+  font-size: 1.35em;
+}
+
+.intro-voce-immagine {
+  flex: 0 0 auto;
+  width: clamp(2.2rem, 6.5vh, 4.2rem);
+  height: clamp(2.2rem, 6.5vh, 4.2rem);
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+}
+
+/* ---------- la domanda ---------- */
+
+.intro-scelte {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 4vh;
+  animation: intro-sale-poco 0.8s 1.2s ease-out both;
+}
+
+.intro-scelta {
+  padding: 1.6vh 2.4rem;
+  border: none;
+  border-radius: 999px;
+  font: 700 clamp(1.05rem, 3.4vh, 2rem) 'Fredoka', 'Nunito', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease;
+}
+
+.intro-scelta:hover, .intro-scelta:focus-visible { transform: scale(1.05); }
+.intro-scelta:focus-visible { outline: 4px solid #fff; outline-offset: 4px; }
+.intro-scelta-si { background: #ffd66b; color: #3a2a00; }
+.intro-scelta-no { background: #3fa45b; color: #fff; }
+
+.intro-conto {
+  margin: 2.4vh 0 0;
+  font-size: clamp(0.9rem, 2.3vh, 1.3rem);
+  color: rgba(255, 250, 240, 0.75);
+}
+
+/* ---------- barra in basso: avanzamento e comandi ---------- */
+
+.intro-barra {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.6vh 2.2rem 2.4vh;
+}
+
+.intro-progressi {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+
+.intro-segmento {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.intro-segmento-pieno {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: #ffd66b;
+}
+
+.intro-segmento.fatto .intro-segmento-pieno { width: 100%; }
+
+.intro-comandi { display: flex; gap: 0.4rem; }
+
+.intro-comando,
+.intro-salta {
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font: 700 1.1rem/1 'Nunito', sans-serif;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.intro-comando { width: 2.8rem; height: 2.8rem; font-size: 1.4rem; }
+.intro-comando:disabled { opacity: 0.3; cursor: default; }
+.intro-salta { padding: 0.75rem 1.3rem; white-space: nowrap; }
+.intro-comando:hover:not(:disabled), .intro-salta:hover { background: rgba(255, 255, 255, 0.18); }
+.intro-comando:focus-visible, .intro-salta:focus-visible { outline: 3px solid #ffd66b; outline-offset: 2px; }
+
+/* ---------- le piccole animazioni ---------- */
+
+.intro-anim {
+  margin: 3.5vh auto 0;
+  animation: intro-sale-poco 0.8s 1.4s ease-out both;
+}
+
+/* il percorso con tre pedine che corrono */
+.intro-anim-percorso {
+  position: relative;
+  width: min(40rem, 84vw);
+  padding-top: 3.4rem;
+}
+
+.intro-pista {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+}
+
+.intro-pista-casella {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+}
+
+.intro-pedina {
+  position: absolute;
+  top: calc(0.6rem + var(--riga) * 0.55rem);
+  left: 0;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-left: calc(5% - 0.65rem + (var(--riga) - 1) * 0.35rem);
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+  animation: intro-corsa var(--durata, 6s) steps(10, jump-none) var(--ritardo, 0s) infinite,
+             intro-saltello calc(var(--durata, 6s) / 10) ease-in-out var(--ritardo, 0s) infinite;
+}
+
+@keyframes intro-corsa {
+  from { left: 0; }
+  to { left: 90%; }
+}
+
+@keyframes intro-saltello {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-2.2vh); }
+}
+
+/* il telefono che tira il dado */
+.intro-anim-dado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  font-size: clamp(2.4rem, 9vh, 5.5rem);
+}
+
+.intro-telefono { animation: intro-vibra 2.6s ease-in-out infinite; }
+.intro-freccia { font-size: 0.6em; opacity: 0.7; }
+.intro-dado { display: inline-block; animation: intro-rotola 2.6s cubic-bezier(0.3, 0.7, 0.4, 1) infinite; }
+
+.intro-numero {
+  font: 700 0.7em 'Fredoka', sans-serif;
+  color: #ffd66b;
+  animation: intro-numero 2.6s ease-out infinite;
+}
+
+@keyframes intro-vibra {
+  0%, 12%, 100% { transform: rotate(0); }
+  3%, 9% { transform: rotate(-9deg); }
+  6% { transform: rotate(9deg); }
+}
+
+@keyframes intro-rotola {
+  0%, 15% { transform: translateY(0) rotate(0); }
+  35% { transform: translateY(-3vh) rotate(380deg); }
+  55%, 100% { transform: translateY(0) rotate(720deg); }
+}
+
+@keyframes intro-numero {
+  0%, 50% { opacity: 0; transform: scale(0.4); }
+  62% { opacity: 1; transform: scale(1.25); }
+  75%, 92% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; }
+}
+
+/* COLLABORIAMO!: la voce descrive, i riquadri si scambiano */
+.intro-anim-mosaico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+}
+
+.intro-voce { font-size: clamp(2.2rem, 8vh, 5rem); animation: intro-galleggia 1.6s ease-in-out infinite; }
+
+.intro-mosaico {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  width: clamp(6rem, 18vh, 11rem);
+}
+
+.intro-tessera {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: #8ecbee;
+  font-size: clamp(1.4rem, 5vh, 3rem);
+}
+
+.intro-tessera-1 { background: #dcd4f2; }
+.intro-tessera-2 { background: #bfe0c8; }
+.intro-tessera-3 { background: #f6d98b; }
+
+/* il primo e l'ultimo riquadro si scambiano di posto, poi tornano */
+.intro-tessera-0 { animation: intro-scambio-a 4s ease-in-out infinite; }
+.intro-tessera-3 { animation: intro-scambio-b 4s ease-in-out infinite; }
+
+@keyframes intro-scambio-a {
+  0%, 30% { transform: translate(0, 0); }
+  45%, 80% { transform: translate(calc(100% + 6px), calc(100% + 6px)); }
+  95%, 100% { transform: translate(0, 0); }
+}
+
+@keyframes intro-scambio-b {
+  0%, 30% { transform: translate(0, 0); }
+  45%, 80% { transform: translate(calc(-100% - 6px), calc(-100% - 6px)); }
+  95%, 100% { transform: translate(0, 0); }
+}
+
+/* ---------- schermi piccoli (telefono, pagina "Come si gioca") ---------- */
+
+@media (max-width: 640px) {
+  .intro-palco { padding: 2vh 1rem 0; }
+  .intro-barra { flex-wrap: wrap; gap: 0.6rem; padding: 1rem; }
+  .intro-progressi { flex-basis: 100%; }
+  .intro-comandi { flex: 1; }
+  .intro-voce-elenco { border-radius: 18px; padding: 0.6rem 0.9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-sfondo, .intro-luce, .intro-icona, .intro-anim * { animation: none !important; }
+  .intro-parola { animation-duration: 0.01s; }
+}

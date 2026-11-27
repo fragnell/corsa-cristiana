@@ -24,6 +24,7 @@
   <meta property="og:image:alt" content="Corsa Cristiana, il gioco biblico: cartelli del percorso, pedine e dadi su un tavolo di legno">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="css/tabellone.css">
+  <link rel="stylesheet" href="css/vittoria.css">
 </head>
 <body>
 
@@ -77,27 +78,19 @@
 
   <div id="vista-gioco" class="nascosta">
     <div id="scena">
+      <!-- Il percorso a spirale occupa tutta la tavola; al centro (dentro la spirale) va il
+           riquadro del turno: js/tabellone-ui.js lo sposta li' quando disegna le caselle.
+           Le prove in sospeso non hanno piu' un riquadro: si vedono come ⏳ sulla pedina
+           e, per esteso, sui telefoni. -->
       <div id="tabellone"></div>
 
-      <div id="pannello-sospeso" class="pannello-laterale">
-        <div class="pannello-titolo">In sospeso</div>
-        <div id="prove-in-sospeso"></div>
-      </div>
-
-      <div id="pannello-legenda" class="pannello-laterale">
-        <div class="pannello-titolo">Legenda</div>
-        <div id="legenda-lista"></div>
-      </div>
-
-      <div id="pannello-turno" class="pannello-laterale">
-        <div class="pannello-titolo">Turno</div>
+      <div id="pannello-turno">
         <div id="turno-info"></div>
+        <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span><span id="modalita-badge" class="nascosta"> · ⚡ Partita veloce</span></div>
       </div>
-
-      <div id="codice-partita-badge">Codice: <span id="codice-partita-gioco"></span><span id="modalita-badge" class="nascosta"> · ⚡ Partita veloce</span></div>
     </div>
 
-
+    
     <div id="annuncio-ordine" class="nascosta" role="status" aria-live="polite">
       <div class="annuncio-ordine-titolo">🎲 Ordine di gioco sorteggiato</div>
       <ol id="annuncio-ordine-lista"></ol>
@@ -121,13 +114,23 @@
   </div>
 
    <div id="carta-overlay" class="carta-overlay nascosta">
+      <!-- La carta (js/carta-ui.js): in alto il tipo, di chi e' e il tempo per rispondere; poi
+           l'esito (quando c'e'); al centro il testo, che si adatta da solo allo spazio; in fondo i bottoni. -->
       <div id="carta" class="carta">
         <div id="carta-retro" class="carta-retro"></div>
-        <div class="carta-fronte">
-          <div id="carta-tipo" class="carta-tipo"></div>
-          <div id="carta-testo" class="carta-testo"></div>
-          <div id="carta-riferimento" class="carta-riferimento"></div>
-          <div id="carta-opzioni" class="carta-opzioni"></div>
+        <div id="carta-fronte" class="carta-fronte">
+          <div class="carta-testa">
+            <span id="carta-tipo" class="carta-tipo"></span>
+            <span id="carta-chi" class="carta-chi"></span>
+            <span id="carta-tempo" class="carta-tempo"></span>
+          </div>
+          <div id="carta-esito" class="carta-esito nascosta" role="status" aria-live="polite"></div>
+          <div id="carta-corpo" class="carta-corpo">
+            <div id="carta-testo" class="carta-testo"></div>
+            <div id="carta-riferimento" class="carta-riferimento"></div>
+            <div id="carta-opzioni" class="carta-opzioni"></div>
+            <div id="carta-risposte" class="carta-risposte"></div>
+          </div>
           <div id="carta-bottoni" class="carta-bottoni"></div>
         </div>
       </div>
@@ -157,10 +160,13 @@
     </div>
   </div>
 
+  <!-- La festa di fine partita (js/vittoria-ui.js): raggi di luce, coriandoli e fuochi (canvas),
+       la pedina del vincitore con la corona, il nome, il versetto, il podio e i pulsanti. -->
   <div id="vittoria-overlay" class="vittoria-overlay nascosta">
+    <div class="vittoria-raggi" aria-hidden="true"></div>
+    <canvas id="vittoria-festa" class="vittoria-festa" aria-hidden="true"></canvas>
     <div class="vittoria-box">
-      <video id="vittoria-video" src="img/vittoria.mp4" muted playsinline></video>
-      <h2 id="vittoria-titolo"></h2>
+      <div id="vittoria-scena" class="vittoria-scena" role="status" aria-live="polite"></div>
 
       <div id="vittoria-bottoni">
         <button id="vittoria-btn-nuova">🔄 Gioca un'altra partita</button>
@@ -175,7 +181,7 @@
       </div>
     </div>
   </div>
-
+  
   <button id="btn-audio-toggle" class="audio-toggle" type="button">🔊</button>
   <script type="module" src="js/tabellone-ui.js"></script>
 </body>
